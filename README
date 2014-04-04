@@ -5,13 +5,14 @@ Copyright 2014 Lloyd Konneker
 Released under license GPLv3
 
 
+Work in progress.
 
 This is a framework that wraps the Qt print architecture.
 
 It includes a small test app.
 
 It is useful for:
-- as a working component of an app
+- a working component of an app
 - understanding the Qt print architecture.
 - testing Qt print on different platforms that Qt supports.
 
@@ -24,14 +25,15 @@ it is difficult to adapt the print architectures of diverse platforms.
 
 Attributes:
 - use cases work on all platforms
-- i18n
+- i18n (TODO)
 
 Use cases (GUI test sequences):
 - print to PDF file on all platforms
 	- OSX: Implemented by OSX
 	- Linux: Implemented by Qt inside QPrintDialog
 	- Win: Implemented by this framework, using Qt modules
-- PageSetup if no physical print device on system
-- app remembers current printer (may be Paperless printer: PDF or XPS)
-- app remembers PageSetup for current printer
+- PageSetup if no physical print device on system ( Paperless printer only.)
+- remembers current printer (may be Paperless printer: PDF or XPS)
+- remembers PageSetup of current printer
+- PageSetup is a setting of the app, and is applied on app startup to Paperless printer only.
 
