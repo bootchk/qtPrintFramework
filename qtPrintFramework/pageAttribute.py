@@ -24,6 +24,11 @@ class PageAttribute():
     # assert result is a value in the model (an enum value.)
     return result
 
+  def setValue(self, value):
+    self.control.setValue(value)
+    
+    
+    
   """
   def toPrinterAdaptor(self, printerAdaptor):
     '''

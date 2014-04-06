@@ -93,5 +93,7 @@ class PrinterAdaptor(QPrinter):
     '''
     Description of adapted printer.
     '''
-    print("Name, paper size", self.printerName(), self.paperSize() )
+    print("Printer name: ", self.printerName())
+    print("   paper size:", self.paperSize() )
+    print("   isNative", self.isAdaptingNative())
     
