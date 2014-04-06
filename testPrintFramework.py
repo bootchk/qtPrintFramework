@@ -12,8 +12,8 @@ Various things tested:
 
 import sys
 
+from PyQt5.QtCore import QCoreApplication
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget
-
 from qtPrintFramework.printerAdaptor import PrinterAdaptor
 
 mainWindow = None
@@ -65,6 +65,10 @@ def main():
   app = QApplication(sys.argv)
   
   global mainWindow
+  
+  QCoreApplication.setOrganizationName("testPrintFramework")
+  QCoreApplication.setOrganizationDomain("testPrintFramework.com")
+  QCoreApplication.setApplicationName("testPrintFramework")
   
   mainWindow = QMainWindow()
   mainWindow.setGeometry(100, 100, 500, 40)

@@ -1,0 +1,31 @@
+
+
+A.  Page setup remembered between app sessions for paperless printer
+
+(Note that a system with a printer always remembers a real printer as the current printer?
+Such a system will not let you set a paperless printer as the default printer?)
+
+On a system with no printer (say a Linux box):
+1. Start app
+2. Choose Print
+  _ dialog offers only 'Print to PDF'
+3. Change paper of printer to (Legal, Landscape)
+4. Choose OK
+  _ (a real app) creates file
+5. Quit and restart app
+6. Choose PageSetup
+  _ shows the paperless printer PageSetup dialog
+  _ dialog show choices made above (Legal, Landscape) from previous session
+  
+ 
+B. Page setup for paperless printer remembered between File>Print invocations
+
+C. File>Page Setup displays dialog for both real printers and paperless printers
+
+D. File>Print PDF on Win platform
+
+E. PageSetup shows correct PaperSize chosen in native dialogs (Qt Bug before 5.3)
+
+
+
+

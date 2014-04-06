@@ -17,8 +17,9 @@ It is useful for:
 - testing Qt print on different platforms that Qt supports.
 
 Contributes (hides these warts):
-- Qt's QPrintDialog and QPageSetupDialog cannot be used for non-native printer
+- Qt's QPrintDialog and QPageSetupDialog cannot be used for non-native printer, some platforms
 - the Win platform has no native support for printing PDF
+- Qt versions before 5.3 return wrong PaperSize on OSX Bug TODO
 
 These warts are not necessarily the fault of Qt:
 it is difficult to adapt the print architectures of diverse platforms.
@@ -31,9 +32,14 @@ Use cases (GUI test sequences):
 - print to PDF file on all platforms
 	- OSX: Implemented by OSX
 	- Linux: Implemented by Qt inside QPrintDialog
-	- Win: Implemented by this framework, using Qt modules
+	- Win: Implemented by this framework, using Qt modules TODO
 - PageSetup if no physical print device on system ( Paperless printer only.)
-- remembers current printer (may be Paperless printer: PDF or XPS)
-- remembers PageSetup of current printer
+- remembers current printer (may be Paperless printer: PDF or XPS) ???
+- remembers PageSetup of current printer if Paperless
 - PageSetup is a setting of the app, and is applied on app startup to Paperless printer only.
 
+TODO explain this: I inconsistently call a NonNative printer a Paperless printer, meaning only 'no cellulose'
+Qt's notion of a NonNative printer is: native platform has no interaction with printer (typically PDF on Win)
+OR some Qt dialog (typically QPageSetupDialog on Linux) refuse to work with it.
+A NonNative printer is typically cellulose free, but has pages and pagination (PDF.)
+But some native printers (i.e. Win XPS) are also cellulose free.

@@ -31,7 +31,7 @@ class PrintConverser(QObject):
     self.printerAdaptor = printerAdaptor  # TODO really need this here?
     
     # self owns because self mediates use of it: every conversation
-    self.pageSetup = PageSetup()
+    self.pageSetup = PageSetup(printerAdaptor)
 
 
   '''
