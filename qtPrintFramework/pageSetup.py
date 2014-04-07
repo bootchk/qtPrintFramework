@@ -14,9 +14,14 @@ class PageSetup(list):
   This defines the set of attributes, their labels and models.
   
   Responsibilities:
-  - iterate PageAttributes (which know their labels, controls, models, and values (but values are view values.)
-  - save/restore self to settings, so self persists with app, not with a printer TODO
+  - iterate PageAttributes (which are editable)
+  - save/restore self to settings, so self persists with app, not with a printer
   - apply/get self to/from PrinterAdaptor
+  
+  Almost a responsibility:
+  - edit: PrinterlessPageSetupDialog edits this, and knows this intimately by iterating over editable PageAttributes.
+    But other dialog (native) contribute to this state.
+    See PrintRelatedConverser.
   
   !!! Paper/Page are not interchangeable but refer to a similar concept.
   Paper connotes real thing, and Page an ideal concept.
