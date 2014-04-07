@@ -56,7 +56,7 @@ class PageAttributeComboBox(QComboBox):
   
   
   def value(self):
-    print("pageAttributeComboBox currentText", self.currentText())
+    #print("pageAttributeComboBox.value() returns", self.currentText())
     return self._adaptNewValue(self.currentText())
   
   

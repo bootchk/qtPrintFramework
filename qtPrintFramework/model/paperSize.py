@@ -14,7 +14,13 @@ class AdaptedPaperSizeModel(AdaptedModel):
     ''' See super. '''
     '''
     Dictionary keyed by names of paper sizes, of enum values.
-    For all paper sizes in QPagedPaintDevice enum (not what current printer supports.)
+    For all paper sizes in QPagedPaintDevice enum.
+    
+    A current printer might support a different set.
+    Typically a subset.
+    When a superset: Custom?
+    
+    TODO del Custom
     '''
     self.values = AdaptedModel._getAdaptedDictionary(enumOwningClass=QPagedPaintDevice, 
                                                      enumType=QPagedPaintDevice.PageSize) # !!! Paper/Page confusion

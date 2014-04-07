@@ -4,6 +4,10 @@ from qtPrintFramework.userInterface.pageAttributeComboBox import PageAttributeCo
 
 class PageAttribute():
   '''
+  
+  Responsibilities:
+  - standard property responsibilities: get/set value
+  - editable
   '''
   
   def __init__(self, label, model):   #, printerAdaptorSetMethod):

@@ -1,8 +1,9 @@
 '''
 '''
-
+from PyQt5.QtCore import QSize
 from PyQt5.QtPrintSupport import QPrinter
 
+from qtPrintFramework.paper import Paper
 from qtPrintFramework.printRelatedConverser import PrintConverser
 
 
@@ -94,6 +95,45 @@ class PrinterAdaptor(QPrinter):
     Description of adapted printer.
     '''
     print("Printer name: ", self.printerName())
-    print("   paper size:", self.paperSize() )
     print("   isNative", self.isAdaptingNative())
+    print("   paper size:", self.paperSize() )  # Calls QPrinter, this is wrong in Qt < 5.3
+    print("   paper:", self.paper())
+    
+  
+  def paper(self):
+    '''
+    User's choice of paper.
+    
+    !!! Ameliorates a bug in Qt, whereby a QPrinter.paperSize() returns value that does not match pageSize().
+    e.g. Returns Custom, dimensions of Letter when in fact user chose 'Letter'
+    
+    Also, returns a more capable object than QPrinter.paperSize(), which is only an enum value (a feeble subclass of int.)
+    '''
+    
+    '''
+    fix Qt bug.
+    Create a Paper object by calling class method of Paper that returns proper enum that matches my floating page dimensions
+    Using a dialog on QPrinter returns paperSize that is floating but not stable across platforms and doesn't compare exactly to integral Paper
+    '''
+    
+    # !!! Not call deprecated pageSize(), it is in error also.
+    # The overloaded paperSize(MM) returns an epsilon correct (except for floating precision) correct result
+    floatPaperDimensionsMM = self.paperSize(QPrinter.Millimeter)
+    correctPaperEnum = Paper.fuzzyMatchPageSize(floatPaperDimensionsMM)
+    if correctPaperEnum is None:
+      # self's pageSize doesn't match any standard Paper, it must be Custom
+      # Which should be what self's paperSize() is saying
+      assert False  
+      # TODO
+      # self.paperSize() == .Custom
+      #result = CustomPaper()
+    else:
+      result = Paper(correctPaperEnum)  # TODO StandardPaper
+    assert isinstance(result, Paper)
+    return result
+  
+  
+  
+    
+    
     

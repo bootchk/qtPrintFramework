@@ -4,7 +4,7 @@ class AdaptedModel(object):
   '''
   ABC
   
-  Mimics a PyQt5 enum: "values" attribute is a dictionary.
+  Mimics a PySide/PyQt5(?) enum: where "values" is the name of the attribute, really a dictionary.
   But uses a pickleable type 
   (PyQt5 Qt enum not pickleable since enum values are class attributes.)
   
@@ -24,6 +24,12 @@ class AdaptedModel(object):
     
   def _createValues(self):
     raise NotImplementedError # Deferred
+  
+  
+  '''
+  Assert class defining enum is a binary relation (one-to-one).
+  Can extract dictionaries in both directions, they will be equal in size.
+  '''
   
   @classmethod
   def _getAdaptedDictionary(self, enumOwningClass, enumType):
@@ -51,6 +57,24 @@ class AdaptedModel(object):
         #print(key, value)
         adaptedDictionary[key] = value
     return adaptedDictionary
+  
+  @classmethod
+  def _getAdaptedReverseDictionary(self, enumOwningClass, enumType):
+    ''' 
+    Dictionary keyed by enum values of names.
+    
+    See forward dictionary above.
+    '''
+    assert str(enumOwningClass.__class__) == "<type 'PyQt5.QtCore.pyqtWrapperType'>" 
+    assert str(type(enumType)) == "<type 'sip.enumtype'>"
+    
+    adaptedDictionary = {}
+    for key, value in vars(enumOwningClass).items():  # Python2 iteritems():
+      if isinstance(value, enumType):
+        #print(key, value)
+        adaptedDictionary[value] = key
+    return adaptedDictionary
+    
     
     
   def default(self):

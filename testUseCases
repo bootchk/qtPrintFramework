@@ -26,6 +26,17 @@ D. File>Print PDF on Win platform
 
 E. PageSetup shows correct PaperSize chosen in native dialogs (Qt Bug before 5.3)
 
+F. Cannot choose custom paper size on paperless printer
+
+(A paperless printer, since it is all algorithm and no molecules, 
+could print any paper size you could dream of.
+But a paperless printer doesn't remember a choice of a range of custom paper sizes.
+Choosing 'Custom' might really mean 'let me specify a paper size.'
+It doesn't mean 'I have bought a special paper that I want this printerless file to understand.'
+But there is little real user benefit of offering that choice:
+since the paperless document is scaleable, users can view it at any size.
+There is no point in referencing it to a paper size that other viewers won't understand.
+So this framework does not attempt to tell a paperless printer a custom paper size.)
 
 
 

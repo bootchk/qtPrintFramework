@@ -165,6 +165,5 @@ class PrintConverser(QObject):
     '''
     self.pageSetup.toControlView()  # restore view to equal unchanged model
     print('canceled')
-    pass
     
 
