@@ -1,11 +1,8 @@
 '''
 Qt app that exercises qtPrintFramework
 
-
-This is a test harness for QPageSetup.
-
-Various things tested:
-- that dialogs are foobar in certain versions of Qt (4.8)
+???
+- that dialogs are foobar in certain versions of Qt (4.8) on Linux
 - that dialog modes are foobar on certain platforms
 - that the warning about 'non-native printer' is present on all platforms for a PDF printer.
 '''
@@ -15,8 +12,6 @@ import sys
 from PyQt5.QtCore import QCoreApplication
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget
 from qtPrintFramework.printerAdaptor import PrinterAdaptor
-
-mainWindow = None
         
     
 
@@ -33,54 +28,71 @@ class ButtonSet(QWidget):
     layout = QVBoxLayout()
   
     button = QPushButton("Setup page")
-    button.clicked.connect(printerAdaptor.doPageSetup)
+    button.clicked.connect(printerAdaptor.conversePageSetup)
     
-    """
-    button2 = QPushButton("Setup page PDF non-native")
-    button2.clicked.connect(printerAdaptor.doPageSetupDefaultPDFPrinter)
-    """
+    button2 = QPushButton("Print PDF")
+    button2.clicked.connect(printerAdaptor.conversePrintPDF)
+    
     button3 = QPushButton("Print")
-    button3.clicked.connect(printerAdaptor.doPrint)
-    
-    """
-    button4 = QPushButton("Print PDF")
-    button4.clicked.connect(printerAdaptor.doPrintPDF)
-    
-    
-    button5 = QPushButton("Private Page Setup")
-    button5.clicked.connect(printerAdaptor.doPrivatePageSetup)
-    """
+    button3.clicked.connect(printerAdaptor.conversePrint)
     
     layout.addWidget(button)
-    #layout.addWidget(button2)
+    layout.addWidget(button2)
     layout.addWidget(button3)
-    #layout.addWidget(button4)
-    #layout.addWidget(button5)
     
     self.setLayout(layout)
     
+
+class MainWindow(QMainWindow):
+  
+  def __init__(self):
+    super(MainWindow, self).__init__()
+    self.setGeometry(100, 100, 500, 40)
+    self.printerAdaptor = PrinterAdaptor(parentWidget=self)
+    self.connectPrinterAdaptorSignals(self.printerAdaptor)
+    self.setCentralWidget(ButtonSet(printerAdaptor=self.printerAdaptor))
+    
+    
+  def connectPrinterAdaptorSignals(self, printerAdaptor):
+    printerAdaptor.printConverser.userChangedPaper.connect(self.changedPaper)
+    # userChangedPrinter
+    
+    printerAdaptor.printConverser.userAcceptedPrint.connect(self.acceptedPrint)
+    printerAdaptor.printConverser.userAcceptedPageSetup.connect(self.acceptedPageSetup)
+    printerAdaptor.printConverser.userAcceptedPrintPDF.connect(self.acceptedPrintPDF)
+    
+    printerAdaptor.printConverser.userCanceledPrintRelatedConversation.connect(self.canceled)
+    
+  
+  '''
+  Dummy postludes.
+  These should do something: print, or appropriate processing, such as change visible page.
+  '''
+  def changedPaper(self):
+    print(">>>>>>>user changed paper")
+    
+  def acceptedPrint(self):
+    print(">>>>>>>user accepted print")
+    
+  def acceptedPrintPDF(self):
+    print(">>>>>>>user accepted print pdf")
+    
+  def acceptedPageSetup(self):
+    print(">>>>>>>user accepted page setup")
+    
+  def canceled(self):
+    print(">>>>>>>user canceled")
     
     
 def main():
   app = QApplication(sys.argv)
   
-  global mainWindow
-  
   QCoreApplication.setOrganizationName("testPrintFramework")
   QCoreApplication.setOrganizationDomain("testPrintFramework.com")
   QCoreApplication.setApplicationName("testPrintFramework")
   
-  mainWindow = QMainWindow()
-  mainWindow.setGeometry(100, 100, 500, 40)
-  
-  # printConverser = PrintConverser(parentWidget=mainWindow)
-  printerAdaptor = PrinterAdaptor(parentWidget=mainWindow)
-  
-  mainWindow.setCentralWidget(ButtonSet(printerAdaptor=printerAdaptor))
+  mainWindow = MainWindow()
   mainWindow.show()
-
-  
-  
   sys.exit(app.exec_())
 
 

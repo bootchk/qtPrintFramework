@@ -55,6 +55,10 @@ class PageSetup(list):
     until user actually chooses to print on said native printer.
     '''
 
+  
+  def __eq__(self, other):
+    return self.paper == other.paper and self.orientation == other.orientation
+  
 
   def initializeModelFromSettings(self, printerAdaptor):
     '''
@@ -169,10 +173,5 @@ class PageSetup(list):
     '''
     '''
     print(self.paper, self.orientation)
-    """
-    Note values are from the control/view, not from QPageSetup
-    '''
-    for attribute in self:
-      print attribute.value
-    """
+
   

@@ -83,7 +83,7 @@ class Paper(object):
     
     normalizedRoundedSize = cls._normalizedPaperSize(roundedSize)
     hashedNormalizedRoundedSize = (normalizedRoundedSize.width(), normalizedRoundedSize.height())
-    print(roundedSize)
+    #print(hashedNormalizedRoundedSize)
     try:
       result = cls.inverseSizeModel[hashedNormalizedRoundedSize]
     except KeyError:

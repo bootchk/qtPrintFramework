@@ -1,6 +1,7 @@
-'''
-'''
-from PyQt5.QtCore import QSize
+
+
+
+
 from PyQt5.QtPrintSupport import QPrinter
 
 from qtPrintFramework.paper import Paper
@@ -10,10 +11,22 @@ from qtPrintFramework.printRelatedConverser import PrintConverser
 
 class PrinterAdaptor(QPrinter):
   '''
-  A thin wrapper around QPrinter hiding native distinction.
+  A thin wrapper around QPrinter:
+  - hides Qt's native/nonnative printer distinction
+  - adds print PDF for platforms that don't support it (Win).  Linux already supports via Qt or and OSC natively.
+  - fixes QTBUG TODO
   
   QPrinter is itself an adaptor/controller: it adapts physical and virtual (e.g. to PDF file) printers.
+  
+  Responsibilities:
+  - hold conversations (dialogs, user interactions) related to printing (Print, PageSetup)
+  - know which paper user has chosen
+  - know printable rect (taking into account paper, margins, and paper orientation)
+  - know user's choice of file (for paperless print)
+  - emit signals when user accepts/cancels
+  - emit signals when user chooses a different paper
   '''
+  
   
   def __init__(self, parentWidget):
     super(PrinterAdaptor, self).__init__()
@@ -50,12 +63,15 @@ class PrinterAdaptor(QPrinter):
   
   
   
-  def doPageSetup(self):
+  def conversePageSetup(self):
+    '''
+    Start a Page Setup conversation
+    '''
     if self.isAdaptingNative():
-      self.printConverser.doPageSetupNative(printerAdaptor=self)
+      self.printConverser.conversePageSetupNative(printerAdaptor=self)
     else:
-      self.printConverser.doPageSetupNonNative(printerAdaptor=self)
-    self.describePrinter()
+      self.printConverser.conversePageSetupNonNative(printerAdaptor=self)
+
     
     '''
     Execution continues, but conversation might be ongoing (if window modal or modeless)
@@ -68,19 +84,19 @@ class PrinterAdaptor(QPrinter):
     '''
     
     
-  def doPrint(self):
+  def conversePrint(self):
     '''
-    Do a print conversation.
+    Start a print conversation.
     
     This understands differences by platform.
     '''
     if self.isAdaptingNative():
-      self.printConverser.doPrintNative(printerAdaptor=self)
+      self.printConverser.conversePrintNative(printerAdaptor=self)
     else:
       if True:
-        self.printConverser.doPrintNative(printerAdaptor=self)
+        self.printConverser.conversePrintNative(printerAdaptor=self)
       else:
-        self.printConverser.doPrintNonNative(printerAdaptor=self)
+        self.printConverser.conversePrintNonNative(printerAdaptor=self)
         
     '''
     Execution continues, but conversation might be ongoing (if window modal or modeless)
@@ -90,15 +106,35 @@ class PrinterAdaptor(QPrinter):
     '''
   
   
-  def describePrinter(self):
+  def conversePrintPDF(self):
+    '''
+    Start a print PDF conversation.
+    
+    Only necessary on Win, where native or Qt provided dialog does not offer choice to print PDF.
+    
+    Optional (shortcutting the PrintDialog) on other platforms.
+
+    Sets up self to print PDF.
+    
+    Conversation includes:
+    - user choice of paper?  If current printer is not PDF?
+    - user choice of file
+    '''
+    self.printConverser.conversePrintNonNative(printerAdaptor=self)
+  
+  
+  @property
+  def description(self):
     '''
     Description of adapted printer.
     '''
-    print("Printer name: ", self.printerName())
-    print("   isNative", self.isAdaptingNative())
-    print("   paper size:", self.paperSize() )  # Calls QPrinter, this is wrong in Qt < 5.3
-    print("   paper:", self.paper())
-    
+    # self.paperSize() calls QPrinter, wrong in Qt < 5.3
+    terms = ( "Name", self.printerName(),
+              "isNative", str(self.isAdaptingNative()),
+              "paper size enum from Qt", str(self.paperSize()),
+              "paper from qtPrintFramework", str(self.paper()) )
+    return ','.join(terms)
+  
   
   def paper(self):
     '''

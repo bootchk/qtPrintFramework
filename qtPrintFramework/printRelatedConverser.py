@@ -1,9 +1,12 @@
 '''
 '''
 
+from copy import copy
+
 from PyQt5.QtCore import QObject
 from PyQt5.QtPrintSupport import QPageSetupDialog, QPrintDialog
 
+from PyQt5.QtCore import pyqtSignal as Signal
 
 from qtPrintFramework.userInterface.printerlessPageSetupDialog import PrinterlessPageSetupDialog
 from qtPrintFramework.pageSetup import PageSetup
@@ -24,6 +27,42 @@ class PrintConverser(QObject):
   '''
   
   
+  '''
+  Meaning of signals:
+  userChangedPaper is 
+  
+  Algebra of signals:
+  
+  userChangedPrinter and userChangedPaper are emitted before other signals
+  
+  userChangedPrinter and userChangedPaper are NOT emitted unless there is a change 
+  (not emitted if user is offered choice but OK's when choice is same as previous.)
+  
+  userChangedPrinter and userChangedPaper are NOT emitted if userCanceledPrintRelatedConversation is emitted
+  
+  userAcceptedFoo and userCanceledPrintRelatedConversation are mutually exclusive
+  '''
+  userChangedPaper = Signal()
+  
+  '''
+  TODO
+  userChangedPrinter = Signal()
+  Not necessary since user must print to change printers.
+  Assume apps do not have a separate 'Choose Printer' action.
+  If user changes printers using System Preferences,
+  we can't know of it?  (App can get signal elsewhere?)
+  OR
+  PageSetup allows user to change printer?
+  '''
+  
+  userAcceptedPrint = Signal()
+  userAcceptedPageSetup = Signal()
+  userAcceptedPrintPDF = Signal()
+  
+  userCanceledPrintRelatedConversation = Signal()
+  
+  
+  
   def __init__(self, parentWidget, printerAdaptor):
     super(PrintConverser, self).__init__()
     self.parentWidget = parentWidget
@@ -38,18 +77,18 @@ class PrintConverser(QObject):
   Page setup
   '''
     
-  def doPageSetupNonNative(self, printerAdaptor):
+  def conversePageSetupNonNative(self, printerAdaptor):
     '''
     User our own dialog, which works with non-native printers (on some platforms?)
     '''
     print("NonNative page setup")
     dialog = PrinterlessPageSetupDialog(pageSetup=self.pageSetup, parentWidget=self.parentWidget)
-    self._showPrintRelatedDialogWindowModal(dialog, model=printerAdaptor, acceptSlot=self.acceptNonNativePageSetupSlot)
+    self._showPrintRelatedDialogWindowModal(dialog, model=printerAdaptor, acceptSlot=self._acceptNonNativePageSetupSlot)
     # execution continues but conversation not complete
     
     
     
-  def doPageSetupNative(self, printerAdaptor):
+  def conversePageSetupNative(self, printerAdaptor):
     '''
     Use QPageSetup dialog, which works with native printers.
     
@@ -58,38 +97,39 @@ class PrintConverser(QObject):
     Native dialog correctly shows user's last choices for printer, page setup.
     '''
     print("Opening page setup dialog")
-    printerAdaptor.describePrinter()
+    print(printerAdaptor.description)
     
     assert printerAdaptor.isValid()
     assert printerAdaptor.isAdaptingNative()
     assert self.parentWidget is not None
     
     dialog = QPageSetupDialog(printerAdaptor, parent=self.parentWidget)
-    self._showPrintRelatedDialogWindowModal(dialog, model=printerAdaptor, acceptSlot=self.acceptNativePageSetupSlot)
+    self._showPrintRelatedDialogWindowModal(dialog, model=printerAdaptor, acceptSlot=self._acceptNativePageSetupSlot)
     
     
   '''
   Print
   '''
     
-  def doPrintNative(self, printerAdaptor):
+  def conversePrintNative(self, printerAdaptor):
     
-    print("Native print")
-    printerAdaptor.describePrinter()
+    print("Native print to", printerAdaptor.description)
     
     dialog = QPrintDialog(printerAdaptor, parent=self.parentWidget)
-    self._showPrintRelatedDialogWindowModal(dialog, model=printerAdaptor, acceptSlot=self.acceptNativePrintSlot)
+    self._showPrintRelatedDialogWindowModal(dialog, model=printerAdaptor, acceptSlot=self._acceptNativePrintSlot)
     
     
-  def doPrintNonNative(self, printerAdaptor):
+  def conversePrintNonNative(self, printerAdaptor):
     '''
     Print to a non-native printer.
     On Win, action PrintPDF comes here
     '''
-    print("NonNative print")
+    print("NonNative print to", printerAdaptor.description)
     # TODO
+    # This dialog will be a file chooser with PageSetup?
     #self._showPrintRelatedDialogWindowModal(dialog)
-
+    self._printerAdaptor = printerAdaptor
+    self._acceptNonNativePrintSlot() # TEMP assume accepted
 
 
   '''
@@ -104,27 +144,42 @@ class PrintConverser(QObject):
     '''
     self._printerAdaptor = model  # remember for local use
     dialog.accepted.connect(acceptSlot)
-    dialog.rejected.connect(self.cancelSlot)
+    dialog.rejected.connect(self._cancelSlot)
     dialog.open() # window modal
     
   
 
-  def acceptNativePrintSlot(self):
+  def _acceptNativePrintSlot(self):
     '''
     A native PrintDialog was accepted.
     User may have changed real printer and/or it's page setup.
     
-    Whether native printer or non-native printer (user changed it)
+    Whether native printer or non-native printer (user changed printer)
     reflect user's choices into PageSetup.
     '''
-    print("Accept native print dialog")
-    self._printerAdaptor.describePrinter()
+    print("Accept native print dialog on", self._printerAdaptor.description)
     
-    self.pageSetup.fromPrinterAdaptor(self.printerAdaptor)
-    assert self.pageSetup.isEqualPrinterAdaptor(self.printerAdaptor)
+    self._capturePageSetupChange()
+    self.userAcceptedPrint.emit()
 
 
-  def acceptNativePageSetupSlot(self):
+  def _acceptNonNativePrintSlot(self):
+    '''
+    A nonnative PrintDialog was accepted.
+    User does not have choices for printer, but by choosing this action, makes 'PDF' the current printer?
+    User may have changed it's page setup.
+    User may have chosen a new file.
+    
+    Whether native printer or non-native printer (user changed printer)
+    reflect user's choices into PageSetup.
+    '''
+    print("Accept non-native print dialog on", self._printerAdaptor.description)
+    
+    self._capturePageSetupChange()
+    self.userAcceptedPrintPDF.emit()
+
+
+  def _acceptNativePageSetupSlot(self):
     '''
     User accepted NonNative PageSetupDialog.
     User may have changed real printer and/or it's page setup.
@@ -132,11 +187,19 @@ class PrintConverser(QObject):
     TODO are the semantics the same on all platforms?
     or do some platforms not allow user to choose a new printer (make it current.)
     '''
-    # Same semantics as Print
-    self.acceptNativePrintSlot()
+    self._capturePageSetupChange()
+    self.userAcceptedPageSetup.emit()
+  
+  
+  def _capturePageSetupChange(self):
+    oldPageSetup = copy(self.pageSetup)
+    self.pageSetup.fromPrinterAdaptor(self.printerAdaptor)
+    if not oldPageSetup == self.pageSetup:
+      self.userChangedPaper.emit()
+    assert self.pageSetup.isEqualPrinterAdaptor(self.printerAdaptor)
     
 
-  def acceptNonNativePageSetupSlot(self):
+  def _acceptNonNativePageSetupSlot(self):
     '''
     User accepted NonNative PageSetupDialog.
     
@@ -146,16 +209,21 @@ class PrintConverser(QObject):
     PageSetup control/view has user's choices,
     but they have not been applied to a PrinterAdaptor.)
     '''
-    self._printerAdaptor.describePrinter()  # Before we change it
+    print(self._printerAdaptor.description)  # Before we change it
     
+    # !!! This is similar, but not the same as _capturePageSetupChange()
+    oldPageSetup = copy(self.pageSetup)
     self.pageSetup.fromControlView()
-    self.pageSetup.toPrinterAdaptor(self.printerAdaptor)
-    
+    if not oldPageSetup == self.pageSetup:
+      self.pageSetup.toPrinterAdaptor(self.printerAdaptor)
+      self.userChangedPaper.emit()
     assert self.pageSetup.isEqualPrinterAdaptor(self.printerAdaptor)
-    self._printerAdaptor.describePrinter()  # After we changed it
+    
+    print(self._printerAdaptor.description)  # After we changed it
+    self.userAcceptedPageSetup.emit()
     
     
-  def cancelSlot(self):
+  def _cancelSlot(self):
     '''
     PageSetupDialog or PrintDialog was canceled.
     
@@ -164,6 +232,7 @@ class PrintConverser(QObject):
     - pageSetup of adapted printer is unchanged.
     '''
     self.pageSetup.toControlView()  # restore view to equal unchanged model
-    print('canceled')
+    self.userCanceledPrintRelatedConversation.emit()
+    
     
 
