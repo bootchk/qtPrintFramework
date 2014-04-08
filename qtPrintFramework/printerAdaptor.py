@@ -132,7 +132,9 @@ class PrinterAdaptor(QPrinter):
     terms = ( "Name", self.printerName(),
               "isNative", str(self.isAdaptingNative()),
               "paper size enum from Qt", str(self.paperSize()),
-              "paper from qtPrintFramework", str(self.paper()) )
+              "paper from qtPrintFramework", str(self.paper()),
+              # "printable rect", str(self.printablePageRect()),
+              "printable rect MM", str(self.pageRect(QPrinter.Millimeter)))
     return ','.join(terms)
   
   
@@ -169,6 +171,13 @@ class PrinterAdaptor(QPrinter):
     return result
   
   
+  def printablePageRect(self):
+    '''
+    Rect that can be printed (Paper less printer's limitations (unprintable) less user defined margins.
+    
+    Units DevicePixel
+    '''
+    return self.pageRect()  # Delegate to QPrinter
   
     
     

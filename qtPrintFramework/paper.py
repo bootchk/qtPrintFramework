@@ -77,9 +77,16 @@ class Paper(object):
     !!! But note that Qt returns paperSizeMM that reflects orientation, i.e. width can be > height
     '''
     assert isinstance(paperSizeMM, QSizeF)
-    roundedSize = QSize(int(round(paperSizeMM.width())), 
-                        int(round(paperSizeMM.height()))
-                        )
+    integralWidth = int(round(paperSizeMM.width()))
+    integralHeight = int(round(paperSizeMM.height()))
+    
+    '''
+    May be Python type 'long', which QSize will not accept.
+    '''
+    try:
+      roundedSize = QSize(integralWidth, integralHeight )
+    except TypeError:
+      return None  # ugly premature return
     
     normalizedRoundedSize = cls._normalizedPaperSize(roundedSize)
     hashedNormalizedRoundedSize = (normalizedRoundedSize.width(), normalizedRoundedSize.height())
