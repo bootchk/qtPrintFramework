@@ -1,8 +1,10 @@
 
 
 from PyQt5.QtCore import QSettings
+from PyQt5.QtGui import QPagedPaintDevice  # !! Not in QtPrintSupport
 
-from qtPrintFramework.paper import Paper
+from qtPrintFramework.paper.standard import StandardPaper
+from qtPrintFramework.paper.custom import CustomPaper
 from qtPrintFramework.pageAttribute import PageAttribute
 from qtPrintFramework.model.paperSize import PaperSizeModel # singleton
 from qtPrintFramework.model.pageOrientation import PageOrientationModel # singleton
@@ -34,7 +36,7 @@ class PageSetup(list):
   def __init__(self, printerAdaptor):
     
     " Model "
-    self.paper = Paper(PaperSizeModel.default())
+    self.paper = StandardPaper(PaperSizeModel.default())
     self.orientation = PageOrientationModel.default()
     
     " Control/views"
@@ -104,7 +106,18 @@ class PageSetup(list):
     1. !!! setPaperSize,  setPageSize() is Qt obsolete
     2. printerAdaptor wants oriented size
     '''
-    printerAdaptor.setPaperSize(self.paper.orientedPaperSize(self.orientation))
+    '''
+    !!! setPaperSize is overloaded.
+    # TODO should this be orientedPaperSizeDevicePixels ?
+    '''
+    """
+    TODO printerAdaptor wants oriented size????
+    if self.paper.pageSize == Custom:
+      
+    else:
+      printerAdaptor.setPaperSize(self.paper.orientedSizeMM(self.orientation), QPrinter.Millimeters)
+    """
+    printerAdaptor.setPaperSize(self.paper.paperSize) # !!! Enum only
     printerAdaptor.setOrientation(self.orientation)
     
     
@@ -151,7 +164,14 @@ class PageSetup(list):
     ''' 
     Dialog was accepted.  Capture values from view to model.
     '''
-    self.paper = Paper(self[0].value)  # Create new instance of Paper from enum.  Old instance garbage collected.
+    # Create new instance of Paper from enum.  Old instance garbage collected.
+    pageSize = self[0].value
+    if pageSize == QPagedPaintDevice.Custom:
+      self.paper = CustomPaper()
+    else:
+      self.paper = StandardPaper(pageSize)
+      
+    # TODO meaningless choice if paper is Custom with unknown size?
     self.orientation = self[1].value
     assert self.isModelEqualView()
     

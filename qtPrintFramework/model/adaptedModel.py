@@ -23,7 +23,7 @@ class AdaptedModel(object):
     
     
   def _createValues(self):
-    raise NotImplementedError # Deferred
+    raise NotImplementedError, 'Deferred'
   
   
   '''

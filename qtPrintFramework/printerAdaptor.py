@@ -3,8 +3,12 @@
 
 
 from PyQt5.QtPrintSupport import QPrinter
+from PyQt5.QtGui import QPagedPaintDevice  # !! Not in QtPrintSupport
 
-from qtPrintFramework.paper import Paper
+
+from qtPrintFramework.paper.paper import Paper
+from qtPrintFramework.paper.standard import StandardPaper
+from qtPrintFramework.paper.custom import CustomPaper
 from qtPrintFramework.printRelatedConverser import PrintConverser
 
 
@@ -157,16 +161,15 @@ class PrinterAdaptor(QPrinter):
     # !!! Not call deprecated pageSize(), it is in error also.
     # The overloaded paperSize(MM) returns an epsilon correct (except for floating precision) correct result
     floatPaperDimensionsMM = self.paperSize(QPrinter.Millimeter)
-    correctPaperEnum = Paper.fuzzyMatchPageSize(floatPaperDimensionsMM)
+    correctPaperEnum = Paper.enumForPageSizeByMatchDimensions(floatPaperDimensionsMM)
     if correctPaperEnum is None:
       # self's pageSize doesn't match any standard Paper, it must be Custom
       # Which should be what self's paperSize() is saying
-      assert False  
-      # TODO
-      # self.paperSize() == .Custom
-      #result = CustomPaper()
+      
+      assert self.paperSize() == QPagedPaintDevice.Custom
+      result = CustomPaper()
     else:
-      result = Paper(correctPaperEnum)  # TODO StandardPaper
+      result = StandardPaper(correctPaperEnum)  
     assert isinstance(result, Paper)
     return result
   
@@ -177,6 +180,7 @@ class PrinterAdaptor(QPrinter):
     
     Units DevicePixel
     '''
+    # TODO but Custom?
     return self.pageRect()  # Delegate to QPrinter
   
     

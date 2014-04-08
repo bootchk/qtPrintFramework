@@ -2,13 +2,18 @@
 '''
 from PyQt5.QtCore import QSize, QSizeF
 from PyQt5.QtGui import QPagedPaintDevice  # !! Not in QtPrintSupport
-from PyQt5.QtPrintSupport import QPrinter
 
 from qtPrintFramework.model.adaptedModel import AdaptedModel
 
 class Paper(object):
   '''
   Wrapper around QPagedPaintDevice.PageSize
+  
+  ABC
+  Inherited by:
+  - StandardPaper: has size
+  - CustomPaper: has no size
+  Future: NonStandardPaper: defined by a printer, having a size and name.
   '''
   nameModel = AdaptedModel._getAdaptedReverseDictionary(enumOwningClass=QPagedPaintDevice, 
                                                      enumType=QPagedPaintDevice.PageSize) # !!! Paper/Page confusion
@@ -21,7 +26,7 @@ class Paper(object):
   
   Assert this includes every value from QPagedPaintDevice.PageSize enumerated type.
   Assert every QSize has width < height (which differs from Qt.)
-  
+  Wrapper around QPagedPaintDevice.PageSize
   '''
   sizeModel = { 
     QPagedPaintDevice.A0 : QSize(841, 1189),
@@ -66,9 +71,9 @@ class Paper(object):
     
     
   @classmethod
-  def fuzzyMatchPageSize(cls, paperSizeMM):
+  def enumForPageSizeByMatchDimensions(cls, paperSizeMM):
     '''
-    Returns enum from type QPagedPaintDevice.PageSize using fuzzy match.
+    Returns enum from type QPagedPaintDevice.PageSize using fuzzy match on paper dimensions.
     
     The fuzziness is: 0.5 mm
     That is, we round mm fractional sizes to int.
@@ -113,15 +118,21 @@ class Paper(object):
   
     
   def __init__(self, pageSize):
-    #assert isinstance(pageSize, enumtype)
+    '''
+    Default: CustomPaper overrides: still has this attribute but is constant
+    '''
+    # this is the best assertion we can do?  Fragile?
+    assert isinstance(pageSize, int)
+    #assert str(type(pageSize)) == "<type 'sip.enumtype'>"
+    #assert isinstance(pageSize, QPagedPaintDevice.PageSize)
     assert pageSize is not None
+    
     self.pageSize = pageSize
   
   
   def __repr__(self):
-    ''' Human readable description including name and dimensions in mm. '''
-    size = self.integralSizeMM
-    return self.name + " " + str(size.width()) + 'x' + str(size.height()) + 'mm'
+    raise NotImplementedError, 'Deferred'
+  
   
   def __eq__(self, other):
     '''
@@ -134,35 +145,15 @@ class Paper(object):
   
   @property
   def name(self):
-    return  Paper.nameModel[self.pageSize]
+    raise NotImplementedError, 'Deferred'
+  
   
   @property
   def paperSize(self):
     " Enum value "
     return self.pageSize  # sic, thats the name Qt uses
+
   
-  
-  def orientedSizeMM(self, orientation):
-    '''
-    QSize oriented
-    '''
-    if orientation == QPrinter.Portrait:
-      result = self.integralSizeMM
-    else:
-      result = Paper.rotatedPaperSize(self.integralSizeMM)
-    assert isinstance(result, QSize)
-    return result
-  
-  @property
-  def integralSizeMM(self):
-    '''
-    Default: subclasses may override.
-    '''
-    result = Paper.sizeModel[self.pageSize]
-    assert isinstance(result, QSize)
-    return result
-  
-    
   def isStandard(self):
     '''
     Compare with isCustom().
@@ -170,9 +161,10 @@ class Paper(object):
     Loosely, name is well-known and means the same thing around the world.
     See above, some really are not rigorously standardized, only loosely standardize.
     
-    Default:subclasses may reimplement.
+    Deferred: subclasses must reimplement.
     '''
-    return True
+    raise NotImplementedError, 'Deferred'
+    
     
   def isCustom(self):
     return not self.isStandard()
