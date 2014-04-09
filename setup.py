@@ -10,5 +10,6 @@ setup(name='qtPrintFramework',
       url='https://github.com/bootchk/qtPrintFramework',
       packages=['qtPrintFramework',
                 'qtPrintFramework.model',
-                'qtPrintFramework.userInterface', ]
+                'qtPrintFramework.userInterface',
+                'qtPrintFramework.paper', ]
      )

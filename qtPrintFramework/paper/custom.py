@@ -11,7 +11,7 @@ class CustomPaper(Paper):
   '''
   
   def __init__(self):
-    self.pageSize = QPagedPaintDevice.Custom
+    self.paperSizeEnum = QPagedPaintDevice.Custom
     
     
   def __repr__(self):
@@ -28,14 +28,14 @@ class CustomPaper(Paper):
   
   
   '''
-  paperSize(self) inherited: returns self's enum
+  paperSizeEnum attribute inherited
   '''
 
   '''
   !!! No size methods.  Undefined.
   '''
   
-    
+  @property
   def isStandard(self):
     '''
     Reimplement super

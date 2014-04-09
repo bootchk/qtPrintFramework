@@ -14,6 +14,8 @@ class Paper(object):
   - StandardPaper: has size
   - CustomPaper: has no size
   Future: NonStandardPaper: defined by a printer, having a size and name.
+  
+  !!! a Paper does not know its orientation.
   '''
   nameModel = AdaptedModel._getAdaptedReverseDictionary(enumOwningClass=QPagedPaintDevice, 
                                                      enumType=QPagedPaintDevice.PageSize) # !!! Paper/Page confusion
@@ -99,14 +101,14 @@ class Paper(object):
     try:
       result = cls.inverseSizeModel[hashedNormalizedRoundedSize]
     except KeyError:
-      print("KeyError")
+      print("KeyError in enumForPageSizeByMatchDimensions:", paperSizeMM.width(), ',', paperSizeMM.height())
       result = None
     return result
   
   @classmethod
   def _normalizedPaperSize(cls, paperSize):
     '''
-    QSize having width <= height
+    Normalized means: QSize having width <= height
     '''
     assert isinstance(paperSize, QSize) # Algorithm would work for QSizeF
     if paperSize.width() > paperSize.height():
@@ -117,17 +119,17 @@ class Paper(object):
     return result
   
     
-  def __init__(self, pageSize):
+  def __init__(self, paperSizeEnum):
     '''
     Default: CustomPaper overrides: still has this attribute but is constant
     '''
     # this is the best assertion we can do?  Fragile?
-    assert isinstance(pageSize, int)
-    #assert str(type(pageSize)) == "<type 'sip.enumtype'>"
-    #assert isinstance(pageSize, QPagedPaintDevice.PageSize)
-    assert pageSize is not None
+    assert isinstance(paperSizeEnum, int)
+    #assert str(type(paperSizeEnum)) == "<type 'sip.enumtype'>"
+    #assert isinstance(paperSizeEnum, QPagedPaintDevice.PageSize)
+    assert paperSizeEnum is not None
     
-    self.pageSize = pageSize
+    self.paperSizeEnum = paperSizeEnum
   
   
   def __repr__(self):
@@ -140,20 +142,15 @@ class Paper(object):
     An instance of Paper represents a user choice.  There may be many instances.
     Without implementing this, == returns False for separate instances.
     '''
-    return self.pageSize == other.pageSize
+    return self.paperSizeEnum == other.paperSizeEnum
   
   
   @property
   def name(self):
     raise NotImplementedError, 'Deferred'
   
-  
-  @property
-  def paperSize(self):
-    " Enum value "
-    return self.pageSize  # sic, thats the name Qt uses
 
-  
+  @property
   def isStandard(self):
     '''
     Compare with isCustom().
@@ -165,9 +162,9 @@ class Paper(object):
     '''
     raise NotImplementedError, 'Deferred'
     
-    
+  @property
   def isCustom(self):
-    return not self.isStandard()
+    return not self.isStandard
   
   
   

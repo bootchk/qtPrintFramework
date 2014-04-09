@@ -2,7 +2,7 @@
 '''
 
 from PyQt5.QtPrintSupport import QPrinter
-from PyQt5.QtCore import QSize
+from PyQt5.QtCore import QSize, QSizeF
 
 from qtPrintFramework.paper.paper import Paper
 
@@ -25,11 +25,11 @@ class StandardPaper(Paper):
     '''
     Implement deferred.
     '''
-    return  Paper.nameModel[self.pageSize]
+    return  Paper.nameModel[self.paperSizeEnum]
   
   
   '''
-  paperSize(self) inherited, but its an enum, not a size
+  paperSizeEnum attribute inherited
   '''
   
   '''
@@ -38,13 +38,15 @@ class StandardPaper(Paper):
   
   def orientedSizeMM(self, orientation):
     '''
-    QSize oriented
+    QSize oriented.  Integer
     '''
     if orientation == QPrinter.Portrait:
       result = self.integralSizeMM
     else:
-      result = Paper._normalizedPaperSize(self.integralSizeMM)
+      result = self.integralSizeMM.transposed() # QSize method, swap width and height
     assert isinstance(result, QSize)
+    # Oriented does not imply normalized
+    # assert result.width() > result.height() or result.width() <= result.height()
     return result
   
   @property
@@ -52,11 +54,29 @@ class StandardPaper(Paper):
     '''
     Default: subclasses may override.
     '''
-    result = Paper.sizeModel[self.pageSize]
+    result = Paper.sizeModel[self.paperSizeEnum]
     assert isinstance(result, QSize)
     return result
   
+  
+  def isOrientedSizeEpsilonEqual(self, orientation, sizeF):
+    assert isinstance(sizeF, QSizeF)  # and is millimeter units
     
+    integralOrientedSize = self.orientedSizeMM(orientation)
+    result = abs(integralOrientedSize.width() - sizeF.width()) < 0.5 \
+            and abs(integralOrientedSize.height() - sizeF.height()) < 0.5
+    return result
+  
+  def isSizeEpsilonEqual(self, sizeF):
+    assert isinstance(sizeF, QSizeF)  # and is millimeter units
+    
+    integralSize = self.integralSizeMM
+    result = abs(integralSize.width() - sizeF.width()) < 0.5 \
+            and abs(integralSize.height() - sizeF.height()) < 0.5
+    return result
+    
+    
+  @property
   def isStandard(self):
     '''
     Implement deferred

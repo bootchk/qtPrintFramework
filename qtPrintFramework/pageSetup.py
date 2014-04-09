@@ -1,7 +1,8 @@
 
 
-from PyQt5.QtCore import QSettings
+from PyQt5.QtCore import QSettings, QSizeF
 from PyQt5.QtGui import QPagedPaintDevice  # !! Not in QtPrintSupport
+from PyQt5.QtPrintSupport import QPrinter
 
 from qtPrintFramework.paper.standard import StandardPaper
 from qtPrintFramework.paper.custom import CustomPaper
@@ -101,24 +102,31 @@ class PageSetup(list):
   def toPrinterAdaptor(self, printerAdaptor):
     '''
     Set my values on printerAdaptor (and whatever printer it is adapting.)
-    '''
-    '''
+    
     1. !!! setPaperSize,  setPageSize() is Qt obsolete
     2. printerAdaptor wants oriented size
-    '''
-    '''
+    
     !!! setPaperSize is overloaded.
     # TODO should this be orientedPaperSizeDevicePixels ?
     '''
-    """
-    TODO printerAdaptor wants oriented size????
-    if self.paper.pageSize == Custom:
-      
-    else:
-      printerAdaptor.setPaperSize(self.paper.orientedSizeMM(self.orientation), QPrinter.Millimeters)
-    """
-    printerAdaptor.setPaperSize(self.paper.paperSize) # !!! Enum only
+    
     printerAdaptor.setOrientation(self.orientation)
+    
+    # Set using overloaded setPaperSize(QSizeF, units) to ensure equality 
+    if self.paper.isCustom :
+      # Custom paper has unknown QSize
+      # Illegal to call setPaperSize(QPrinter.Custom), but this has intended effect
+      printerAdaptor.setPaperSize(QSizeF(0,0), QPrinter.Millimeter)
+      pass  
+    else:
+      # use overload QPrinter.setPaperSize(QPagedPaintDevice.PageSize)
+      # TODO why setPaperSize in Millimeter?  it seems to set enum to Custom?
+      printerAdaptor.setPaperSize(QSizeF(self.paper.orientedSizeMM(self.orientation)), QPrinter.Millimeter)
+      printerAdaptor.setPaperSize(self.paper.paperSizeEnum)
+    
+    # TODO this might not hold: Qt might be showing paper dimensions QSizeF(0,0) for Custom
+    # Which is bad programming.  None or Null should represent unknown.
+    assert self.isStronglyEqualPrinterAdaptor(printerAdaptor)
     
     
   '''
@@ -156,7 +164,7 @@ class PageSetup(list):
   When dialog is accepted or canceled, view and model are made equal again.
   '''
   def toControlView(self):
-    self[0].setValue(self.paper.paperSize)
+    self[0].setValue(self.paper.paperSizeEnum)
     self[1].setValue(self.orientation)
     assert self.isModelEqualView()
     
@@ -165,11 +173,11 @@ class PageSetup(list):
     Dialog was accepted.  Capture values from view to model.
     '''
     # Create new instance of Paper from enum.  Old instance garbage collected.
-    pageSize = self[0].value
-    if pageSize == QPagedPaintDevice.Custom:
+    paperSizeEnum = self[0].value
+    if paperSizeEnum == QPagedPaintDevice.Custom:
       self.paper = CustomPaper()
     else:
-      self.paper = StandardPaper(pageSize)
+      self.paper = StandardPaper(paperSizeEnum)
       
     # TODO meaningless choice if paper is Custom with unknown size?
     self.orientation = self[1].value
@@ -180,14 +188,42 @@ class PageSetup(list):
   Assertion support
   '''
   def isModelEqualView(self):
-    return self.paper.paperSize == self[0].value and self.orientation == self[1].value
+    return self.paper.paperSizeEnum == self[0].value and self.orientation == self[1].value
   
   def isEqualPrinterAdaptor(self, printerAdaptor):
+    '''
+    Weak comparison: computed printerAdaptor.paper() equal self.
+    printerAdaptor.paperSize() might still not equal self.paperSizeEnum
+    '''
     result = self.paper == printerAdaptor.paper() and self.orientation == printerAdaptor.orientation()
     if not result:
       print(self.paper, printerAdaptor.paper())
     return result
   
+  def isStronglyEqualPrinterAdaptor(self, printerAdaptor):
+    '''
+    Strong comparison: enum, orientation, dimensions equal
+    
+    Comparison of dimensions is epsilon (one is integer, one is float.
+    Comparison of dimensions is unoriented (usually, width < height, but not always, Tabloid/Ledger).
+    '''
+    # partialResult holds for both Custom and StandardPaper
+    partialResult = self.paper.paperSizeEnum == printerAdaptor.paperSize() \
+          and self.orientation == printerAdaptor.orientation()
+    
+    if self.paper.isCustom:
+      result = partialResult
+      # CustomPaper has no size to compare.
+      print("printerAdaptor has Custom paper saying size:", printerAdaptor.paperSizeMM.width(), ',', printerAdaptor.paperSizeMM.height())
+    else: 
+      result = partialResult and self.paper.isOrientedSizeEpsilonEqual(self.orientation, printerAdaptor.paperSizeMM)
+      
+    if not result:
+      print(self.paper.paperSizeEnum, printerAdaptor.paperSize())
+      print( self.orientation, printerAdaptor.orientation())
+      print (self.paper.orientedSizeMM(self.orientation), printerAdaptor.paperSizeMM, )
+    return result
+    
   
   def dump(self):
     '''

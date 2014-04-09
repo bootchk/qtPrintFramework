@@ -54,13 +54,13 @@ class PrinterAdaptor(QPrinter):
     The Qt PDF file printer:
     - not necessary on OSX since OSX natively offers print to PDF
     - necessary on Win if you need that capability, but it cannot be integrated with the native Win Print dialog
-    - is seamlessly used on Linux by Qt (it visible in the Qt Print dialog.)
+    - is partially used on Linux by Qt (is visible in Qt Print dialog but QPageSetupDialog fails.)
     
-    In other words, if you pass a non-native printer:
+    In other words, if you pass a non-native printer (outputFormat == PDF):
           QPrintDialog  QPageSetupDialog
-    Win:   fails          fails
-    OSX:   
-    Linux: works          fails
+    OSX:   fail          fail
+    Win:   ?              ?        TODO not determined yet, but probably fail
+    Linux: work          fail
     
     '''
     return not self.outputFormat() == QPrinter.PdfFormat
@@ -132,7 +132,7 @@ class PrinterAdaptor(QPrinter):
     '''
     Description of adapted printer.
     '''
-    # self.paperSize() calls QPrinter, wrong in Qt < 5.3
+    # self.paperSize() calls QPrinter.paperSize(), wrong in Qt < 5.3 returns Custom when it shouldn't
     terms = ( "Name", self.printerName(),
               "isNative", str(self.isAdaptingNative()),
               "paper size enum from Qt", str(self.paperSize()),
@@ -146,8 +146,8 @@ class PrinterAdaptor(QPrinter):
     '''
     User's choice of paper.
     
-    !!! Ameliorates a bug in Qt, whereby a QPrinter.paperSize() returns value that does not match pageSize().
-    e.g. Returns Custom, dimensions of Letter when in fact user chose 'Letter'
+    !!! Ameliorates a bug in Qt, whereby a QPrinter.paperSize() returns value that does not match dimensions i.e. paperSize(Millimeter).
+    e.g. paperSize() returns Custom, paperSize(Millimeter) dimensions of Letter when in fact user chose 'Letter'
     
     Also, returns a more capable object than QPrinter.paperSize(), which is only an enum value (a feeble subclass of int.)
     '''
@@ -158,22 +158,27 @@ class PrinterAdaptor(QPrinter):
     Using a dialog on QPrinter returns paperSize that is floating but not stable across platforms and doesn't compare exactly to integral Paper
     '''
     
-    # !!! Not call deprecated pageSize(), it is in error also.
+    # !!! Not call deprecated self.pageSize(), it is in error also.
     # The overloaded paperSize(MM) returns an epsilon correct (except for floating precision) correct result
     floatPaperDimensionsMM = self.paperSize(QPrinter.Millimeter)
     correctPaperEnum = Paper.enumForPageSizeByMatchDimensions(floatPaperDimensionsMM)
     if correctPaperEnum is None:
-      # self's pageSize doesn't match any standard Paper, it must be Custom
-      # Which should be what self's paperSize() is saying
-      
+      # self's paperSize(Millimeter) doesn't match any StandardPaper therefore self.paperSize() should be Custom
       assert self.paperSize() == QPagedPaintDevice.Custom
       result = CustomPaper()
     else:
       result = StandardPaper(correctPaperEnum)  
     assert isinstance(result, Paper)
+    '''
+    !!! result.paperSizeEnum might not agree with self.paperSize() because of the Qt bug.
+    '''
     return result
   
   
+  '''
+  Methods that alias Qt methods for clarification
+  '''
+  #TODO property
   def printablePageRect(self):
     '''
     Rect that can be printed (Paper less printer's limitations (unprintable) less user defined margins.
@@ -183,6 +188,12 @@ class PrinterAdaptor(QPrinter):
     # TODO but Custom?
     return self.pageRect()  # Delegate to QPrinter
   
+  @property
+  def paperSizeMM(self):
+    '''
+    Implementation: call an overload.
+    '''
+    return self.paperSize(QPrinter.Millimeter)
     
     
     
