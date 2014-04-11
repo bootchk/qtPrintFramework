@@ -190,11 +190,13 @@ class PrinterAdaptor(QPrinter):
     if not self.printConverser.pageSetup.isStronglyEqualPrinterAdaptor(self):
       paper = self.printConverser.pageSetup.paper
       print('>>>> Fixing invariant by setting paperSize on QPrinter', str(paper))
-      self.setPaperSize(paper.paperSizeEnum)
+      # self.setPaperSize(paper.paperSizeEnum)
+      self.printConverser.pageSetup.toPrinterAdaptor(printerAdaptor=self)
     if sys.platform.startswith('darwin'):
       paper = self.printConverser.pageSetup.paper
       print('>>>> Darwin: always set paperSize on QPrinter', str(paper))
-      self.setPaperSize(paper.paperSizeEnum)
+      # self.setPaperSize(paper.paperSizeEnum)
+      self.printConverser.pageSetup.toPrinterAdaptor(printerAdaptor=self)
   
   
   '''

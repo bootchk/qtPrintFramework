@@ -121,6 +121,7 @@ class PageSetup(list):
     else:
       # use overload QPrinter.setPaperSize(QPagedPaintDevice.PageSize)
       # TODO why setPaperSize in Millimeter?  it seems to set enum to Custom?
+      # TODO do we need both of these?
       printerAdaptor.setPaperSize(QSizeF(self.paper.orientedSizeMM(self.orientation)), QPrinter.Millimeter)
       printerAdaptor.setPaperSize(self.paper.paperSizeEnum)
     
