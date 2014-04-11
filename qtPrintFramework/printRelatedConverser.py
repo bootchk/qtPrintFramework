@@ -82,7 +82,7 @@ class PrintConverser(QObject):
     '''
     User our own dialog, which works with non-native printers (on some platforms?)
     '''
-    print("NonNative page setup")
+    print("NonNative page setup to")
     dialog = PrinterlessPageSetupDialog(pageSetup=self.pageSetup, parentWidget=self.parentWidget)
     self._showPrintRelatedDialogWindowModal(dialog, model=printerAdaptor, acceptSlot=self._acceptNonNativePageSetupSlot)
     # execution continues but conversation not complete
@@ -97,13 +97,13 @@ class PrintConverser(QObject):
     We don't pass a PageSetup.
     Native dialog correctly shows user's last choices for printer, page setup.
     '''
-    print("Opening page setup dialog")
-    print(printerAdaptor.description)
+    print("Native page setup to", printerAdaptor.description)
     
     assert printerAdaptor.isValid()
     assert printerAdaptor.isAdaptingNative()
     assert self.parentWidget is not None
     
+    printerAdaptor.checkInvariantAndFix()
     dialog = QPageSetupDialog(printerAdaptor, parent=self.parentWidget)
     self._showPrintRelatedDialogWindowModal(dialog, model=printerAdaptor, acceptSlot=self._acceptNativePageSetupSlot)
     
@@ -116,6 +116,7 @@ class PrintConverser(QObject):
     
     print("Native print to", printerAdaptor.description)
     
+    printerAdaptor.checkInvariantAndFix()
     dialog = QPrintDialog(printerAdaptor, parent=self.parentWidget)
     self._showPrintRelatedDialogWindowModal(dialog, model=printerAdaptor, acceptSlot=self._acceptNativePrintSlot)
     
@@ -200,7 +201,7 @@ class PrintConverser(QObject):
     
 
   def _acceptNonNativePageSetupSlot(self):
-    '''
+    '''paperSizeMM
     User accepted NonNative PageSetupDialog.
     
     Dialog does not allow user to change adapted printer.

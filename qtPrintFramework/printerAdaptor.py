@@ -135,10 +135,11 @@ class PrinterAdaptor(QPrinter):
     # self.paperSize() calls QPrinter.paperSize(), wrong in Qt < 5.3 returns Custom when it shouldn't
     terms = ( "Name", self.printerName(),
               "isNative", str(self.isAdaptingNative()),
-              "paper size enum from Qt", str(self.paperSize()),
-              "paper from qtPrintFramework", str(self.paper()),
+              "Qt paper enum", str(self.paperSize()),
+              "qtPFramework paper", str(self.paper()),
               # "printable rect", str(self.printablePageRect()),
-              "printable rect MM", str(self.pageRect(QPrinter.Millimeter)))
+              "paper size MM", str(self.paperSizeMM),
+              "print rect MM", str(self.pageRect(QPrinter.Millimeter)))
     return ','.join(terms)
   
   
@@ -160,7 +161,7 @@ class PrinterAdaptor(QPrinter):
     
     # !!! Not call deprecated self.pageSize(), it is in error also.
     # The overloaded paperSize(MM) returns an epsilon correct (except for floating precision) correct result
-    floatPaperDimensionsMM = self.paperSize(QPrinter.Millimeter)
+    floatPaperDimensionsMM = self.paperSizeMM
     correctPaperEnum = Paper.enumForPageSizeByMatchDimensions(floatPaperDimensionsMM)
     if correctPaperEnum is None:
       # self's paperSize(Millimeter) doesn't match any StandardPaper therefore self.paperSize() should be Custom
@@ -174,6 +175,21 @@ class PrinterAdaptor(QPrinter):
     '''
     return result
   
+  def checkInvariantAndFix(self):
+    '''
+    Check invariant (about QPrinter.paperSize() == framework's local Paper.paperSizeEnum)
+    and fix it if necessary.
+    In other words, QPrinter is supposed to stay in sync with native,
+    and qtPrintFramework is supposed to stay in sync with QPrinter.
+    But qtPrintFramework can fix bugs in QPrinter.
+    
+    This ameliorates another bug on the OSX platform: PageSetup not persistent.
+    (After one Print conversation, a printerAdaptor loses its page setup.)
+    '''
+    if not self.printConverser.pageSetup.isStronglyEqualPrinterAdaptor(self):
+      paper = self.printConverser.pageSetup.paper
+      print('>>>> Fixing invariant by setting paperSize on QPrinter', str(paper))
+      self.setPaperSize(paper.paperSizeEnum)
   
   '''
   Methods that alias Qt methods for clarification
@@ -199,7 +215,7 @@ class PrinterAdaptor(QPrinter):
   @property
   def paperSizeMM(self):
     '''
-    Size of paper (usually larger than printablePageRect.)
+    QSizeF of paper (usually larger than printablePageRect.)
     Units mm.
     Implementation: call an overloaded QPrinter method.
     '''
