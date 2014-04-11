@@ -116,8 +116,7 @@ class PageSetup(list):
     if self.paper.isCustom :
       # Custom paper has unknown QSize
       # Illegal to call setPaperSize(QPrinter.Custom), but this has intended effect
-      printerAdaptor.setPaperSize(QSizeF(0,0), QPrinter.Millimeter)
-      pass  
+      printerAdaptor.setPaperSize(QSizeF(0,0), QPrinter.Millimeter) 
     else:
       # use overload QPrinter.setPaperSize(QPagedPaintDevice.PageSize)
       # TODO why setPaperSize in Millimeter?  it seems to set enum to Custom?
@@ -125,9 +124,14 @@ class PageSetup(list):
       printerAdaptor.setPaperSize(QSizeF(self.paper.orientedSizeMM(self.orientation)), QPrinter.Millimeter)
       printerAdaptor.setPaperSize(self.paper.paperSizeEnum)
     
-    # TODO this might not hold: Qt might be showing paper dimensions QSizeF(0,0) for Custom
-    # Which is bad programming.  None or Null should represent unknown.
-    assert self.isStronglyEqualPrinterAdaptor(printerAdaptor)
+    '''
+    TODO Strong assertion might not hold: Qt might be showing paper dimensions QSizeF(0,0) for Custom
+    (Which is bad programming.  None or Null should represent unknown.)
+    
+    Or, despite trying to set QPrinter consistent, Qt bugs still don't meet strong assertion.
+    '''
+    #assert self.isStronglyEqualPrinterAdaptor(printerAdaptor)
+    assert self.isEqualPrinterAdaptor(printerAdaptor)
     
     
   '''
