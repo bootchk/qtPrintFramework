@@ -1,6 +1,6 @@
 
 
-
+import sys
 
 from PyQt5.QtPrintSupport import QPrinter
 from PyQt5.QtGui import QPagedPaintDevice  # !! Not in QtPrintSupport
@@ -186,10 +186,16 @@ class PrinterAdaptor(QPrinter):
     This ameliorates another bug on the OSX platform: PageSetup not persistent.
     (After one Print conversation, a printerAdaptor loses its page setup.)
     '''
+    
     if not self.printConverser.pageSetup.isStronglyEqualPrinterAdaptor(self):
       paper = self.printConverser.pageSetup.paper
       print('>>>> Fixing invariant by setting paperSize on QPrinter', str(paper))
       self.setPaperSize(paper.paperSizeEnum)
+    if sys.platform.startswith('darwin'):
+      paper = self.printConverser.pageSetup.paper
+      print('>>>> Darwin: always set paperSize on QPrinter', str(paper))
+      self.setPaperSize(paper.paperSizeEnum)
+  
   
   '''
   Methods that alias Qt methods for clarification

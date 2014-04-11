@@ -214,14 +214,17 @@ class PageSetup(list):
     if self.paper.isCustom:
       result = partialResult
       # CustomPaper has no size to compare.
-      print("printerAdaptor has Custom paper saying size:", printerAdaptor.paperSizeMM.width(), ',', printerAdaptor.paperSizeMM.height())
+      print("printerAdaptor has Custom paper size:", printerAdaptor.paperSizeMM.width(), ',', printerAdaptor.paperSizeMM.height())
     else: 
       result = partialResult and self.paper.isOrientedSizeEpsilonEqual(self.orientation, printerAdaptor.paperSizeMM)
       
     if not result:
-      print(self.paper.paperSizeEnum, printerAdaptor.paperSize())
-      print( self.orientation, printerAdaptor.orientation())
-      print (self.paper.orientedSizeMM(self.orientation), printerAdaptor.paperSizeMM, )
+      print('isStronglyEqualPrinterAdaptor returns False')
+      print(self.paper.paperSizeEnum, printerAdaptor.paperSize(), # our and Qt enums
+            self.orientation, printerAdaptor.orientation(), # our and Qt orientation
+            printerAdaptor.paperSizeMM ) # Qt paperSize(mm)
+      if not self.paper.isCustom:
+        print (self.paper.orientedSizeMM(self.orientation) )  # our size mm (not defined for Custom)
     return result
     
   
