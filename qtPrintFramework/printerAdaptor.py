@@ -178,20 +178,30 @@ class PrinterAdaptor(QPrinter):
   '''
   Methods that alias Qt methods for clarification
   '''
-  #TODO property
   def printablePageRect(self):
     '''
-    Rect that can be printed (Paper less printer's limitations (unprintable) less user defined margins.
+    Rect that can be printed. Paper less printer's limitations (unprintable) less user defined margins.
     
     Units DevicePixel
     '''
-    # TODO but Custom?
+    # TODO If paper is Custom, this is not from the paper,
+    # but from whatever the app sets on the printerAdaptor.
+    # If app fails to do that, I'm not sure if this is well-defined.
+    # Some native print subsystems may define Custom paper's
+    # but Qt may be punting in other situations.   Need to clarify this.
     return self.pageRect()  # Delegate to QPrinter
+  
+  @property
+  def printablePageSize(self):
+    return self.printablePageRect().size()
+  
   
   @property
   def paperSizeMM(self):
     '''
-    Implementation: call an overload.
+    Size of paper (usually larger than printablePageRect.)
+    Units mm.
+    Implementation: call an overloaded QPrinter method.
     '''
     return self.paperSize(QPrinter.Millimeter)
     

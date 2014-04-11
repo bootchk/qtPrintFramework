@@ -44,8 +44,14 @@ class PrintConverser(QObject):
   '''
   userChangedPaper = Signal()
   
+  userAcceptedPrint = Signal()
+  userAcceptedPageSetup = Signal()
+  userAcceptedPrintPDF = Signal()
+  
+  userCanceledPrintRelatedConversation = Signal()
+  
   '''
-  TODO
+  FUTURE
   userChangedPrinter = Signal()
   Not necessary since user must print to change printers.
   Assume apps do not have a separate 'Choose Printer' action.
@@ -55,11 +61,6 @@ class PrintConverser(QObject):
   PageSetup allows user to change printer?
   '''
   
-  userAcceptedPrint = Signal()
-  userAcceptedPageSetup = Signal()
-  userAcceptedPrintPDF = Signal()
-  
-  userCanceledPrintRelatedConversation = Signal()
   
   
   
@@ -157,9 +158,8 @@ class PrintConverser(QObject):
     Whether native printer or non-native printer (user changed printer)
     reflect user's choices into PageSetup.
     '''
-    print("Accept native print dialog on", self._printerAdaptor.description)
-    
     self._capturePageSetupChange()
+    print("Accept native print dialog on", self._printerAdaptor.description)
     self.userAcceptedPrint.emit()
 
 
@@ -173,9 +173,8 @@ class PrintConverser(QObject):
     Whether native printer or non-native printer (user changed printer)
     reflect user's choices into PageSetup.
     '''
-    print("Accept non-native print dialog on", self._printerAdaptor.description)
-    
     self._capturePageSetupChange()
+    print("Accept non-native print dialog on", self._printerAdaptor.description)
     self.userAcceptedPrintPDF.emit()
 
 
@@ -188,6 +187,7 @@ class PrintConverser(QObject):
     or do some platforms not allow user to choose a new printer (make it current.)
     '''
     self._capturePageSetupChange()
+    print("Accept native page setup dialog on", self._printerAdaptor.description)
     self.userAcceptedPageSetup.emit()
   
   
@@ -209,7 +209,7 @@ class PrintConverser(QObject):
     PageSetup control/view has user's choices,
     but they have not been applied to a PrinterAdaptor.)
     '''
-    print(self._printerAdaptor.description)  # Before we change it
+    print("Before accept nonnative page setup", self._printerAdaptor.description)
     
     # !!! This is similar, but not the same as _capturePageSetupChange()
     oldPageSetup = copy(self.pageSetup)
@@ -219,7 +219,7 @@ class PrintConverser(QObject):
       self.userChangedPaper.emit()
     assert self.pageSetup.isEqualPrinterAdaptor(self.printerAdaptor)
     
-    print(self._printerAdaptor.description)  # After we changed it
+    print("After accept nonnative page setup", self._printerAdaptor.description)
     self.userAcceptedPageSetup.emit()
     
     
