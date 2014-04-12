@@ -11,7 +11,7 @@ class CustomPaper(Paper):
   '''
   
   def __init__(self):
-    self.paperSizeEnum = QPagedPaintDevice.Custom
+    self.paperEnum = QPagedPaintDevice.Custom
     
     
   def __repr__(self):
@@ -28,7 +28,7 @@ class CustomPaper(Paper):
   
   
   '''
-  paperSizeEnum attribute inherited
+  paperEnum attribute inherited
   '''
 
   '''

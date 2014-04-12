@@ -171,13 +171,13 @@ class PrinterAdaptor(QPrinter):
       result = StandardPaper(correctPaperEnum)  
     assert isinstance(result, Paper)
     '''
-    !!! result.paperSizeEnum might not agree with self.paperSize() because of the Qt bug.
+    !!! result.paperEnum might not agree with self.paperSize() because of the Qt bug.
     '''
     return result
   
   def checkInvariantAndFix(self):
     '''
-    Check invariant (about QPrinter.paperSize() == framework's local Paper.paperSizeEnum)
+    Check invariant (about QPrinter.paperSize() == framework's local Paper.paperEnum)
     and fix it if necessary.
     In other words, QPrinter is supposed to stay in sync with native,
     and qtPrintFramework is supposed to stay in sync with QPrinter.
@@ -190,18 +190,21 @@ class PrinterAdaptor(QPrinter):
     if not self.printConverser.pageSetup.isStronglyEqualPrinterAdaptor(self):
       paper = self.printConverser.pageSetup.paper
       print('>>>> Fixing invariant by setting paperSize on QPrinter', str(paper))
-      # self.setPaperSize(paper.paperSizeEnum)
+      # self.setPaperSize(paper.paperEnum)
       self.printConverser.pageSetup.toPrinterAdaptor(printerAdaptor=self)
     if sys.platform.startswith('darwin'):
       paper = self.printConverser.pageSetup.paper
       print('>>>> Darwin: always set paperSize on QPrinter', str(paper))
-      # self.setPaperSize(paper.paperSizeEnum)
+      # self.setPaperSize(paper.paperEnum)
       self.printConverser.pageSetup.toPrinterAdaptor(printerAdaptor=self)
   
   
   '''
   Methods that alias Qt methods for clarification
+  
+  orientation() is not aliased
   '''
+      
   def printablePageRect(self):
     '''
     Rect that can be printed. Paper less printer's limitations (unprintable) less user defined margins.

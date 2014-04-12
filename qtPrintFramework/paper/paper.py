@@ -57,12 +57,12 @@ class Paper(object):
     QPagedPaintDevice.DLE  : QSize(110, 220),
     # Following entries are hacked from Qt docs: rounded from fractional mm, or otherwise altered
     # Comments tell whether they meet ANSI Standard, or are loose standards.
-    QPagedPaintDevice.Executive  : QSize(184, 267), # Different from Qt ~ 191, 254?
-    QPagedPaintDevice.Folio  : QSize(210, 330),   # Loose
-    QPagedPaintDevice.Ledger  : QSize(279, 432),  # Same as Tabloid. But differs from Qt reversed width and height
-    QPagedPaintDevice.Legal  : QSize(216, 356),   # Loose
-    QPagedPaintDevice.Letter  : QSize(216, 279),  # ANSI
-    QPagedPaintDevice.Tabloid  : QSize(279, 432), # ANSI
+    QPagedPaintDevice.Executive  : QSize(191, 254), # ? Wiki says (184, 267)
+    QPagedPaintDevice.Folio  : QSize(210, 330),     # Loose
+    QPagedPaintDevice.Ledger  : QSize(279, 432),    # Same as Tabloid. But differs from Qt reversed width and height
+    QPagedPaintDevice.Legal  : QSize(216, 356),     # Loose
+    QPagedPaintDevice.Letter  : QSize(216, 279),    # ANSI
+    QPagedPaintDevice.Tabloid  : QSize(279, 432),   # ANSI
     # QPagedPaintDevice.Custom  30  Unknown, or a user defined size.
     }
   
@@ -119,17 +119,17 @@ class Paper(object):
     return result
   
     
-  def __init__(self, paperSizeEnum):
+  def __init__(self, paperEnum):
     '''
     Default: CustomPaper overrides: still has this attribute but is constant
     '''
     # this is the best assertion we can do?  Fragile?
-    assert isinstance(paperSizeEnum, int)
-    #assert str(type(paperSizeEnum)) == "<type 'sip.enumtype'>"
-    #assert isinstance(paperSizeEnum, QPagedPaintDevice.PageSize)
-    assert paperSizeEnum is not None
+    assert isinstance(paperEnum, int)
+    #assert str(type(paperEnum)) == "<type 'sip.enumtype'>"
+    #assert isinstance(paperEnum, QPagedPaintDevice.PageSize)
+    assert paperEnum is not None
     
-    self.paperSizeEnum = paperSizeEnum
+    self.paperEnum = paperEnum
   
   
   def __repr__(self):
@@ -142,7 +142,7 @@ class Paper(object):
     An instance of Paper represents a user choice.  There may be many instances.
     Without implementing this, == returns False for separate instances.
     '''
-    return self.paperSizeEnum == other.paperSizeEnum
+    return self.paperEnum == other.paperEnum
   
   
   @property

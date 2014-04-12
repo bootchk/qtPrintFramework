@@ -25,11 +25,11 @@ class StandardPaper(Paper):
     '''
     Implement deferred.
     '''
-    return  Paper.nameModel[self.paperSizeEnum]
+    return  Paper.nameModel[self.paperEnum]
   
   
   '''
-  paperSizeEnum attribute inherited
+  paperEnum attribute inherited
   '''
   
   '''
@@ -54,7 +54,7 @@ class StandardPaper(Paper):
     '''
     Default: subclasses may override.
     '''
-    result = Paper.sizeModel[self.paperSizeEnum]
+    result = Paper.sizeModel[self.paperEnum]
     assert isinstance(result, QSize)
     return result
   
