@@ -70,12 +70,26 @@ class PrintConverser(QObject):
     
     self.printerAdaptor = printerAdaptor  # TODO really need this here?
     
-    # self owns because self mediates use of it: every conversation
+    '''
+    self owns because self mediates use of it: every conversation
+    
+    PageSetup is initialized from settings OR printerAdaptor.
+    '''
     self.pageSetup = PageSetup(printerAdaptor)
+    
+    '''
+    Not assert that printerAdaptor equal PageSetup.
+    Try to make them equal now.
+    '''
+    self.pageSetup.toPrinterAdaptor(printerAdaptor)
+    '''
+    Still not assert that printerAdaptor equal PageSetup, since adapted printer might not support.
+    Usually they are equal.  But user might have changed system default printer.
+    '''
 
 
   '''
-  Page setup
+  Page setup conversations
   '''
     
   def conversePageSetupNonNative(self, printerAdaptor):
@@ -196,7 +210,7 @@ class PrintConverser(QObject):
     oldPageSetup = copy(self.pageSetup)
     self.pageSetup.fromPrinterAdaptor(self.printerAdaptor)
     if not oldPageSetup == self.pageSetup:
-      self.userChangedPaper.emit()
+      self._emitUserChangedPaper()
     assert self.pageSetup.isEqualPrinterAdaptor(self.printerAdaptor)
     
 
@@ -213,15 +227,25 @@ class PrintConverser(QObject):
     print("Before accept nonnative page setup", self._printerAdaptor.description)
     
     # !!! This is similar, but not the same as _capturePageSetupChange()
+    # Here, user made change in a non-native dialog that hasn't yet affected printerAdaptor
     oldPageSetup = copy(self.pageSetup)
     self.pageSetup.fromControlView()
     if not oldPageSetup == self.pageSetup:
       self.pageSetup.toPrinterAdaptor(self.printerAdaptor)
-      self.userChangedPaper.emit()
+      self._emitUserChangedPaper()
     assert self.pageSetup.isEqualPrinterAdaptor(self.printerAdaptor)
     
     print("After accept nonnative page setup", self._printerAdaptor.description)
     self.userAcceptedPageSetup.emit()
+    
+  def _emitUserChangedPaper(self):
+    '''
+    User has chosen a new paper, either in Print or PageSetup dialog.
+    '''
+    # Tell the app
+    self.userChangedPaper.emit()
+    # Persist
+    self.pageSetup.toSettings()
     
     
   def _cancelSlot(self):

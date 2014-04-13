@@ -62,7 +62,8 @@ class PageSetup(list):
     self.append(PageAttribute(label="Orientation", model=PageOrientationModel)) # ('Portrait', 'Landscape')))
     
     " Possibly change default model from settings."
-    self.initializeModelFromSettings(printerAdaptor)
+    self.initializeModelFromSettings(getDefaultsFromPrinterAdaptor=printerAdaptor)
+    # Not assert that printerAdaptor equals self yet.
     
     " Ensure model equals view"
     self.toControlView()
@@ -75,6 +76,12 @@ class PageSetup(list):
     until user actually chooses to print on said native printer.
     '''
 
+  def __repr__(self):
+    '''
+    Not strict: result will not recreate object.
+    '''
+    return ','.join((str(self.paper), str(self.orientation)))
+  
   
   def __eq__(self, other):
     return self.paper == other.paper and self.orientation == other.orientation
@@ -92,9 +99,9 @@ class PageSetup(list):
   of the adapted printer, or some other page setup.
   After user accepts such a dialog, we capture its page setup to self.
   '''
-  def initializeModelFromSettings(self, printerAdaptor):
+  def initializeModelFromSettings(self, getDefaultsFromPrinterAdaptor):
     #if not printerAdaptor.isAdaptingNative():
-    self.fromSettings(getDefaultsFromPrinterAdaptor=printerAdaptor)
+    self.fromSettings(getDefaultsFromPrinterAdaptor=getDefaultsFromPrinterAdaptor)
     
     
     
@@ -182,6 +189,7 @@ class PageSetup(list):
     qsettings.endGroup()
     assert isinstance(self.paper, Paper)  # !!! Might be custom of unknown size
     assert isinstance(self.orientation, int)
+    print("PageSetup from settings:", str(self))
   
   
   def toSettings(self):
