@@ -124,10 +124,10 @@ class Paper(object):
     Default: CustomPaper overrides: still has this attribute but is constant
     '''
     # this is the best assertion we can do?  Fragile?
-    assert isinstance(paperEnum, int)
+    assert paperEnum is not None
+    assert isinstance(paperEnum, int), str(type(paperEnum))
     #assert str(type(paperEnum)) == "<type 'sip.enumtype'>"
     #assert isinstance(paperEnum, QPagedPaintDevice.PageSize)
-    assert paperEnum is not None
     
     self.paperEnum = paperEnum
   

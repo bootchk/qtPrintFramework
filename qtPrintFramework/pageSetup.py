@@ -235,6 +235,7 @@ class PageSetup(list):
     '''
     Instance of a subclass of Paper for paperEnum.
     '''
+    assert isinstance(paperEnum, int)
     if paperEnum == QPagedPaintDevice.Custom:
       result = CustomPaper()
     else:
