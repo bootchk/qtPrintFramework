@@ -4,6 +4,7 @@ from PyQt5.QtCore import QSettings, QSizeF
 from PyQt5.QtGui import QPagedPaintDevice  # !! Not in QtPrintSupport
 from PyQt5.QtPrintSupport import QPrinter
 
+from qtPrintFramework.paper.paper import Paper
 from qtPrintFramework.paper.standard import StandardPaper
 from qtPrintFramework.paper.custom import CustomPaper
 from qtPrintFramework.pageAttribute import PageAttribute
@@ -18,6 +19,11 @@ class PageSetup(list):
   Iterable container of attributes of a page.
   
   This defines the set of attributes, their labels and models.
+  Currently, we omit margins attribute of page setup.
+  
+  TODO we are persisting only the enum of a paper.
+  For a CustomPaper, we don't persist the user's choice of size for the Custom paper.
+  It might be better (as UI) to persist that also.
   
   Responsibilities:
   - iterate PageAttributes (which are editable)
@@ -28,6 +34,17 @@ class PageSetup(list):
   - edit: PrinterlessPageSetupDialog edits this, and knows this intimately by iterating over editable PageAttributes.
     But other dialogs (native) contribute to self state.
     See PrintRelatedConverser.
+  
+  For some apps, a PageSetup (as a user choice) is an attribute of a document.
+  For other apps, a PageSetup is only an attribute of a user (a setting.)
+  Here, we always get it as a setting.
+  If your app treats a PageSetup as a document attribute,
+  you must call toPrinterAdaptor() (but it may not take.)
+  
+  !!! A PageSetup can be impressed on a PrinterAdaptor, but a PrinterAdaptor does not own one.
+  A PrintConverser owns a PageSetup.
+  An adapted printer (that a PrinterAdaptor adapts) might own a different object (which is opaque to us)
+  that holds its notion of page setup.
   
   !!! Paper/Page are not interchangeable but refer to a similar concept.
   Paper connotes real thing, and Page an ideal concept.
@@ -63,20 +80,21 @@ class PageSetup(list):
     return self.paper == other.paper and self.orientation == other.orientation
   
 
+  '''
+  A NonNative printer by definition does not own a persistent page setup,
+  i.e. the platform doesn't necessarily know of the printer, let alone know its page setup.
+  The app persists a PageSetup for such printers.)
+  
+  A user might have used another real or native paperless printer since this app was last used.
+  This PageSetup (and its persistent value)
+  should be tryImpressed on adatped printer before it's dialogs are shown.
+  Otherwise, the dialogs may show persistent (persisted by the platform) page setup
+  of the adapted printer, or some other page setup.
+  After user accepts such a dialog, we capture its page setup to self.
+  '''
   def initializeModelFromSettings(self, printerAdaptor):
-    '''
-    If current printer is NonNative, self's settings pertain to it.
-    (a NonNative printer by definition does not own a persistent page setup,
-    i.e. the platform doesn't necessarily know of the printer, let alone know its page setup.
-    The app persists a PageSetup for such printers.)
-    
-    Otherwise, user has used another real printer since
-    this app was last used, and that printer's persistent PageSetup
-    will show in it's native dialogs, 
-    and will be captured to self after those dialogs are used.
-    '''
-    if not printerAdaptor.isAdaptingNative():
-      self.fromSettings(printerAdaptor)
+    #if not printerAdaptor.isAdaptingNative():
+    self.fromSettings(getDefaultsFromPrinterAdaptor=printerAdaptor)
     
     
     
@@ -108,6 +126,10 @@ class PageSetup(list):
     
     !!! setPaperSize is overloaded.
     # TODO should this be orientedPaperSizeDevicePixels ?
+    
+    Qt docs for setPaperSize() say: "Sets the printer paper size to newPaperSize if that size is supported. 
+    The result is undefined if newPaperSize is not supported."
+    The same applies here; this may not have the intended effect.
     '''
     
     printerAdaptor.setOrientation(self.orientation)
@@ -143,7 +165,7 @@ class PageSetup(list):
   QCoreApplication.setApplicationName("Bar")
   '''
   
-  def fromSettings(self, printerAdaptor):
+  def fromSettings(self, getDefaultsFromPrinterAdaptor):
     '''
     Set my values from settings (that persist across app sessions.)
     If settings don't exist yet, use default value from printerAdaptor
@@ -151,9 +173,16 @@ class PageSetup(list):
     '''
     qsettings = QSettings()
     qsettings.beginGroup( "paperlessPrinter" )
-    self.paper = self._paperFromEnum(qsettings.value( "paperEnum", printerAdaptor.paper().paperEnum))
-    self.orientation = qsettings.value( "paperOrientation", printerAdaptor.orientation() )
+    
+    value = qsettings.value( "paperEnum", getDefaultsFromPrinterAdaptor.paper().paperEnum)
+    self.paper = self._paperFromEnum(self._intForSetting(value))
+    
+    value = qsettings.value( "paperOrientation", getDefaultsFromPrinterAdaptor.orientation() )
+    self.orientation = self._intForSetting(value)
     qsettings.endGroup()
+    assert isinstance(self.paper, Paper)  # !!! Might be custom of unknown size
+    assert isinstance(self.orientation, int)
+  
   
   def toSettings(self):
     qsettings = QSettings()
@@ -162,6 +191,17 @@ class PageSetup(list):
     qsettings.setValue( "paperEnum", self.paper.paperEnum )
     qsettings.setValue( "paperOrientation", self.orientation )
     qsettings.endGroup()
+  
+  def _intForSetting(self, value):
+    '''
+    Ensure a settings value is type int, or 0 if can't convert.
+    Settings values are unicode in PyQt.
+    '''
+    try:
+      result = int(value)
+    except ValueError:
+      result = 0
+    return result
   
   
   '''
@@ -235,7 +275,7 @@ class PageSetup(list):
     '''
     Instance of a subclass of Paper for paperEnum.
     '''
-    assert isinstance(paperEnum, int)
+    assert isinstance(paperEnum, int), str(type(paperEnum))
     if paperEnum == QPagedPaintDevice.Custom:
       result = CustomPaper()
     else:
