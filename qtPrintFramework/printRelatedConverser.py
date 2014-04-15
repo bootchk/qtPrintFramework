@@ -11,6 +11,9 @@ from PyQt5.QtCore import pyqtSignal as Signal
 from qtPrintFramework.userInterface.printerlessPageSetupDialog import PrinterlessPageSetupDialog
 from qtPrintFramework.pageSetup import PageSetup
 
+import qtPrintFramework.config as config
+
+
 
 class PrintConverser(QObject):
   '''
@@ -86,7 +89,11 @@ class PrintConverser(QObject):
     Still not assert that printerAdaptor equal PageSetup, since adapted printer might not support.
     Usually they are equal.  But user might have changed system default printer.
     '''
-
+    
+  def dump(self, condition):
+    if config.DEBUG:
+      print(condition)
+      print(self.printerAdaptor.description)
 
   '''
   Page setup conversations
@@ -96,7 +103,7 @@ class PrintConverser(QObject):
     '''
     User our own dialog, which works with non-native printers (on some platforms?)
     '''
-    print("NonNative page setup to")
+    self.dump("NonNative page setup to")
     dialog = PrinterlessPageSetupDialog(pageSetup=self.pageSetup, parentWidget=self.parentWidget)
     self._showPrintRelatedDialogWindowModal(dialog, model=printerAdaptor, acceptSlot=self._acceptNonNativePageSetupSlot)
     # execution continues but conversation not complete
@@ -111,7 +118,7 @@ class PrintConverser(QObject):
     We don't pass a PageSetup.
     Native dialog correctly shows user's last choices for printer, page setup.
     '''
-    print("Native page setup to", printerAdaptor.description)
+    self.dump("Native page setup to")
     
     assert printerAdaptor.isValid()
     assert printerAdaptor.isAdaptingNative()
@@ -128,7 +135,7 @@ class PrintConverser(QObject):
     
   def conversePrintNative(self, printerAdaptor):
     
-    print("Native print to", printerAdaptor.description)
+    self.dump("Native print to")
     
     printerAdaptor.checkInvariantAndFix()
     dialog = QPrintDialog(printerAdaptor, parent=self.parentWidget)
@@ -140,7 +147,7 @@ class PrintConverser(QObject):
     Print to a non-native printer.
     On Win, action PrintPDF comes here
     '''
-    print("NonNative print to", printerAdaptor.description)
+    self.dump("NonNative print to")
     # TODO
     # This dialog will be a file chooser with PageSetup?
     #self._showPrintRelatedDialogWindowModal(dialog)
@@ -174,8 +181,12 @@ class PrintConverser(QObject):
     reflect user's choices into PageSetup.
     '''
     self._capturePageSetupChange()
-    print("Accept native print dialog on", self._printerAdaptor.description)
+    self.dump("Accept native print dialog on")
+
     self.userAcceptedPrint.emit()
+    if config.DEBUG:
+      print("Emit userAcceptedPrint")
+    
 
 
   def _acceptNonNativePrintSlot(self):
@@ -189,8 +200,11 @@ class PrintConverser(QObject):
     reflect user's choices into PageSetup.
     '''
     self._capturePageSetupChange()
-    print("Accept non-native print dialog on", self._printerAdaptor.description)
+    self.dump("Accept non-native print dialog on")
+
     self.userAcceptedPrintPDF.emit()
+    if config.DEBUG:
+      print("Emit userAcceptedPrintPDF")
 
 
   def _acceptNativePageSetupSlot(self):
@@ -201,9 +215,13 @@ class PrintConverser(QObject):
     TODO are the semantics the same on all platforms?
     or do some platforms not allow user to choose a new printer (make it current.)
     '''
+    self.dump("Accept native page setup, printerAdaptor before setting it ")
     self._capturePageSetupChange()
-    print("Accept native page setup dialog on", self._printerAdaptor.description)
+    self.dump("accept native page setup, printerAdaptor after setting it")
+    
     self.userAcceptedPageSetup.emit()
+    if config.DEBUG:
+      print("Emit userAcceptedPageSetup")
   
   
   def _capturePageSetupChange(self):
@@ -224,7 +242,7 @@ class PrintConverser(QObject):
     PageSetup control/view has user's choices,
     but they have not been applied to a PrinterAdaptor.)
     '''
-    print("Before accept nonnative page setup", self._printerAdaptor.description)
+    self.dump("accept nonnative page setup, printerAdaptor before setting it")
     
     # !!! This is similar, but not the same as _capturePageSetupChange()
     # Here, user made change in a non-native dialog that hasn't yet affected printerAdaptor
@@ -235,8 +253,12 @@ class PrintConverser(QObject):
       self._emitUserChangedPaper()
     assert self.pageSetup.isEqualPrinterAdaptor(self.printerAdaptor)
     
-    print("After accept nonnative page setup", self._printerAdaptor.description)
+    self.dump("accept nonnative page setup, printerAdaptor after setting it")
+
     self.userAcceptedPageSetup.emit()
+    if config.DEBUG:
+      print("Emit userAcceptedPageSetup")
+    
     
   def _emitUserChangedPaper(self):
     '''
@@ -244,6 +266,8 @@ class PrintConverser(QObject):
     '''
     # Tell the app
     self.userChangedPaper.emit()
+    if config.DEBUG:
+      print("Emit userChangedPaper")
     # Persist
     self.pageSetup.toSettings()
     
@@ -258,6 +282,8 @@ class PrintConverser(QObject):
     '''
     self.pageSetup.toControlView()  # restore view to equal unchanged model
     self.userCanceledPrintRelatedConversation.emit()
+    if config.DEBUG:
+      print("Emit userCanceledPrintRelatedConversation")
     
     
 

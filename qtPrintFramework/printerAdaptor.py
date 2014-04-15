@@ -12,7 +12,6 @@ from qtPrintFramework.paper.custom import CustomPaper
 from qtPrintFramework.printRelatedConverser import PrintConverser
 
 
-
 class PrinterAdaptor(QPrinter):
   '''
   A thin wrapper around QPrinter:
@@ -133,19 +132,21 @@ class PrinterAdaptor(QPrinter):
     Description of adapted printer.
     '''
     # self.paperSize() calls QPrinter.paperSize(), wrong in Qt < 5.3 returns Custom when it shouldn't
-    terms = ( "Name", self.printerName(),
-              "isNative", str(self.isAdaptingNative()),
-              "Qt paper enum", str(self.paperSize()),
-              "qtPFramework paper", str(self.paper()),
-              # "printable rect", str(self.printablePageRect()),
-              "paper size MM", str(self.paperSizeMM),
-              "print rect MM", str(self.pageRect(QPrinter.Millimeter)))
-    return ','.join(terms)
+    terms = ( "Name:" + self.printerName(),
+              "isNative:"+ str(self.isAdaptingNative()),
+              "Qt paper enum:"+ str(self.paperSize()),
+              "qtPFramework setup:"+ str(self.printConverser.pageSetup),
+              # "printable rect:"+ str(self.printablePageRect()),
+              "paper size MM:"+ str(self.paperSizeMM),
+              "print rect MM:" + str(self.pageRect(QPrinter.Millimeter)))
+    return '\n   '.join(terms)
+  
+  
   
   
   def paper(self):
     '''
-    User's choice of paper.
+    New Paper instance representing user's choice of paper.
     
     !!! Ameliorates a bug in Qt, whereby a QPrinter.paperSize() returns value that does not match dimensions i.e. paperSize(Millimeter).
     e.g. paperSize() returns Custom, paperSize(Millimeter) dimensions of Letter when in fact user chose 'Letter'

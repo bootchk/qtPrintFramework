@@ -69,19 +69,19 @@ class MainWindow(QMainWindow):
   These should do something: print, or appropriate processing, such as change visible page.
   '''
   def changedPaper(self):
-    print(">>>>>>>user changed paper")
+    pass
     
   def acceptedPrint(self):
-    print(">>>>>>>user accepted print")
+    pass
     
   def acceptedPrintPDF(self):
-    print(">>>>>>>user accepted print pdf")
+    pass
     
   def acceptedPageSetup(self):
-    print(">>>>>>>user accepted page setup")
+    pass
     
   def canceled(self):
-    print(">>>>>>>user canceled")
+    pass
     
     
 def main():
