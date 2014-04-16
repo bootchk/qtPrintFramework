@@ -2,10 +2,11 @@
 
 import sys
 
+from PyQt5.QtCore import QSize
 from PyQt5.QtPrintSupport import QPrinter
 from PyQt5.QtGui import QPagedPaintDevice  # !! Not in QtPrintSupport
 
-
+from qtPrintFramework.orientedSize import OrientedSize
 from qtPrintFramework.paper.paper import Paper
 from qtPrintFramework.paper.standard import StandardPaper
 from qtPrintFramework.paper.custom import CustomPaper
@@ -167,10 +168,14 @@ class PrinterAdaptor(QPrinter):
     if correctPaperEnum is None:
       # self's paperSize(Millimeter) doesn't match any StandardPaper therefore self.paperSize() should be Custom
       assert self.paperSize() == QPagedPaintDevice.Custom
-      result = CustomPaper()
+      size = OrientedSize.roundedSize(floatPaperDimensionsMM)
+      if size is None:
+        result = CustomPaper(QSize(0,0))
+      else:
+        result = CustomPaper(integralOrientedSizeMM=size, orientation=self.orientation())
     else:
       result = StandardPaper(correctPaperEnum)  
-    assert isinstance(result, Paper)
+    assert isinstance(result, (StandardPaper, CustomPaper))
     '''
     !!! result.paperEnum might not agree with self.paperSize() because of the Qt bug.
     '''

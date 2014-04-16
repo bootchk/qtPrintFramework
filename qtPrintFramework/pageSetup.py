@@ -1,6 +1,6 @@
 
 
-from PyQt5.QtCore import QSettings, QSizeF
+from PyQt5.QtCore import QSettings, QSizeF, QSize
 from PyQt5.QtGui import QPagedPaintDevice  # !! Not in QtPrintSupport
 from PyQt5.QtPrintSupport import QPrinter
 
@@ -36,7 +36,7 @@ class PageSetup(list):
     See PrintRelatedConverser.
   
   For some apps, a PageSetup (as a user choice) is an attribute of a document.
-  For other apps, a PageSetup is only an attribute of a user (a setting.)
+  For other apps, a PageSetup is only an attribute ofif orientation == a user (a setting.)
   Here, we always get it as a setting.
   If your app treats a PageSetup as a document attribute,
   you must call toPrinterAdaptor() (but it may not take.)
@@ -76,12 +76,18 @@ class PageSetup(list):
     until user actually chooses to print on said native printer.
     '''
 
+
   def __repr__(self):
     '''
     Not strict: result will not recreate object.
+    
+    paperName orientationName orientedDimensions
+    e.g. 'A4 Landscape 297x219mm'
     '''
-    return ','.join((str(self.paper), str(self.orientation)))
-  
+    ## return ','.join((str(self.paper), str(self.orientation)))
+    return self.paper.orientedDescription(self.orientation)
+    ##return " ".joint((self.paper.name, self._orientationName(self.orientation)), self.paper)
+    
   
   def __eq__(self, other):
     return self.paper == other.paper and self.orientation == other.orientation
@@ -150,7 +156,7 @@ class PageSetup(list):
       # use overload QPrinter.setPaperSize(QPagedPaintDevice.PageSize)
       # TODO why setPaperSize in Millimeter?  it seems to set enum to Custom?
       # TODO do we need both of these?
-      printerAdaptor.setPaperSize(QSizeF(self.paper.orientedSizeMM(self.orientation)), QPrinter.Millimeter)
+      printerAdaptor.setPaperSize(QSizeF(self.paper.integralOrientedSizeMM(self.orientation)), QPrinter.Millimeter)
       printerAdaptor.setPaperSize(self.paper.paperEnum)
     
     '''
@@ -181,11 +187,20 @@ class PageSetup(list):
     qsettings = QSettings()
     qsettings.beginGroup( "paperlessPrinter" )
     
-    value = qsettings.value( "paperEnum", getDefaultsFromPrinterAdaptor.paper().paperEnum)
-    self.paper = self._paperFromEnum(self._intForSetting(value))
+    enumValue = qsettings.value( "paperEnum", getDefaultsFromPrinterAdaptor.paper().paperEnum)
+    orientationValue = qsettings.value( "paperOrientation", getDefaultsFromPrinterAdaptor.orientation() )
+    defaultSize = CustomPaper.defaultSize()
+    integralOrientedWidthValue = qsettings.value( "paperintegralOrientedWidth", defaultSize.width())
+    integralOrientedHeightValue = qsettings.value( "paperintegralOrientedHeight", defaultSize.height())
     
-    value = qsettings.value( "paperOrientation", getDefaultsFromPrinterAdaptor.orientation() )
-    self.orientation = self._intForSetting(value)
+    # Orientation first, needed for orienting paper size
+    self.orientation = self._intForSetting(orientationValue)
+    
+    size = QSize(self._intForSetting(integralOrientedWidthValue),
+                self._intForSetting(integralOrientedHeightValue))
+    self.paper = self._paperFromSettings(paperEnum=self._intForSetting(enumValue),
+                                         integralOrientedPaperSize=size,
+                                         orientation=self.orientation)
     qsettings.endGroup()
     assert isinstance(self.paper, Paper)  # !!! Might be custom of unknown size
     assert isinstance(self.orientation, int)
@@ -195,9 +210,12 @@ class PageSetup(list):
   def toSettings(self):
     qsettings = QSettings()
     qsettings.beginGroup( "paperlessPrinter" )
-    # Although Paper is pickleable, simplify to int
+    # Although Paper is pickleable, simplify to int.  QSettings stores objects correctly?
     qsettings.setValue( "paperEnum", self.paper.paperEnum )
     qsettings.setValue( "paperOrientation", self.orientation )
+    integralOrientedSize = self.paper.integralOrientedSizeMM(self.orientation)
+    qsettings.setValue( "paperintegralOrientedWidth", integralOrientedSize.width())
+    qsettings.setValue( "paperintegralOrientedHeight", integralOrientedSize.height())
     qsettings.endGroup()
   
   def _intForSetting(self, value):
@@ -219,19 +237,29 @@ class PageSetup(list):
   When dialog is accepted or canceled, view and model are made equal again.
   '''
   def toControlView(self):
-    self[0].setValue(self.paper.paperEnum)
+    if self.paper.paperEnum == QPrinter.Custom:
+      # Not allow Custom into dialog
+      self[0].setValue(0)
+    else:
+      self[0].setValue(self.paper.paperEnum)
     self[1].setValue(self.orientation)
     assert self.isModelEqualView()
     
   def fromControlView(self):
     ''' 
-    Dialog was accepted.  Capture values from view to model.
+    NonNative PageSetup Dialog was accepted.  Capture values from view to model.
+    
+    Dialog DOES allow choice of Custom, but not specifying size: will default.
+    
+    Since Dialog defaults size of Custom, Dialog cannot be used to just change
+    the orientation of an existing Custom paper???
     '''
+    # Orientation choice is meaningful even if paper is Custom with default size?
+    self.orientation = self[1].value
+    
     # Create new instance of Paper from enum.  Old instance garbage collected.
     self.paper = self._paperFromEnum(self[0].value)
-      
-    # TODO meaningless choice if paper is Custom with unknown size?
-    self.orientation = self[1].value
+    
     assert self.isModelEqualView()
     
   
@@ -239,7 +267,9 @@ class PageSetup(list):
   Assertion support
   '''
   def isModelEqualView(self):
-    return self.paper.paperEnum == self[0].value and self.orientation == self[1].value
+    # allow one disparity: self is Custom and view is A4.  See toControlView.
+    return ( self.paper.paperEnum == self[0].value or self.paper.paperEnum == QPrinter.Custom and self[0].value == 0) \
+          and self.orientation == self[1].value
   
   def isEqualPrinterAdaptor(self, printerAdaptor):
     '''
@@ -282,10 +312,31 @@ class PageSetup(list):
   def _paperFromEnum(self, paperEnum):
     '''
     Instance of a subclass of Paper for paperEnum.
+    
+    If Custom, default size.
     '''
     assert isinstance(paperEnum, int), str(type(paperEnum))
     if paperEnum == QPagedPaintDevice.Custom:
-      result = CustomPaper()
+      # TODO warning dialog here
+      print(">>>> Warning: PageSetup sets Custom paper to default size.  You may change size when you Print. ")
+      result = CustomPaper(integralOrientedSizeMM=CustomPaper.defaultSize(),
+                           orientation=QPrinter.Portrait)
+    else:
+      result = StandardPaper(paperEnum)
+    return result
+    
+    
+  def _paperFromSettings(self, paperEnum, integralOrientedPaperSize, orientation ):
+    '''
+    Instance of a subclass of Paper for settings values
+    
+    If Custom, size from settings.
+    Otherwise, size defined for enum.
+    '''
+    assert isinstance(paperEnum, int), str(type(paperEnum))
+    if paperEnum == QPagedPaintDevice.Custom:
+      result = CustomPaper(integralOrientedSizeMM=integralOrientedPaperSize, 
+                           orientation=orientation)
     else:
       result = StandardPaper(paperEnum)
     return result

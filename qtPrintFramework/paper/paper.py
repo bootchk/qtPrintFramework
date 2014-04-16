@@ -1,9 +1,10 @@
-'''
-'''
-from PyQt5.QtCore import QSize, QSizeF
+
+from PyQt5.QtCore import QSize
 from PyQt5.QtGui import QPagedPaintDevice  # !! Not in QtPrintSupport
 
+
 from qtPrintFramework.model.adaptedModel import AdaptedModel
+from qtPrintFramework.orientedSize import OrientedSize
 
 class Paper(object):
   '''
@@ -11,11 +12,21 @@ class Paper(object):
   
   ABC
   Inherited by:
-  - StandardPaper: has size
-  - CustomPaper: has no size
-  Future: NonStandardPaper: defined by a printer, having a size and name.
+  - StandardPaper: size defined by a standard model
+  - CustomPaper: size defined by user (or a default)
+  Future: NonStandardPaper: defined by a printer
   
-  !!! a Paper does not know its orientation.
+  Responsibilities:
+  - name
+  - enum, constant that Qt uses
+  - orientedDescription
+  - knows whether it is Custom
+  - size in various flavors
+  -- integralOrientedSizeMM
+  - equality
+  - how to derive enum from a floating size from Qt: enumForPageSizeByMatchDimensions
+  
+  !!! a Paper does not know its orientation (it is passed) but knows it's oriented description.
   '''
   nameModel = AdaptedModel._getAdaptedReverseDictionary(enumOwningClass=QPagedPaintDevice, 
                                                      enumType=QPagedPaintDevice.PageSize) # !!! Paper/Page confusion
@@ -26,7 +37,8 @@ class Paper(object):
   This is NOT a binary relation, see Ledger and Tabloid
   In other words, two papers having different names have the same dimensions (if oriented narrow dimension vertical.)
   
-  Assert this includes every value from QPagedPaintDevice.PageSize enumerated type.
+  Assert this includes every value from QPagedPaintDevice.PageSize enumerated type, EXCEPT for Custom.
+  
   Assert every QSize has width < height (which differs from Qt.)
   Wrapper around QPagedPaintDevice.PageSize
   '''
@@ -83,19 +95,11 @@ class Paper(object):
     
     !!! But note that Qt returns paperSizeMM that reflects orientation, i.e. width can be > height
     '''
-    assert isinstance(paperSizeMM, QSizeF)
-    integralWidth = int(round(paperSizeMM.width()))
-    integralHeight = int(round(paperSizeMM.height()))
+    roundedSize = OrientedSize.roundedSize(sizeF=paperSizeMM)
+    if roundedSize is None:
+      return None
     
-    '''
-    May be Python type 'long', which QSize will not accept.
-    '''
-    try:
-      roundedSize = QSize(integralWidth, integralHeight )
-    except TypeError:
-      return None  # ugly premature return
-    
-    normalizedRoundedSize = cls._normalizedPaperSize(roundedSize)
+    normalizedRoundedSize = OrientedSize.normalizedSize(roundedSize)
     hashedNormalizedRoundedSize = (normalizedRoundedSize.width(), normalizedRoundedSize.height())
     #print(hashedNormalizedRoundedSize)
     try:
@@ -104,21 +108,9 @@ class Paper(object):
       print("KeyError in enumForPageSizeByMatchDimensions:", paperSizeMM.width(), ',', paperSizeMM.height())
       result = None
     return result
-  
-  @classmethod
-  def _normalizedPaperSize(cls, paperSize):
-    '''
-    Normalized means: QSize having width <= height
-    '''
-    assert isinstance(paperSize, QSize) # Algorithm would work for QSizeF
-    if paperSize.width() > paperSize.height():
-      result = QSize(paperSize.height(), paperSize.width())
-    else:
-      result = paperSize
-    assert isinstance(result, QSize)
-    return result
-  
     
+   
+  
   def __init__(self, paperEnum):
     '''
     Default: CustomPaper overrides: still has this attribute but is constant
@@ -134,6 +126,15 @@ class Paper(object):
   
   def __repr__(self):
     raise NotImplementedError, 'Deferred'
+  
+  def orientedDescription(self, orientation):
+    ''' Human readable description also oriented. '''
+    return " ".join(( self.name, OrientedSize.orientationName(orientation), self._orientedSizeString(orientation)))
+  
+  def _orientedSizeString(self, orientation):
+    " string for oriented size  "
+    size = self.integralOrientedSizeMM(orientation)
+    return str(size.width()) + 'x' + str(size.height()) + 'mm'
   
   
   def __eq__(self, other):
@@ -167,4 +168,14 @@ class Paper(object):
     return not self.isStandard
   
   
+  def integralOrientedSizeMM(self, orientation):
+    '''
+    QSize oriented.  Integer. Units mm
+    '''
+    # integralNormalSizeMM is property of subclass
+    result = OrientedSize.orientedSize(self.integralNormalSizeMM, orientation)
+    assert isinstance(result, QSize)
+    # Oriented does not imply normalized
+    # assert result.width() > result.height() or result.width() <= result.height()
+    return result
   
