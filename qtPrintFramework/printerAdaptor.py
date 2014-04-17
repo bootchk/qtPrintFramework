@@ -170,6 +170,8 @@ class PrinterAdaptor(QPrinter):
       assert self.paperSize() == QPagedPaintDevice.Custom
       size = OrientedSize.roundedSize(floatPaperDimensionsMM)
       if size is None:
+        # Rounding failed: Qt passed a long
+        # TODO Better to set to some non-zero default, or to emulate Qt's large size?
         result = CustomPaper(QSize(0,0))
       else:
         result = CustomPaper(integralOrientedSizeMM=size, orientation=self.orientation())
@@ -180,6 +182,16 @@ class PrinterAdaptor(QPrinter):
     !!! result.paperEnum might not agree with self.paperSize() because of the Qt bug.
     '''
     return result
+  
+  
+  def pageSetup(self):
+    '''
+    Reference to current PageSetup.
+    
+    Knows that printConverser owns a PageSetup
+    '''
+    return self.printConverser.pageSetup
+  
   
   def checkInvariantAndFix(self):
     '''
