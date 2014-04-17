@@ -26,7 +26,7 @@ class PrintConverser(QObject):
   
   This does NOT hide non-native/native distinction.  
   PrinterAdaptor also knows distinction, and dispatches to here.
-  TODO should this be two subclasses?  Then pageSetup could not be owned here.
+  FUTURE should this be two subclasses?  Then pageSetup could not be owned here.
   '''
   
   
@@ -71,7 +71,11 @@ class PrintConverser(QObject):
     super(PrintConverser, self).__init__()
     self.parentWidget = parentWidget
     
-    self.printerAdaptor = printerAdaptor  # TODO really need this here?
+    '''
+    PrinterAdaptor knows PrintConverser and vice versa (bidirectional link.)
+    See below, this is used in signal handlers.
+    '''
+    self.printerAdaptor = printerAdaptor
     
     '''
     self owns because self mediates use of it: every conversation
@@ -148,7 +152,7 @@ class PrintConverser(QObject):
     On Win, action PrintPDF comes here
     '''
     self.dump("NonNative print to")
-    # TODO
+    # TODO 'Win PrintPDF'
     # This dialog will be a file chooser with PageSetup?
     #self._showPrintRelatedDialogWindowModal(dialog)
     self._printerAdaptor = printerAdaptor

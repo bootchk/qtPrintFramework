@@ -25,9 +25,7 @@ class CustomPaper(Paper):
     self._portraitSizeMM = OrientedSize.portraitSizeMM(integralOrientedSizeMM, orientation)
 
     
-  def __repr__(self):
-    ''' Human readable description'''
-    return self.name + " Unknown size"
+  # Inherited: def __repr__(self):
   
   
   @property

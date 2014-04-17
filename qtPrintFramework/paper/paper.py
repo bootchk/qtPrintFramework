@@ -34,12 +34,16 @@ class Paper(object):
   '''
   Dictionary from enum to integral QSize in mm.
   
-  This is NOT a binary relation, see Ledger and Tabloid
-  In other words, two papers having different names have the same dimensions (if oriented narrow dimension vertical.)
+  This IS a binary relation.
+  In other words, no two papers (having different names) have the same size.
+  
+  The sizes are 'defined size.'
+  Not assert every QSize is normalized, i.e. has width < height.
+  Two defined sizes are not the same even if they are the same form factor(pair of number in different order.)
+  See Ledger and Tabloid.
   
   Assert this includes every value from QPagedPaintDevice.PageSize enumerated type, EXCEPT for Custom.
   
-  Assert every QSize has width < height (which differs from Qt.)
   Wrapper around QPagedPaintDevice.PageSize
   '''
   sizeModel = { 
@@ -71,16 +75,20 @@ class Paper(object):
     # Comments tell whether they meet ANSI Standard, or are loose standards.
     QPagedPaintDevice.Executive  : QSize(191, 254), # ? Wiki says (184, 267)
     QPagedPaintDevice.Folio  : QSize(210, 330),     # Loose
-    QPagedPaintDevice.Ledger  : QSize(279, 432),    # Same as Tabloid. But differs from Qt reversed width and height
+    QPagedPaintDevice.Ledger  : QSize(432, 279),    # Same form as Tabloid.
     QPagedPaintDevice.Legal  : QSize(216, 356),     # Loose
     QPagedPaintDevice.Letter  : QSize(216, 279),    # ANSI
     QPagedPaintDevice.Tabloid  : QSize(279, 432),   # ANSI
     # QPagedPaintDevice.Custom  30  Unknown, or a user defined size.
     }
   
-  # Convert QSize to hashable tuple.
-  # TODO, but it is not a binary relation !!!
+  '''
+  Inverse dictionary
+  
+  Part of process is convert QSize to hashable tuple.
+  '''
   inverseSizeModel = {(v.width(), v.height()):k for k, v in sizeModel.items()}
+  assert len(inverseSizeModel) == len(sizeModel), "Binary relation"
   #print(Paper.inverseSizeModel)
     
     
@@ -125,7 +133,19 @@ class Paper(object):
   
   
   def __repr__(self):
-    raise NotImplementedError, 'Deferred'
+    ''' 
+    Human readable description including name, dimensions in mm. 
+    
+    !!! Not oriented
+    '''
+    return self.name + " " + self._definedSizeString
+  
+  
+  @property
+  def _definedSizeString(self):
+    " string for defined size  (not oriented.) "
+    size = self.integralNormalSizeMM
+    return str(size.width()) + 'x' + str(size.height()) + 'mm'
   
   def orientedDescription(self, orientation):
     ''' Human readable description also oriented. '''

@@ -21,9 +21,7 @@ class PageSetup(list):
   This defines the set of attributes, their labels and models.
   Currently, we omit margins attribute of page setup.
   
-  TODO we are persisting only the enum of a paper.
-  For a CustomPaper, we don't persist the user's choice of size for the Custom paper.
-  It might be better (as UI) to persist that also.
+  For a CustomPaper, we DO persist user's choice of size for the Custom paper.
   
   Responsibilities:
   - iterate PageAttributes (which are editable)
@@ -83,6 +81,7 @@ class PageSetup(list):
     
     paperName orientationName orientedDimensions
     e.g. 'A4 Landscape 297x219mm'
+    e.g. 'Custom Portrait 640x480mm'
     '''
     ## return ','.join((str(self.paper), str(self.orientation)))
     return self.paper.orientedDescription(self.orientation)
@@ -127,7 +126,7 @@ class PageSetup(list):
     self.paper = printerAdaptor.paper()
     self.orientation = printerAdaptor.orientation()
     self.toControlView()
-    self.toSettings()   # TODO optimization: only if non-native
+    self.toSettings()   # FUTURE optimization: only if non-native
     
     
   def toPrinterAdaptor(self, printerAdaptor):
@@ -147,16 +146,21 @@ class PageSetup(list):
     
     printerAdaptor.setOrientation(self.orientation)
     
-    # Set using overloaded setPaperSize(QSizeF, units) to ensure equality 
+    # Even a Custom paper has a size, even if it is defaulted.
+    newPaperSizeMM = QSizeF(self.paper.integralOrientedSizeMM(self.orientation))
+    assert newPaperSizeMM.isValid()
+    # use overload QPrinter.setPaperSize(QPagedPaintDevice.PageSize)
+    printerAdaptor.setPaperSize(newPaperSizeMM, QPrinter.Millimeter)
+    
+    '''
+    Also set paper by enum.  Why do we need this is additon to the above?
+    Because floating point errors in some versions of Qt, 
+    setting paperSize by a QSizeF does not always have the intended effect on enum.
+    '''
     if self.paper.isCustom :
-      # Custom paper has unknown QSize
-      # Illegal to call setPaperSize(QPrinter.Custom), but this has intended effect
-      printerAdaptor.setPaperSize(QSizeF(0,0), QPrinter.Millimeter) 
+      # Illegal to call setPaperSize(QPrinter.Custom), but the above has intended effect
+      pass
     else:
-      # use overload QPrinter.setPaperSize(QPagedPaintDevice.PageSize)
-      # TODO why setPaperSize in Millimeter?  it seems to set enum to Custom?
-      # TODO do we need both of these?
-      printerAdaptor.setPaperSize(QSizeF(self.paper.integralOrientedSizeMM(self.orientation)), QPrinter.Millimeter)
       printerAdaptor.setPaperSize(self.paper.paperEnum)
     
     '''

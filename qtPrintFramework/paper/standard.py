@@ -12,20 +12,7 @@ class StandardPaper(Paper):
   - supported across platform by Qt
   '''
   
-  def __repr__(self):
-    ''' 
-    Human readable description including name, dimensions in mm. 
-    
-    !!! Not oriented
-    '''
-    return self.name + " " + self._normalSizeString
-
-    
-  @property
-  def _normalSizeString(self):
-    " string for normalized size  "
-    size = self.integralNormalSizeMM
-    return str(size.width()) + 'x' + str(size.height()) + 'mm'
+  # Inherited def __repr__(self):
   
   
   @property
@@ -39,11 +26,6 @@ class StandardPaper(Paper):
   '''
   paperEnum attribute inherited
   '''
-  
-  '''
-  Only StandardPaper has size.
-  '''
-  
   
   
   @property

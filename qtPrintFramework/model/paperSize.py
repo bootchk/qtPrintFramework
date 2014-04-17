@@ -18,9 +18,8 @@ class AdaptedPaperSizeModel(AdaptedSortedModel):  # !!! Sorted
     
     A current printer might support a different set.
     Typically a subset.
-    When a superset: Custom?
     
-    TODO del Custom
+    !!! Custom is typically in model, but is special.
     '''
     self.values = AdaptedSortedModel._getAdaptedDictionary(enumOwningClass=QPagedPaintDevice, 
                                                      enumType=QPagedPaintDevice.PageSize) # !!! Paper/Page confusion

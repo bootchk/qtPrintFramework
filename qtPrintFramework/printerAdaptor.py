@@ -56,10 +56,10 @@ class PrinterAdaptor(QPrinter):
     - necessary on Win if you need that capability, but it cannot be integrated with the native Win Print dialog
     - is partially used on Linux by Qt (is visible in Qt Print dialog but QPageSetupDialog fails.)
     
-    In other words, if you pass a non-native printer (outputFormat == PDF):
+    In other words, if you pass a non-native QPrinter (outputFormat == PDF):
           QPrintDialog  QPageSetupDialog
     OSX:   fail          fail
-    Win:   ?              ?        TODO not determined yet, but probably fail
+    Win:   fail          fail
     Linux: work          fail
     
     '''
@@ -84,7 +84,7 @@ class PrinterAdaptor(QPrinter):
     The conversation if accepted may include a change in self's state (user chose a different printer)
     AND a change in state of the adapted printer (user chose a different paper, etc.)
     
-    TODO on any platforms, can user choose different printer during page setup?
+    On some platforms, user CAN choose different printer during page setup.
     '''
     
     
@@ -217,11 +217,12 @@ class PrinterAdaptor(QPrinter):
     
     Units DevicePixel
     '''
-    # TODO If paper is Custom, this is not from the paper,
-    # but from whatever the app sets on the printerAdaptor.
-    # If app fails to do that, I'm not sure if this is well-defined.
-    # Some native print subsystems may define Custom paper's
-    # but Qt may be punting in other situations.   Need to clarify this.
+    '''
+    If paper is Custom, data is flowing not from a defined paper,
+    but from user using platform native dialog through printerAdaptor,
+    or in some cases, a default size (this framework punts.)
+    Qt may be punting in other situations.
+    '''
     return self.pageRect()  # Delegate to QPrinter
   
   @property

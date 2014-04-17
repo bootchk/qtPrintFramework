@@ -35,16 +35,14 @@ class OrientedSize(object):
   def normalizedSize(cls, size):
     '''
     Normalized means: QSize having width <= height
-    # TODO copy
-    # TODO use transpose
     '''
     assert isinstance(size, QSize) # Algorithm would work for QSizeF
     if size.width() > size.height():
-      result = size.transposed()
+      result = size.transposed()  
     else:
       result = copy(size)
     assert isinstance(result, QSize)
-    assert not result is size
+    assert not result is size,  'returns a new object'
     return result
   
   
