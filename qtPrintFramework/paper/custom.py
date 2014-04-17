@@ -22,6 +22,7 @@ class CustomPaper(Paper):
     Is NOT an assertion that size is normalized.
     '''
     assert isinstance(integralOrientedSizeMM, QSize)
+    assert orientation == 0 or orientation == 1
     self._portraitSizeMM = OrientedSize.portraitSizeMM(integralOrientedSizeMM, orientation)
 
     

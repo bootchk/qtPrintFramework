@@ -241,11 +241,15 @@ class PageSetup(list):
   When dialog is accepted or canceled, view and model are made equal again.
   '''
   def toControlView(self):
+    """
     if self.paper.paperEnum == QPrinter.Custom:
       # Not allow Custom into dialog
       self[0].setValue(0)
     else:
       self[0].setValue(self.paper.paperEnum)
+    """
+    # Allow Custom
+    self[0].setValue(self.paper.paperEnum)
     self[1].setValue(self.orientation)
     assert self.isModelEqualView()
     
@@ -296,16 +300,15 @@ class PageSetup(list):
     Comparison of dimensions is epsilon (one is integer, one is float.
     Comparison of dimensions is unoriented (usually, width < height, but not always, Tabloid/Ledger).
     '''
-    # partialResult holds for both Custom and StandardPaper
+    # partialResult: enums and orientation
     partialResult = self.paper.paperEnum == printerAdaptor.paperSize() \
           and self.orientation == printerAdaptor.orientation()
     
-    if self.paper.isCustom:
-      result = partialResult
-      # CustomPaper has no size to compare.
-      print("printerAdaptor has Custom paper size:", printerAdaptor.paperSizeMM.width(), ',', printerAdaptor.paperSizeMM.height())
-    else: 
-      result = partialResult and self.paper.isOrientedSizeEpsilonEqual(self.orientation, printerAdaptor.paperSizeMM)
+    # Compare sizes.  All Paper including Custom has a size.
+    sizeResult = partialResult and self.paper.isOrientedSizeEpsilonEqual(self.orientation, printerAdaptor.paperSizeMM)
+    
+    result = partialResult and sizeResult
+      
       
     if not result:
       print('isStronglyEqualPrinterAdaptor returns False')
