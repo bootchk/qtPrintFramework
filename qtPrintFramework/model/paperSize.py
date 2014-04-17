@@ -3,10 +3,10 @@
 
 from PyQt5.QtGui import QPagedPaintDevice # !! Not in QtPrintSupport
 
-from qtPrintFramework.model.adaptedModel import AdaptedModel
+from qtPrintFramework.model.adaptedModel import AdaptedSortedModel
 
 
-class AdaptedPaperSizeModel(AdaptedModel):
+class AdaptedPaperSizeModel(AdaptedSortedModel):  # !!! Sorted
   '''
   '''
     
@@ -22,7 +22,7 @@ class AdaptedPaperSizeModel(AdaptedModel):
     
     TODO del Custom
     '''
-    self.values = AdaptedModel._getAdaptedDictionary(enumOwningClass=QPagedPaintDevice, 
+    self.values = AdaptedSortedModel._getAdaptedDictionary(enumOwningClass=QPagedPaintDevice, 
                                                      enumType=QPagedPaintDevice.PageSize) # !!! Paper/Page confusion
 
 

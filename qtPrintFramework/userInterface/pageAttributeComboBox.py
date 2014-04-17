@@ -31,7 +31,10 @@ class PageAttributeComboBox(QComboBox):
     
     QComboBox.__init__(self)
     self.model = model
-    self.addItems(list(model.values.keys()))
+    
+    ### WAS (unsorted): self.addItems(list(model.values.keys()))
+    self.addItems(model.keys())
+
     
     # connect adapted widget signal to adapter
     # !!! connecting to str type signal
@@ -52,7 +55,9 @@ class PageAttributeComboBox(QComboBox):
     Implemented below (not here) because setCurrentIndex()
     emits a signal which below we re emit as valueChanged.
     '''
+    #print("setValue", newValue)
     self.setCurrentIndex( self._indexOfValue(newValue) )
+    
   
   
   def value(self):
@@ -95,7 +100,8 @@ class PageAttributeComboBox(QComboBox):
     # searchValue is an enum value or None, and None can be a value in dictionary
     i = 0
     foundKey = False
-    for _, value in self.model.values.items():
+    ## WAS (unsorted) for _, value in self.model.values.items():
+    for _, value in self.model.items():
       #print searchValue, value
       # if searchValue is None and None is in dictionary, or searchValue == value
       if value is searchValue or value == searchValue:  # !!! is, not ==, to match None

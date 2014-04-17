@@ -1,8 +1,7 @@
-'''
-'''
+
 import sys
 
-from PyQt5.QtWidgets import QDialog, QDialogButtonBox, QVBoxLayout, QLabel # QWidget, QScrollArea, QLabel
+from PyQt5.QtWidgets import QDialog, QDialogButtonBox, QVBoxLayout, QLabel
 
 from qtPrintFramework.userInterface.pageSetupForm import PageSetupForm
 
@@ -13,11 +12,16 @@ class PrinterlessPageSetupDialog(QDialog):
   An editor (view/controller) for PageSetup model.
   
   Needed because QPageSetupDialog 'cannot be used with non-native printers.' 
-  i.e. a PDFWriter when Qt is in charge,
-  or native printer driver to PDF (when OSX is in charge?)
-  or native printer driver to XPS (when Win is in charge?)
+  i.e. a PDFWriter when Qt is in charge, on Linux and Win.
+  
+  Some platforms have native print drivers that are printerless i.e. to-file.
+  This dialog does NOT apply:
+  OSX : PDF
+  Win : XPS
   
   Should look similar to QPageSetupDialog.
+  
+  For now, this omits margins as an element of PageSetup.
   '''
   
   def __init__(self, pageSetup=None, parentWidget=None):
@@ -26,7 +30,7 @@ class PrinterlessPageSetupDialog(QDialog):
     # Layout components
     dialogLayout = QVBoxLayout()
     
-    title = 'Printerless Page Setup'
+    title = 'Page Setup PDF'
     if sys.platform.startswith('darwin'):
       # GUI sheet has no title bar
       dialogLayout.addWidget(QLabel(title))

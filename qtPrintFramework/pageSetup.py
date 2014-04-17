@@ -245,6 +245,7 @@ class PageSetup(list):
     self[1].setValue(self.orientation)
     assert self.isModelEqualView()
     
+  
   def fromControlView(self):
     ''' 
     NonNative PageSetup Dialog was accepted.  Capture values from view to model.
@@ -268,8 +269,11 @@ class PageSetup(list):
   '''
   def isModelEqualView(self):
     # allow one disparity: self is Custom and view is A4.  See toControlView.
-    return ( self.paper.paperEnum == self[0].value or self.paper.paperEnum == QPrinter.Custom and self[0].value == 0) \
+    result = ( self.paper.paperEnum == self[0].value or self.paper.paperEnum == QPrinter.Custom and self[0].value == 0) \
           and self.orientation == self[1].value
+    if not result:
+      print(self.paper, self.orientation, self[0].value, self[1].value)
+    return result
   
   def isEqualPrinterAdaptor(self, printerAdaptor):
     '''
