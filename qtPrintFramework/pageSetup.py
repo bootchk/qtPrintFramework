@@ -127,7 +127,7 @@ class PageSetup(list):
     '''
     self.paper = printerAdaptor.paper()
     self.orientation = printerAdaptor.orientation()
-    if self.paper.isCustom():
+    if self.paper.isCustom:
       # capture size chosen by user, say in native Print dialog
       integralOrientedSizeMM = OrientedSize.roundedSize(sizeF=printerAdaptor.paperSizeMM)
       self.paper.setSize(integralOrientedSizeMM = integralOrientedSizeMM, 
