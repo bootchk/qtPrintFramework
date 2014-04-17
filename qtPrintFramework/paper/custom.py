@@ -23,7 +23,8 @@ class CustomPaper(Paper):
     '''
     assert isinstance(integralOrientedSizeMM, QSize)
     assert orientation == 0 or orientation == 1
-    self._portraitSizeMM = OrientedSize.portraitSizeMM(integralOrientedSizeMM, orientation)
+    self.setSize(integralOrientedSizeMM, orientation)
+    ## WAS, EQUIVALENT: self._portraitSizeMM = OrientedSize.portraitSizeMM(integralOrientedSizeMM, orientation)
 
     
   # Inherited: def __repr__(self):
@@ -49,6 +50,16 @@ class CustomPaper(Paper):
   paperEnum attribute inherited
   '''
 
+  def setSize(self, integralOrientedSizeMM, orientation):
+    '''
+    Set self size by orientedIntegralSize, orientation.
+    
+    A user can set size of Custom paper via native Print dialog.
+    Also used to init a Custom paper when user uses non-native PageSetup dialog.
+    '''
+    self._portraitSizeMM = OrientedSize.portraitSizeMM(integralOrientedSizeMM, orientation)
+    
+  
   @property
   def integralNormalSizeMM(self):
     '''

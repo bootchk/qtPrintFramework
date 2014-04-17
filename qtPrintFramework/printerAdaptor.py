@@ -172,7 +172,8 @@ class PrinterAdaptor(QPrinter):
       if size is None:
         # Rounding failed: Qt passed a long
         # TODO Better to set to some non-zero default, or to emulate Qt's large size?
-        result = CustomPaper(QSize(0,0))
+        print("Rounding failed, setting CustomPaper to default size.")
+        result = CustomPaper(CustomPaper.defaultSize(), orientation=self.orientation)
       else:
         result = CustomPaper(integralOrientedSizeMM=size, orientation=self.orientation())
     else:
@@ -245,7 +246,7 @@ class PrinterAdaptor(QPrinter):
   @property
   def paperSizeMM(self):
     '''
-    QSizeF of paper (usually larger than printablePageRect.)
+    QSizeF of oriented paper (usually larger than printablePageRect.)
     Units mm.
     Implementation: call an overloaded QPrinter method.
     '''

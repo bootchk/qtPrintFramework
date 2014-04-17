@@ -10,6 +10,8 @@ from qtPrintFramework.paper.custom import CustomPaper
 from qtPrintFramework.pageAttribute import PageAttribute
 from qtPrintFramework.model.paperSize import PaperSizeModel # singleton
 from qtPrintFramework.model.pageOrientation import PageOrientationModel # singleton
+from qtPrintFramework.orientedSize import OrientedSize
+
 
 
 class PageSetup(list):
@@ -125,6 +127,13 @@ class PageSetup(list):
     '''
     self.paper = printerAdaptor.paper()
     self.orientation = printerAdaptor.orientation()
+    if self.paper.isCustom():
+      # capture size chosen by user, say in native Print dialog
+      integralOrientedSizeMM = OrientedSize.roundedSize(sizeF=printerAdaptor.paperSizeMM)
+      self.paper.setSize(integralOrientedSizeMM = integralOrientedSizeMM, 
+                         orientation=self.orientation)
+    # else size of paper is standard.
+                          
     self.toControlView()
     self.toSettings()   # FUTURE optimization: only if non-native
     
