@@ -81,3 +81,15 @@ class OrientedSize(object):
       else:
           return 'Landscape'
 
+
+  @classmethod
+  def areSizesEpsilonEqual(cls, size1, size2):
+    '''
+    Are two sizes equal to within a small epsilon.
+    i.e. deal with floating point imprecision.
+    '''
+    result = abs(size1.width() - size2.width()) < 0.5 \
+            and abs(size1.height() - size2.height()) < 0.5
+    return result
+  
+  

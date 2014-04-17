@@ -1,5 +1,5 @@
 
-from PyQt5.QtCore import QSize
+from PyQt5.QtCore import QSize, QSizeF
 from PyQt5.QtGui import QPagedPaintDevice  # !! Not in QtPrintSupport
 
 
@@ -197,5 +197,29 @@ class Paper(object):
     assert isinstance(result, QSize)
     # Oriented does not imply normalized
     # assert result.width() > result.height() or result.width() <= result.height()
+    return result
+  
+  
+  
+  '''
+  Tests for epsilon equality.
+  
+  Oriented and Normal are two opposing choices:
+  Oriented: width may be greater than height.
+  Normal: width less than or equal to height.
+  Caller must insure the passed size has the same property, oriented or normal.
+  '''
+  
+  def isOrientedSizeEpsilonEqual(self, orientation, sizeF):
+    assert isinstance(sizeF, QSizeF)  # and is millimeter units
+    integralOrientedSize = self.integralOrientedSizeMM(orientation)
+    result = OrientedSize.areSizesEpsilonEqual(integralOrientedSize, sizeF)
+    return result
+  
+  
+  def isNormalSizeEpsilonEqual(self, sizeF):
+    assert isinstance(sizeF, QSizeF)  # and is millimeter units
+    integralSize = self.integralNormalSizeMM
+    result = OrientedSize.areSizesEpsilonEqual(integralSize, sizeF)
     return result
   
