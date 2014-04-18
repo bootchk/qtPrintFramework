@@ -378,3 +378,14 @@ class PrintConverser(QObject):
       # self.setPaperSize(paper.paperEnum)
       self.pageSetup.toPrinterAdaptor(printerAdaptor=self.printerAdaptor)
 
+
+  '''
+  Exported but delegated methods.
+  To hide internal chains of delegation.
+  '''
+  @property
+  def printablePageSize(self):
+    return self.printerAdaptor.printablePageSize
+  
+  def paper(self):
+    return self.printerAdaptor.paper()
