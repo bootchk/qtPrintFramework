@@ -140,6 +140,25 @@ class Paper(object):
     '''
     return self.name + " " + self._definedSizeString
   
+  def __eq__(self, other):
+    '''
+    Two instances are equal if they have the same value from enum QPagedPaintDevice.PageSize
+    AND if they are both custom, they also have equal portrait sizes.
+    
+    An instance of Paper represents a user choice.  There may be many instances.
+    Without implementing this, == returns False for separate instances.
+    
+    !!! This compares portrait size.
+    Usually caller already knows the orientation is equal.
+    Used to determine whether pageSetup has changed.
+    '''
+    if not self.isCustom:
+      result = self.paperEnum == other.paperEnum
+    else:
+      result = self.paperEnum == other.paperEnum \
+              and self.hasEqualSizeTo(other)
+    return result
+
   
   @property
   def _definedSizeString(self):
@@ -157,13 +176,7 @@ class Paper(object):
     return str(size.width()) + 'x' + str(size.height()) + 'mm'
   
   
-  def __eq__(self, other):
-    '''
-    Two instances are equal if they have the same value from enum QPagedPaintDevice.PageSize.
-    An instance of Paper represents a user choice.  There may be many instances.
-    Without implementing this, == returns False for separate instances.
-    '''
-    return self.paperEnum == other.paperEnum
+  
   
   
   @property

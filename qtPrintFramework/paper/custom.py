@@ -78,6 +78,9 @@ class CustomPaper(Paper):
     '''
     return False
 
-  
+
+  def hasEqualSizeTo(self, other):
+    result = self.integralNormalSizeMM == other.integralNormalSizeMM
+    return result
   
   
