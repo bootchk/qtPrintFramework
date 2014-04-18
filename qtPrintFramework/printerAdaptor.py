@@ -1,5 +1,6 @@
 
 
+from PyQt5.QtCore import QSize
 from PyQt5.QtPrintSupport import QPrinter
 from PyQt5.QtGui import QPagedPaintDevice  # !! Not in QtPrintSupport
 
@@ -146,7 +147,13 @@ class PrinterAdaptor(QPrinter):
   
   @property
   def printablePageSize(self):
-    return self.printablePageRect().size()
+    '''
+    QSize of printable rect.  Units DevicePixel
+    '''
+    result = self.printablePageRect().size()
+    assert isinstance(result, QSize)
+    # !!! not ensuring it isValid() and not isEmpty()
+    return result
   
   
   @property

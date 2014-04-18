@@ -16,13 +16,40 @@ It is useful for:
 - understanding the Qt print architecture.
 - testing Qt print on different platforms that Qt supports.
 
-Contributes (hides these warts):
+Contributes
+-----------
+
+ Hides these warts:
 - Qt's QPrintDialog and QPageSetupDialog cannot be used for non-native printer, some platforms
 - the Win platform has no native support for printing PDF
 - Qt versions before 5.3 return wrong PaperSize on OSX Bug TODO
+- native print dialog lets user specify an invalid Custom paper (too small to print.)
 
 These warts are not necessarily the fault of Qt:
 it is difficult to adapt the print architectures of diverse platforms.
+
+This framework also encapsulates a print subsystem.
+It emits print-related signals.
+
+This framework does NOT let user specify Custom paper for PDF.
+(Qt is still too buggy for that.)
+The native print dialog of Qt, in some versions, still shows that:
+when user chooses Custom for a PDF printer, the height and width boxes are disabled
+and the dialog returns an empty page size.
+
+
+GUI considerations for PageSetup
+--------------------------------
+
+Having a PageSetup action (separate from a Print action) is discouraged by some designers.
+(For example, the Apple HIG discourages it.)
+Yet some users want the flexibility to PageSetup before Print.
+Many apps may show a page.  A user may want to configure the page before printing.
+If a Print dialog does not let you apply page changes without printing,
+then users are forced to print (to trash) just to change page attributes.
+
+
+
 
 Attributes:
 - use cases work on all platforms

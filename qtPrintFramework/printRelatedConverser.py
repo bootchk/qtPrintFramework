@@ -5,6 +5,7 @@ from copy import copy
 
 from PyQt5.QtCore import QObject
 from PyQt5.QtPrintSupport import QPageSetupDialog, QPrintDialog
+from PyQt5.QtWidgets import QMessageBox
 
 from PyQt5.QtCore import pyqtSignal as Signal
 
@@ -22,12 +23,18 @@ class PrintConverser(QObject):
   - print
   - page setup
   
-  Knows parentWidget of dialogs.
-  Hides modality of dialogs.
+  Knows parentWidget of dialogs.  Hides modality of dialogs.
   
-  This does NOT hide non-native/native distinction.  
-  PrinterAdaptor also knows distinction, and dispatches to here.
-  FUTURE should this be two subclasses?  Then pageSetup could not be owned here.
+  Knows attributes of printer and page setup: delegates.
+  
+  Hides non-native/native printer distinction: dispatches.
+  
+  Implementation:
+  owns a PageSetup and a PrinterAdaptor and Dialogs.
+  An app owns only a PrintConverser (usually wrapped in a PrintSession, not included here.)
+  
+  !!! There are no circular references, otherwise you get segfaults on app quit
+  because things are destroyed in the wrong order.
   '''
   
   
@@ -252,9 +259,21 @@ class PrintConverser(QObject):
     self._capturePageSetupChange()
     self.dump("Accept native print dialog on")
 
-    self.userAcceptedPrint.emit()
-    if config.DEBUG:
-      print("Emit userAcceptedPrint")
+    '''
+    Ensure printable rect is valid size (not negative) and not empty (both width and height zero.)
+    This may happen if user specifies a small Custom paper and large margins.
+    Handler for print requires this, else may throw an exception e.g. for division by zero.
+    '''
+    size = self.printerAdaptor.printablePageSize
+    if size.isValid() and not size.isEmpty():
+      self.userAcceptedPrint.emit()
+      if config.DEBUG:
+        print("Emit userAcceptedPrint")
+    else:
+      _ = QMessageBox.warning(self.parentWidget,
+                           "",  # title
+                           "Printable page size is too small to print.  Please increase paper size or decrease margins.")  # text
+      # Not emit
     
 
 
