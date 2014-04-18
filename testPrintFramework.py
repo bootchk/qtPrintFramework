@@ -11,7 +11,7 @@ import sys
 
 from PyQt5.QtCore import QCoreApplication
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget
-from qtPrintFramework.printerAdaptor import PrinterAdaptor
+from qtPrintFramework.printRelatedConverser import PrintConverser
         
     
 
@@ -22,19 +22,19 @@ class ButtonSet(QWidget):
   Widget having vertical layout of set of buttons.
   '''
   
-  def __init__(self, printerAdaptor):
+  def __init__(self, printConverser):
     super(ButtonSet, self).__init__()
     
     layout = QVBoxLayout()
   
     button = QPushButton("Setup page")
-    button.clicked.connect(printerAdaptor.conversePageSetup)
+    button.clicked.connect(printConverser.conversePageSetup)
     
     button2 = QPushButton("Print PDF")
-    button2.clicked.connect(printerAdaptor.conversePrintPDF)
+    button2.clicked.connect(printConverser.conversePrintPDF)
     
     button3 = QPushButton("Print")
-    button3.clicked.connect(printerAdaptor.conversePrint)
+    button3.clicked.connect(printConverser.conversePrint)
     
     layout.addWidget(button)
     layout.addWidget(button2)
@@ -48,20 +48,20 @@ class MainWindow(QMainWindow):
   def __init__(self):
     super(MainWindow, self).__init__()
     self.setGeometry(100, 100, 500, 40)
-    self.printerAdaptor = PrinterAdaptor(parentWidget=self)
-    self.connectPrinterAdaptorSignals(self.printerAdaptor)
-    self.setCentralWidget(ButtonSet(printerAdaptor=self.printerAdaptor))
+    self.printConverser = PrintConverser(parentWidget=self)
+    self.connectPrintConverserSignals()
+    self.setCentralWidget(ButtonSet(printConverser=self.printConverser))
     
     
-  def connectPrinterAdaptorSignals(self, printerAdaptor):
-    printerAdaptor.printConverser.userChangedPaper.connect(self.changedPaper)
+  def connectPrintConverserSignals(self):
+    self.printConverser.userChangedPaper.connect(self.changedPaper)
     # userChangedPrinter
     
-    printerAdaptor.printConverser.userAcceptedPrint.connect(self.acceptedPrint)
-    printerAdaptor.printConverser.userAcceptedPageSetup.connect(self.acceptedPageSetup)
-    printerAdaptor.printConverser.userAcceptedPrintPDF.connect(self.acceptedPrintPDF)
+    self.printConverser.userAcceptedPrint.connect(self.acceptedPrint)
+    self.printConverser.userAcceptedPageSetup.connect(self.acceptedPageSetup)
+    self.printConverser.userAcceptedPrintPDF.connect(self.acceptedPrintPDF)
     
-    printerAdaptor.printConverser.userCanceledPrintRelatedConversation.connect(self.canceled)
+    self.printConverser.userCanceledPrintRelatedConversation.connect(self.canceled)
     
   
   '''

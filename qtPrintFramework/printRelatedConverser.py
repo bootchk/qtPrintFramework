@@ -1,6 +1,6 @@
 '''
 '''
-
+import sys
 from copy import copy
 
 from PyQt5.QtCore import QObject
@@ -8,6 +8,7 @@ from PyQt5.QtPrintSupport import QPageSetupDialog, QPrintDialog
 
 from PyQt5.QtCore import pyqtSignal as Signal
 
+from qtPrintFramework.printerAdaptor import PrinterAdaptor
 from qtPrintFramework.userInterface.printerlessPageSetupDialog import PrinterlessPageSetupDialog
 from qtPrintFramework.pageSetup import PageSetup
 
@@ -67,28 +68,28 @@ class PrintConverser(QObject):
   
   
   
-  def __init__(self, parentWidget, printerAdaptor):
+  def __init__(self, parentWidget):
     super(PrintConverser, self).__init__()
     self.parentWidget = parentWidget
     
     '''
-    PrinterAdaptor knows PrintConverser and vice versa (bidirectional link.)
+    PrintConverser has-a PrinterAdaptor (unidirectional link.)
     See below, this is used in signal handlers.
     '''
-    self.printerAdaptor = printerAdaptor
+    self.printerAdaptor = PrinterAdaptor(parentWidget=parentWidget)
     
     '''
     self owns because self mediates use of it: every conversation
     
     PageSetup is initialized from settings OR printerAdaptor.
     '''
-    self.pageSetup = PageSetup(printerAdaptor)
+    self.pageSetup = PageSetup(self.printerAdaptor)
     
     '''
     Not assert that printerAdaptor equal PageSetup.
     Try to make them equal now.
     '''
-    self.pageSetup.toPrinterAdaptor(printerAdaptor)
+    self.pageSetup.toPrinterAdaptor(self.printerAdaptor)
     '''
     Still not assert that printerAdaptor equal PageSetup, since adapted printer might not support.
     Usually they are equal.  But user might have changed system default printer.
@@ -99,22 +100,88 @@ class PrintConverser(QObject):
       print(condition)
       print(self.printerAdaptor.description)
 
+
+  '''
+  Exported print related conversations (dispatch according to native/nonnative.)
+  '''
+      
+  def conversePageSetup(self):
+    '''
+    Start a Page Setup conversation
+    '''
+    if self.printerAdaptor.isAdaptingNative():
+      self._conversePageSetupNative()
+    else:
+      self._conversePageSetupNonNative()
+
+    
+    '''
+    Execution continues, but conversation might be ongoing (if window modal or modeless)
+    
+    Conversation might be canceled and self's state unchanged (no change in adapted printer, or in it's setup.)
+    The conversation if accepted may include a change in self's state (user chose a different printer)
+    AND a change in state of the adapted printer (user chose a different paper, etc.)
+    
+    On some platforms, user CAN choose different printer during page setup.
+    '''
+    
+    
+  def conversePrint(self):
+    '''
+    Start a print conversation.
+    
+    This understands differences by platform.
+    '''
+    if self.printerAdaptor.isAdaptingNative():
+      self._conversePrintNative()
+    else:
+      if True:
+        self._conversePrintNative()
+      else:
+        self._conversePrintNonNative()
+        
+    '''
+    Execution continues, but conversation might be ongoing (if window modal or modeless)
+    
+    Conversation might be canceled and self's state unchanged (no change in adapted printer.)
+    The conversation if accepted may include a change in self's state (user chose a different printer.)
+    '''
+  
+  
+  def conversePrintPDF(self):
+    '''
+    Start a print PDF conversation.
+    
+    Only necessary on Win, where native or Qt provided dialog does not offer choice to print PDF.
+    
+    Optional (shortcutting the PrintDialog) on other platforms.
+
+    Sets up self to print PDF.
+    
+    Conversation includes:
+    - user choice of paper?  If current printer is not PDF?
+    - user choice of file
+    '''
+    self._conversePrintNonNative()
+
+      
+      
   '''
   Page setup conversations
   '''
     
-  def conversePageSetupNonNative(self, printerAdaptor):
+  def _conversePageSetupNonNative(self):
     '''
     User our own dialog, which works with non-native printers (on some platforms?)
     '''
     self.dump("NonNative page setup to")
     dialog = PrinterlessPageSetupDialog(pageSetup=self.pageSetup, parentWidget=self.parentWidget)
-    self._showPrintRelatedDialogWindowModal(dialog, model=printerAdaptor, acceptSlot=self._acceptNonNativePageSetupSlot)
+    self._showPrintRelatedDialogWindowModal(dialog, acceptSlot=self._acceptNonNativePageSetupSlot)
     # execution continues but conversation not complete
     
     
     
-  def conversePageSetupNative(self, printerAdaptor):
+  def _conversePageSetupNative(self):
     '''
     Use QPageSetup dialog, which works with native printers.
     
@@ -124,29 +191,29 @@ class PrintConverser(QObject):
     '''
     self.dump("Native page setup to")
     
-    assert printerAdaptor.isValid()
-    assert printerAdaptor.isAdaptingNative()
+    assert self.printerAdaptor.isValid()
+    assert self.printerAdaptor.isAdaptingNative()
     assert self.parentWidget is not None
     
-    printerAdaptor.checkInvariantAndFix()
-    dialog = QPageSetupDialog(printerAdaptor, parent=self.parentWidget)
-    self._showPrintRelatedDialogWindowModal(dialog, model=printerAdaptor, acceptSlot=self._acceptNativePageSetupSlot)
+    self.checkInvariantAndFix()
+    dialog = QPageSetupDialog(self.printerAdaptor, parent=self.parentWidget)
+    self._showPrintRelatedDialogWindowModal(dialog, acceptSlot=self._acceptNativePageSetupSlot)
     
     
   '''
   Print
   '''
     
-  def conversePrintNative(self, printerAdaptor):
+  def _conversePrintNative(self):
     
     self.dump("Native print to")
     
-    printerAdaptor.checkInvariantAndFix()
-    dialog = QPrintDialog(printerAdaptor, parent=self.parentWidget)
-    self._showPrintRelatedDialogWindowModal(dialog, model=printerAdaptor, acceptSlot=self._acceptNativePrintSlot)
+    self.checkInvariantAndFix()
+    dialog = QPrintDialog(self.printerAdaptor, parent=self.parentWidget)
+    self._showPrintRelatedDialogWindowModal(dialog, acceptSlot=self._acceptNativePrintSlot)
     
     
-  def conversePrintNonNative(self, printerAdaptor):
+  def _conversePrintNonNative(self):
     '''
     Print to a non-native printer.
     On Win, action PrintPDF comes here
@@ -155,7 +222,6 @@ class PrintConverser(QObject):
     # TODO 'Win PrintPDF'
     # This dialog will be a file chooser with PageSetup?
     #self._showPrintRelatedDialogWindowModal(dialog)
-    self._printerAdaptor = printerAdaptor
     self._acceptNonNativePrintSlot() # TEMP assume accepted
 
 
@@ -163,13 +229,12 @@ class PrintConverser(QObject):
   Common code, and signal handlers.
   '''
 
-  def _showPrintRelatedDialogWindowModal(self, dialog, model, acceptSlot):
+  def _showPrintRelatedDialogWindowModal(self, dialog, acceptSlot):
     '''
     Show a print related dialog in dialog mode:
     - appropriate for platform (window-modal)
     - appropriate for document-related actions (sheets on OSX.)
     '''
-    self._printerAdaptor = model  # remember for local use
     dialog.accepted.connect(acceptSlot)
     dialog.rejected.connect(self._cancelSlot)
     dialog.open() # window modal
@@ -289,5 +354,27 @@ class PrintConverser(QObject):
     if config.DEBUG:
       print("Emit userCanceledPrintRelatedConversation")
     
+  
+  def checkInvariantAndFix(self):
+    '''
+    Check invariant (about QPrinter.paperSize() == framework's local Paper.paperEnum)
+    and fix it if necessary.
+    In other words, QPrinter is supposed to stay in sync with native,
+    and qtPrintFramework is supposed to stay in sync with QPrinter.
+    But qtPrintFramework can fix bugs in QPrinter.
     
+    This ameliorates another bug on the OSX platform: PageSetup not persistent.
+    (After one Print conversation, a printerAdaptor loses its page setup.)
+    '''
+    
+    if not self.pageSetup.isStronglyEqualPrinterAdaptor(self.printerAdaptor):
+      paper = self.pageSetup.paper
+      print('>>>> Fixing invariant by setting paperSize on QPrinter', str(paper))
+      # self.setPaperSize(paper.paperEnum)
+      self.pageSetup.toPrinterAdaptor(printerAdaptor=self.printerAdaptor)
+    if sys.platform.startswith('darwin'):
+      paper = self.pageSetup.paper
+      print('>>>> Darwin: always set paperSize on QPrinter', str(paper))
+      # self.setPaperSize(paper.paperEnum)
+      self.pageSetup.toPrinterAdaptor(printerAdaptor=self.printerAdaptor)
 

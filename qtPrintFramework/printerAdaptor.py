@@ -1,8 +1,5 @@
 
 
-import sys
-
-from PyQt5.QtCore import QSize
 from PyQt5.QtPrintSupport import QPrinter
 from PyQt5.QtGui import QPagedPaintDevice  # !! Not in QtPrintSupport
 
@@ -10,7 +7,7 @@ from qtPrintFramework.orientedSize import OrientedSize
 from qtPrintFramework.paper.paper import Paper
 from qtPrintFramework.paper.standard import StandardPaper
 from qtPrintFramework.paper.custom import CustomPaper
-from qtPrintFramework.printRelatedConverser import PrintConverser
+
 
 
 class PrinterAdaptor(QPrinter):
@@ -34,7 +31,7 @@ class PrinterAdaptor(QPrinter):
   
   def __init__(self, parentWidget):
     super(PrinterAdaptor, self).__init__()
-    self.printConverser = PrintConverser(parentWidget=parentWidget, printerAdaptor=self)
+    
     
     
   def isAdaptingNative(self):
@@ -65,67 +62,8 @@ class PrinterAdaptor(QPrinter):
     '''
     return not self.outputFormat() == QPrinter.PdfFormat
   
-  
-  
-  def conversePageSetup(self):
-    '''
-    Start a Page Setup conversation
-    '''
-    if self.isAdaptingNative():
-      self.printConverser.conversePageSetupNative(printerAdaptor=self)
-    else:
-      self.printConverser.conversePageSetupNonNative(printerAdaptor=self)
 
     
-    '''
-    Execution continues, but conversation might be ongoing (if window modal or modeless)
-    
-    Conversation might be canceled and self's state unchanged (no change in adapted printer, or in it's setup.)
-    The conversation if accepted may include a change in self's state (user chose a different printer)
-    AND a change in state of the adapted printer (user chose a different paper, etc.)
-    
-    On some platforms, user CAN choose different printer during page setup.
-    '''
-    
-    
-  def conversePrint(self):
-    '''
-    Start a print conversation.
-    
-    This understands differences by platform.
-    '''
-    if self.isAdaptingNative():
-      self.printConverser.conversePrintNative(printerAdaptor=self)
-    else:
-      if True:
-        self.printConverser.conversePrintNative(printerAdaptor=self)
-      else:
-        self.printConverser.conversePrintNonNative(printerAdaptor=self)
-        
-    '''
-    Execution continues, but conversation might be ongoing (if window modal or modeless)
-    
-    Conversation might be canceled and self's state unchanged (no change in adapted printer.)
-    The conversation if accepted may include a change in self's state (user chose a different printer.)
-    '''
-  
-  
-  def conversePrintPDF(self):
-    '''
-    Start a print PDF conversation.
-    
-    Only necessary on Win, where native or Qt provided dialog does not offer choice to print PDF.
-    
-    Optional (shortcutting the PrintDialog) on other platforms.
-
-    Sets up self to print PDF.
-    
-    Conversation includes:
-    - user choice of paper?  If current printer is not PDF?
-    - user choice of file
-    '''
-    self.printConverser.conversePrintNonNative(printerAdaptor=self)
-  
   
   @property
   def description(self):
@@ -136,7 +74,7 @@ class PrinterAdaptor(QPrinter):
     terms = ( "Name:" + self.printerName(),
               "isNative:"+ str(self.isAdaptingNative()),
               "Qt paper enum:"+ str(self.paperSize()),
-              "qtPFramework setup:"+ str(self.printConverser.pageSetup),
+              # "qtPFramework setup:"+ str(self.printConverser.pageSetup),
               # "printable rect:"+ str(self.printablePageRect()),
               "paper size MM:"+ str(self.paperSizeMM),
               "print rect MM:" + str(self.pageRect(QPrinter.Millimeter)))
@@ -184,38 +122,6 @@ class PrinterAdaptor(QPrinter):
     '''
     return result
   
-  
-  def pageSetup(self):
-    '''
-    Reference to current PageSetup.
-    
-    Knows that printConverser owns a PageSetup
-    '''
-    return self.printConverser.pageSetup
-  
-  
-  def checkInvariantAndFix(self):
-    '''
-    Check invariant (about QPrinter.paperSize() == framework's local Paper.paperEnum)
-    and fix it if necessary.
-    In other words, QPrinter is supposed to stay in sync with native,
-    and qtPrintFramework is supposed to stay in sync with QPrinter.
-    But qtPrintFramework can fix bugs in QPrinter.
-    
-    This ameliorates another bug on the OSX platform: PageSetup not persistent.
-    (After one Print conversation, a printerAdaptor loses its page setup.)
-    '''
-    
-    if not self.printConverser.pageSetup.isStronglyEqualPrinterAdaptor(self):
-      paper = self.printConverser.pageSetup.paper
-      print('>>>> Fixing invariant by setting paperSize on QPrinter', str(paper))
-      # self.setPaperSize(paper.paperEnum)
-      self.printConverser.pageSetup.toPrinterAdaptor(printerAdaptor=self)
-    if sys.platform.startswith('darwin'):
-      paper = self.printConverser.pageSetup.paper
-      print('>>>> Darwin: always set paperSize on QPrinter', str(paper))
-      # self.setPaperSize(paper.paperEnum)
-      self.printConverser.pageSetup.toPrinterAdaptor(printerAdaptor=self)
   
   
   '''
