@@ -67,17 +67,21 @@ class MainWindow(QMainWindow):
   '''
   Dummy postludes.
   These should do something: print, or appropriate processing, such as change visible page.
+  Missing: paint to printer
   '''
   def changedPaper(self):
+    print(">>>Page setup is", self.printConverser.pageSetup)
     pass
     
   def acceptedPrint(self):
+    print(">>>Printing to size", self.printConverser.printablePageSize)
     pass
     
   def acceptedPrintPDF(self):
     pass
     
   def acceptedPageSetup(self):
+    print(">>>Page setup is", self.printConverser.pageSetup)
     pass
     
   def canceled(self):

@@ -5,12 +5,12 @@ from copy import copy
 
 from PyQt5.QtCore import QObject
 from PyQt5.QtPrintSupport import QPageSetupDialog, QPrintDialog
-from PyQt5.QtWidgets import QMessageBox
 
 from PyQt5.QtCore import pyqtSignal as Signal
 
 from qtPrintFramework.printerAdaptor import PrinterAdaptor
 from qtPrintFramework.userInterface.printerlessPageSetupDialog import PrinterlessPageSetupDialog
+from qtPrintFramework.userInterface.warn import warn
 from qtPrintFramework.pageSetup import PageSetup
 
 import qtPrintFramework.config as config
@@ -147,7 +147,7 @@ class PrintConverser(QObject):
       else:
         self._conversePrintNonNative()
         
-    '''
+    '''You can setup
     Execution continues, but conversation might be ongoing (if window modal or modeless)
     
     Conversation might be canceled and self's state unchanged (no change in adapted printer.)
@@ -182,6 +182,11 @@ class PrintConverser(QObject):
     User our own dialog, which works with non-native printers (on some platforms?)
     '''
     self.dump("NonNative page setup to")
+    
+    # Do we need this warning? User will learn soon enough?
+    if self.pageSetup.paper.isCustom:
+      warn.pageSetupNotUsableOnCustomPaper()
+      
     dialog = PrinterlessPageSetupDialog(pageSetup=self.pageSetup, parentWidget=self.parentWidget)
     self._showPrintRelatedDialogWindowModal(dialog, acceptSlot=self._acceptNonNativePageSetupSlot)
     # execution continues but conversation not complete
@@ -270,9 +275,7 @@ class PrintConverser(QObject):
       if config.DEBUG:
         print("Emit userAcceptedPrint")
     else:
-      _ = QMessageBox.warning(self.parentWidget,
-                           "",  # title
-                           "Printable page size is too small to print.  Please increase paper size or decrease margins.")  # text
+      warn.pageTooSmall()
       # Not emit
     
 
@@ -368,7 +371,7 @@ class PrintConverser(QObject):
     - printerAdaptor still adapts same printer
     - pageSetup of adapted printer is unchanged.
     '''
-    self.pageSetup.toControlView()  # restore view to equal unchanged model
+    self.pageSetup.restoreViewToModel()
     self.userCanceledPrintRelatedConversation.emit()
     if config.DEBUG:
       print("Emit userCanceledPrintRelatedConversation")

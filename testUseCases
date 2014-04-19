@@ -5,17 +5,17 @@ A.  Page setup remembered between app sessions for paperless printer
 (Note that a system with a printer always remembers a real printer as the current printer?
 Such a system will not let you set a paperless printer as the default printer?)
 
-On a system with no printer (say a Linux box):
-1. Start app
-2. Choose Print
-  _ dialog offers only 'Print to PDF'
-3. Change paper of printer to (Legal, Landscape)
-4. Choose OK
-  _ (a real app) creates file
-5. Quit and restart app
-6. Choose PageSetup
-  _ shows the paperless printer PageSetup dialog
-  _ dialog show choices made above (Legal, Landscape) from previous session
+On a system with no printer (say Linux):
+  1. Start app
+  2. Choose Print
+    _ dialog offers only one choice for printer: 'Print to File (PDF)'
+  3. Change paper of printer to (Legal, Landscape)
+  4. Choose OK
+    _ PDF file is created with Legal, Landscape paper
+  5. Quit and restart app
+  6. Choose PageSetup
+    _ shows the paperless printer PageSetup dialog
+    _ dialog show choices made above (Legal, Landscape) from previous session
   
  
 B. Page setup for paperless printer remembered between File>Print invocations
@@ -26,17 +26,33 @@ D. File>Print PDF on Win platform
 
 E. PageSetup shows correct PaperSize chosen in native dialogs (Qt Bug before 5.3)
 
-F. Cannot choose custom paper size on paperless printer
 
-(A paperless printer, since it is all algorithm and no molecules, 
-could print any paper size you could dream of.
-But a paperless printer doesn't remember a choice of a range of custom paper sizes.
-Choosing 'Custom' might really mean 'let me specify a paper size.'
-It doesn't mean 'I have bought a special paper that I want this printerless file to understand.'
-But there is little real user benefit of offering that choice:
-since the paperless document is scaleable, users can view it at any size.
-There is no point in referencing it to a paper size that other viewers won't understand.
-So this framework does not attempt to tell a paperless printer a custom paper size.)
+F. Cannot choose Custom paper in Page Setup on paperless printer
+  1. Choose File>Print, choose PDF printer, specify a Custom paper, and print
+  2. Choose File>Page Setup
+    _ Get a warning: "Current paper is Custom.  Please setup another paper, or ..."
+  3. Choose OK
+    _ Warning closes
+    _ 'Page Setup PDF' dialog opens
+    _ 'Custom' is NOT a choice for 'Size'
+  4.  Choose 'Cancel'
+    _ current paper is still Custom
+  5. Repeat 1-3 but then select 'A4' paper and choose 'OK'
+    _ current paper is 'A4'
+   
+
+
+G. Custom paper of negative or zero size
+  1. Choose File>Print
+    _ dialog appears
+  2. Choose 'Print to File (PDF)' (which has a Custom paper.)
+  3. Choose 'Properties'
+  4. Select 'Custom' paper
+    _ Width and height boxes are enabled (Fails on Qt< 5.2?)
+  5. Enter zero for width and height, enter a positive number for margins
+  6. Choose 'Print' button
+    _ Warning "Printable page is too small.." appears
+    _ Nothing is printed
 
 
 

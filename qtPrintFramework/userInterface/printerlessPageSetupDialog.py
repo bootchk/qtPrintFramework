@@ -30,7 +30,7 @@ class PrinterlessPageSetupDialog(QDialog):
     # Layout components
     dialogLayout = QVBoxLayout()
     
-    title = 'Page Setup PDF'
+    title = self.tr('Page Setup PDF')
     if sys.platform.startswith('darwin'):
       # GUI sheet has no title bar
       dialogLayout.addWidget(QLabel(title))

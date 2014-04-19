@@ -1,0 +1,16 @@
+
+
+To refresh translations:
+>cd to this directory
+>pylupdate5 qtPrintFramework.pro
+(updates .ts files.)
+>linguist
+(open the .ts files and translate them)
+>lrelease5 qtPrintFramework.pro
+(generates new .qm files.)
+
+
+
+Now refresh the using apps resources
+(which should include the .qm files from qtPrintFramework).
+qtPrintFramework has a .qrc file (unused except as documentation.)

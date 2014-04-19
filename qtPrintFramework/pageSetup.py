@@ -12,6 +12,7 @@ from qtPrintFramework.model.paperSize import PaperSizeModel # singleton
 from qtPrintFramework.model.pageOrientation import PageOrientationModel # singleton
 from qtPrintFramework.orientedSize import OrientedSize
 
+import qtPrintFramework.config as config
 
 
 class PageSetup(list):
@@ -26,6 +27,8 @@ class PageSetup(list):
   For a CustomPaper, we DO persist user's choice of size for the Custom paper.
   
   Responsibilities:
+  - editable via our private PrinterlessPageSetupDialog
+    (user can also edit a 'the page setup" using a native dialog, but that comes here via PrinterAdaptor 
   - iterate PageAttributes (which are editable)
   - save/restore self to settings, so self persists with app, not with a printer
   - apply/get self to/from PrinterAdaptor
@@ -58,15 +61,18 @@ class PageSetup(list):
     self.orientation = PageOrientationModel.default()
     
     " Control/views"
-    self.append(PageAttribute(label="Size", model=PaperSizeModel))
-    self.append(PageAttribute(label="Orientation", model=PageOrientationModel)) # ('Portrait', 'Landscape')))
+    self.append(PageAttribute(label=config.i18ns["Size"],
+                              model=PaperSizeModel))
+    self.append(PageAttribute(label=config.i18ns["Orientation"], 
+                              model=PageOrientationModel))
     
     " Possibly change default model from settings."
     self.initializeModelFromSettings(getDefaultsFromPrinterAdaptor=printerAdaptor)
     # Not assert that printerAdaptor equals self yet.
     
-    " Ensure model equals view"
-    self.toControlView()
+    " Ensure model equals view "
+    # TODO only do this just before showing dialog
+    self.toControlViewExcludeCustom() # OR toControlView()
     assert self.isModelEqualView()
     
     '''
@@ -134,7 +140,7 @@ class PageSetup(list):
                          orientation=self.orientation)
     # else size of paper is standard.
                           
-    self.toControlView()
+    self.toControlViewExcludeCustom() # OR toControlView()
     self.toSettings()   # FUTURE optimization: only if non-native
     
     
@@ -250,17 +256,31 @@ class PageSetup(list):
   When dialog is accepted or canceled, view and model are made equal again.
   '''
   def toControlView(self):
-    """
-    if self.paper.paperEnum == QPrinter.Custom:
-      # Not allow Custom into dialog
-      self[0].setValue(0)
-    else:
-      self[0].setValue(self.paper.paperEnum)
-    """
     # Allow Custom
     self[0].setValue(self.paper.paperEnum)
     self[1].setValue(self.orientation)
     assert self.isModelEqualView()
+    
+    
+  def toControlViewExcludeCustom(self):
+    '''
+    To view, except if self is Custom,
+    select another default value in view.
+    (Before displaying view, we will warn the user that the view
+    does permit editing a Custom PageSetup.)
+    '''
+    if self.paper.paperEnum == QPrinter.Custom:
+      # Not allow Custom into dialog
+      self[0].setValue(0) # Typically A4 ?
+    else:
+      self[0].setValue(self.paper.paperEnum)
+    self[1].setValue(self.orientation)
+    assert self.isModelEqualView()
+
+
+  def restoreViewToModel(self):
+    # canceled edit
+    self.toControlViewExcludeCustom()
     
   
   def fromControlView(self):

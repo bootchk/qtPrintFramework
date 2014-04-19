@@ -1,6 +1,8 @@
 
 
-class AdaptedModel(object):
+from PyQt5.QtCore import QObject
+
+class AdaptedModel(QObject):  # for i18n
   '''
   ABC
   
@@ -19,6 +21,7 @@ class AdaptedModel(object):
   
   # Responsibility: have attribute 'values'
   def __init__(self):
+    super(AdaptedModel, self).__init__()
     self._createValues()  # call subclass
     
     

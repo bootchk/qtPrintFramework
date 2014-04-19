@@ -7,7 +7,7 @@ Released under license GPLv3
 
 Work in progress.
 
-This is a framework that wraps the Qt print architecture.
+This is a framework that encapsulates the Qt print architecture.
 
 It includes a small test app.
 
@@ -15,6 +15,15 @@ It is useful for:
 - a working component of an app
 - understanding the Qt print architecture.
 - testing Qt print on different platforms that Qt supports.
+
+
+When to use this framework
+--------------------------
+
+- you want a component with a simple API, that can mask Qt bugs and changes
+- you want PageSetup for non-native printers (PDF)
+- you want Print PDF for Win platform (TODO)
+
 
 Contributes
 -----------
@@ -28,34 +37,76 @@ Contributes
 These warts are not necessarily the fault of Qt:
 it is difficult to adapt the print architectures of diverse platforms.
 
-This framework also encapsulates a print subsystem.
-It emits print-related signals.
+This framework also emits print-related signals (unlike Qt.)
 
 This framework does NOT let user specify Custom paper for PDF.
 (Qt is still too buggy for that.)
-The native print dialog of Qt, in some versions, still shows that:
+The native print dialog of Qt, in some versions, shows that:
 when user chooses Custom for a PDF printer, the height and width boxes are disabled
 and the dialog returns an empty page size.
 
 
+
+
+ 
 GUI considerations for PageSetup
 --------------------------------
 
 Having a PageSetup action (separate from a Print action) is discouraged by some designers.
 (For example, the Apple HIG discourages it.)
+So if you don't want PageSetup action, you might not need this framework.
+But you might use this framework without using its PageSetup features.
+
 Yet some users want the flexibility to PageSetup before Print.
-Many apps may show a page.  A user may want to configure the page before printing.
-If a Print dialog does not let you apply page changes without printing,
+Many apps may show a page (not just at print time.)  
+A user may want to configure the page before printing.
+If a Print dialog does not let you apply page changes without printing (does Qt?)
 then users are forced to print (to trash) just to change page attributes.
 
 
+Custom paper
+------------
+
+Custom paper is rarely used, so it is low priority.
+
+Custom paper seems to be a source of many bugs in Qt,
+and is one of those 80/20% things: most of the effort for little benefit.
+
+A paperless printer, since it is all algorithm, could print any paper size you could dream of.
+But there is little benefit of offering that choice:
+since the paperless document is scaleable, users can view it at any size.
+There is no point in referencing a document to a custom paper size that other viewers don't understand.
+Would the hope be that a viewing user has that real, custom paper?
+
+OTH, some sizes such as 640x480 are an informal standard (for a size that looks good on the web.)
+But again, since PDF is scaleable, specifying such a size might only save the user one step: scaling the view.
+
+Does a printer device remember a choice of a range of custom paper sizes?
+Some printer devices fail to offer a choice of Custom.
+
+It seems like there is a bug in certain versions of Qt for setting a custom paper on a QPrinter.
+
+This framework:
+  - uses QPrintDialog, which does allow a custom paper size on PDF printer
+  - uses QPageSetupDialog on native printers (real printers, not PDF), which depending on the real printer
+    does allow a choice of custom paper
+  - for PDF, uses a framework 'Page Setup PDF' dialog, which does not allow you to choose Custom paper
+    (because of seeming bugs in setting the choice on PrinterAdaptor.  See PageSetup.toPrinterAdaptor.)
+So a user can use a Custom paper on real printers and PDF printers,
+but cannot use Page Setup dialog to specify it when the printer is PDF (only the Print dialog.)
 
 
-Attributes:
+
+Attributes of this framework
+----------------------------
+- simple API: create a PrintConverser, connect its signals, and call a few methods on it.
 - use cases work on all platforms
-- i18n (TODO)
+- i18n
 
-Use cases (GUI test sequences):
+
+Use cases (GUI test sequences)
+------------------------------
+
 - print to PDF file on all platforms
 	- OSX: Implemented by OSX
 	- Linux: Implemented by Qt inside QPrintDialog
@@ -63,7 +114,8 @@ Use cases (GUI test sequences):
 - PageSetup if no physical print device on system ( Paperless printer only.)
 - remembers current printer (may be Paperless printer: PDF or XPS) ???
 - remembers PageSetup of current printer if Paperless
-- PageSetup is a setting of the app, and is applied on app startup to Paperless printer only.
+- PageSetup is a setting of the app, and is applied on app startup to Paperless printer only (???)
+
 
 TODO explain this: I inconsistently call a NonNative printer a Paperless printer, meaning only 'no cellulose'
 Qt's notion of a NonNative printer is: native platform has no interaction with printer (typically PDF on Win)
