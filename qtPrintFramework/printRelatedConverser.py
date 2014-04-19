@@ -10,7 +10,7 @@ from PyQt5.QtCore import pyqtSignal as Signal
 
 from qtPrintFramework.printerAdaptor import PrinterAdaptor
 from qtPrintFramework.userInterface.printerlessPageSetupDialog import PrinterlessPageSetupDialog
-from qtPrintFramework.userInterface.warn import warn
+from qtPrintFramework.userInterface.warn import Warn
 from qtPrintFramework.pageSetup import PageSetup
 
 import qtPrintFramework.config as config
@@ -78,6 +78,7 @@ class PrintConverser(QObject):
   def __init__(self, parentWidget):
     super(PrintConverser, self).__init__()
     self.parentWidget = parentWidget
+    self.warn = Warn(parentWidget)
     
     '''
     PrintConverser has-a PrinterAdaptor (unidirectional link.)
@@ -185,7 +186,7 @@ class PrintConverser(QObject):
     
     # Do we need this warning? User will learn soon enough?
     if self.pageSetup.paper.isCustom:
-      warn.pageSetupNotUsableOnCustomPaper()
+      self.warn.pageSetupNotUsableOnCustomPaper()
       
     dialog = PrinterlessPageSetupDialog(pageSetup=self.pageSetup, parentWidget=self.parentWidget)
     self._showPrintRelatedDialogWindowModal(dialog, acceptSlot=self._acceptNonNativePageSetupSlot)
@@ -275,7 +276,7 @@ class PrintConverser(QObject):
       if config.DEBUG:
         print("Emit userAcceptedPrint")
     else:
-      warn.pageTooSmall()
+      self.warn.pageTooSmall()
       # Not emit
     
 
