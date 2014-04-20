@@ -131,7 +131,7 @@ class PageSetup(list):
     Copy values from printerAdaptor into self.
     And update controls (which are not visible, and are in parallel with native dialog controls.)
     '''
-    self.paper = printerAdaptor.paper()
+    self.paper = printerAdaptor.paper() # new instance
     self.orientation = printerAdaptor.orientation()
     if self.paper.isCustom:
       # capture size chosen by user, say in native Print dialog
@@ -161,20 +161,16 @@ class PageSetup(list):
     
     printerAdaptor.setOrientation(self.orientation)
     
-    # Even a Custom paper has a size, even if it is defaulted.
-    newPaperSizeMM = QSizeF(self.paper.integralOrientedSizeMM(self.orientation))
-    assert newPaperSizeMM.isValid()
-    # use overload QPrinter.setPaperSize(QPagedPaintDevice.PageSize)
-    printerAdaptor.setPaperSize(newPaperSizeMM, QPrinter.Millimeter)
+    # Formerly we called toPrinterAdaptorByMMSize() here
     
     '''
-    Also set paper by enum.  Why do we need this is additon to the above?
+    Set paper by enum where possible.  Why do we need this is additon to the above?
     Because floating point errors in some versions of Qt, 
     setting paperSize by a QSizeF does not always have the intended effect on enum.
     '''
     if self.paper.isCustom :
-      # Illegal to call setPaperSize(QPrinter.Custom), but the above has intended effect
-      pass
+      # Illegal to call setPaperSize(QPrinter.Custom)
+      self.toPrinterAdaptorByMMSize(printerAdaptor)
     else:
       printerAdaptor.setPaperSize(self.paper.paperEnum)
     
@@ -186,6 +182,20 @@ class PageSetup(list):
     '''
     #assert self.isStronglyEqualPrinterAdaptor(printerAdaptor)
     assert self.isEqualPrinterAdaptor(printerAdaptor)
+    
+  
+  def toPrinterAdaptorByMMSize(self, printerAdaptor):
+    '''
+    Set my values on printerAdaptor (and whatever printer it is adapting) by setting size.
+    
+    Take integral size, convert to float.
+    '''
+    # Even a Custom paper has a size, even if it is defaulted.
+    newPaperSizeMM = QSizeF(self.paper.integralOrientedSizeMM(self.orientation))
+    assert newPaperSizeMM.isValid()
+    # use overload QPrinter.setPaperSize(QPagedPaintDevice.PageSize)
+    printerAdaptor.setPaperSize(newPaperSizeMM, QPrinter.Millimeter)
+    
     
     
   '''
@@ -345,7 +355,7 @@ class PageSetup(list):
             self.orientation, printerAdaptor.orientation(), # our and Qt orientation
             printerAdaptor.paperSizeMM ) # Qt paperSize(mm)
       if not self.paper.isCustom:
-        print (self.paper.orientedSizeMM(self.orientation) )  # our size mm (not defined for Custom)
+        print (self.paper.integralOrientedSizeMM(self.orientation) )  # our size mm (not defined for Custom)
     return result
     
   

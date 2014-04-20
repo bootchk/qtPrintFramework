@@ -55,4 +55,20 @@ G. Custom paper of negative or zero size
     _ Nothing is printed
 
 
+H. PaperChange emitted when user changes only size or orientation of Custom
+  1.  Starting with the current paper equal to any standard paper
+  2.  Make the current paper equal to a valid Custom paper (details omitted.)
+    _ paperChange is emitted (app shows 'Custom Portrait 5x7mm' e.g.
+  3. Choose 'Print to File (PDF)' (which has a Custom paper.)
+  4. Choose 'Properties'
+  5. Select 'Custom' paper
+  6. Increase the width and height
+  7. Choose OK
+  8. Choose Print button
+    _ File is created with size 6x8 e.g.
+    _ paperChange is emitted (app shows 'Custom Portrait 6x8mm' e.g.
+  9. Repeat 3-5.  Now change only the orientation of the Custom paper to 'Landscape'.  Choose OK and Print.
+    _ File is created with size 8X6 e.g.
+    _ paperChange is emitted (app shows 'Custom Landscape 8x6mm' e.g.
+
 
