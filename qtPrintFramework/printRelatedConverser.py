@@ -398,9 +398,15 @@ class PrintConverser(QObject):
       
     if sys.platform.startswith('darwin'):
       paper = self.pageSetup.paper
-      print('>>>> Darwin: always set paperSize on QPrinter', str(paper))
-      # self.setPaperSize(paper.paperEnum)
-      self.pageSetup.toPrinterAdaptor(printerAdaptor=self.printerAdaptor)
+      print('>>>> Darwin: always set inch paperSize on QPrinter', str(paper))
+      '''
+      Not just toPrinterAdaptor(), since printerAdaptor may agree with pageSetup,
+      (on enums, and float sizes to epsilon)
+      but platform native dialog may disagree with printerAdaptor.
+  
+      Call _toPrinterAdaptorByFloatInchSize() which might be more effective.
+      '''
+      self.pageSetup._toPrinterAdaptorByFloatInchSize(self.printerAdaptor)
       
     self.dump("After checkInvariantAndFix")
 
