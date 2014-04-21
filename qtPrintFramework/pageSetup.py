@@ -161,7 +161,7 @@ class PageSetup(list):
     
     printerAdaptor.setOrientation(self.orientation)
     
-    # Formerly we called toPrinterAdaptorByMMSize() here
+    # Formerly we called _toPrinterAdaptorByIntegralMMSize() here
     
     '''
     Set paper by enum where possible.  Why do we need this is additon to the above?
@@ -170,7 +170,7 @@ class PageSetup(list):
     '''
     if self.paper.isCustom :
       # Illegal to call setPaperSize(QPrinter.Custom)
-      self.toPrinterAdaptorByMMSize(printerAdaptor)
+      self._toPrinterAdaptorByIntegralMMSize(printerAdaptor)
     else:
       printerAdaptor.setPaperSize(self.paper.paperEnum)
     
@@ -186,7 +186,11 @@ class PageSetup(list):
       (Typically on OSX.)
       Fallback: attempt to set by size.
       '''
-      self.toPrinterAdaptorByMMSize(printerAdaptor)
+      self._toPrinterAdaptorByIntegralMMSize(printerAdaptor)
+    
+    if not self.isEqualPrinterAdaptor(printerAdaptor):
+      # TEMP test for OSX
+      self._toPrinterAdaptorByFloatInchSize(printerAdaptor)
       
     if not self.isEqualPrinterAdaptor(printerAdaptor):
       '''
@@ -201,7 +205,7 @@ class PageSetup(list):
     #assert self.isEqualPrinterAdaptor(printerAdaptor)
     
   
-  def toPrinterAdaptorByMMSize(self, printerAdaptor):
+  def _toPrinterAdaptorByIntegralMMSize(self, printerAdaptor):
     '''
     Set my values on printerAdaptor (and whatever printer it is adapting) by setting size.
     
@@ -210,8 +214,27 @@ class PageSetup(list):
     # Even a Custom paper has a size, even if it is defaulted.
     newPaperSizeMM = QSizeF(self.paper.integralOrientedSizeMM(self.orientation))
     assert newPaperSizeMM.isValid()
-    # use overload QPrinter.setPaperSize(QPagedPaintDevice.PageSize)
+    # use overload QPrinter.setPaperSize(QPagedPaintDevice.PageSize, Units)
     printerAdaptor.setPaperSize(newPaperSizeMM, QPrinter.Millimeter)
+    
+    
+  def _toPrinterAdaptorByFloatInchSize(self, printerAdaptor):
+    '''
+    Set my values on printerAdaptor (and whatever printer it is adapting) by setting size.
+    
+    Floating inch size.
+    '''
+    # TODO oriented, other inch unit sizes
+    if self.paper.paperEnum == QPrinter.Legal:
+      newPaperSizeMM = QSizeF(8.5, 14)
+    elif self.paper.paperEnum == QPrinter.Letter:
+      newPaperSizeMM = QSizeF(8.5, 11)
+    else:
+      return
+      
+    assert newPaperSizeMM.isValid()
+    # use overload QPrinter.setPaperSize(QPagedPaintDevice.PageSize, Units)
+    printerAdaptor.setPaperSize(newPaperSizeMM, QPrinter.Inch)
     
     
     
