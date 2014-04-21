@@ -175,13 +175,30 @@ class PageSetup(list):
       printerAdaptor.setPaperSize(self.paper.paperEnum)
     
     '''
-    TODO Strong assertion might not hold: Qt might be showing paper dimensions QSizeF(0,0) for Custom
+    Strong assertion might not hold: Qt might be showing paper dimensions QSizeF(0,0) for Custom
     (Which is bad programming.  None or Null should represent unknown.)
     
     Or, despite trying to set QPrinter consistent, Qt bugs still don't meet strong assertion.
     '''
+    if not self.isEqualPrinterAdaptor(printerAdaptor):
+      '''
+      Setting by enum (non-custom) or setting by size (Custom) has failed.
+      (Typically on OSX.)
+      Fallback: attempt to set by size.
+      '''
+      self.toPrinterAdaptorByMMSize(printerAdaptor)
+      
+    if not self.isEqualPrinterAdaptor(printerAdaptor):
+      '''
+      Despite best efforts, could not get printerAdaptor (and the platform)
+      to have page setup we desire.
+      '''
+      print(">>>>>>>>>>>>Warning: printerAdaptor pageSetup disagrees.")
+      
+      
+    # Ideally (if Qt was bug free) these assertions should hold
     #assert self.isStronglyEqualPrinterAdaptor(printerAdaptor)
-    assert self.isEqualPrinterAdaptor(printerAdaptor)
+    #assert self.isEqualPrinterAdaptor(printerAdaptor)
     
   
   def toPrinterAdaptorByMMSize(self, printerAdaptor):
