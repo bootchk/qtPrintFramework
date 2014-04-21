@@ -226,15 +226,16 @@ class PageSetup(list):
     '''
     # TODO oriented, other inch unit sizes
     if self.paper.paperEnum == QPrinter.Legal:
-      newPaperSizeMM = QSizeF(8.5, 14)
+      newPaperSizeInch = QSizeF(8.5, 14)
     elif self.paper.paperEnum == QPrinter.Letter:
-      newPaperSizeMM = QSizeF(8.5, 11)
+      newPaperSizeInch = QSizeF(8.5, 11)
     else:
       return
       
-    assert newPaperSizeMM.isValid()
+    assert newPaperSizeInch.isValid()
     # use overload QPrinter.setPaperSize(QPagedPaintDevice.PageSize, Units)
-    printerAdaptor.setPaperSize(newPaperSizeMM, QPrinter.Inch)
+    print("setPaperSize(Inch)", newPaperSizeInch)
+    printerAdaptor.setPaperSize(newPaperSizeInch, QPrinter.Inch)
     
     
     

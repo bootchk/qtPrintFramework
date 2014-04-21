@@ -78,6 +78,8 @@ class PrinterAdaptor(QPrinter):
               # "qtPFramework setup:"+ str(self.printConverser.pageSetup),
               # "printable rect:"+ str(self.printablePageRect()),
               "paper size MM:"+ str(self.paperSizeMM),
+              "paper size Inch:"+ str(self.paperSize(QPrinter.Inch)),
+              "paper size DP:"+ str(self.paperSize(QPrinter.DevicePixel)),
               "print rect MM:" + str(self.pageRect(QPrinter.Millimeter)))
     return '\n   '.join(terms)
   
