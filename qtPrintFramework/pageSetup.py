@@ -182,15 +182,17 @@ class PageSetup(list):
     '''
     if not self.isEqualPrinterAdaptor(printerAdaptor):
       '''
-      Setting by enum (non-custom) or setting by size (Custom) has failed.
-      (Typically on OSX.)
+      Setting by enum (non-custom) has failed.  (Typically on OSX?)
       Fallback: attempt to set by size.
       '''
       self._toPrinterAdaptorByIntegralMMSize(printerAdaptor)
     
+    """
+    Tried this for OSX, but it did not succeed in getting native dialog to agree with self.
+    So Qt versions < 5.3 have a bug that cannot be worked around by this framework.
     if not self.isEqualPrinterAdaptor(printerAdaptor):
-      # TEMP test for OSX
       self._toPrinterAdaptorByFloatInchSize(printerAdaptor)
+    """
       
     if not self.isEqualPrinterAdaptor(printerAdaptor):
       '''
