@@ -372,7 +372,9 @@ class PageSetup(list):
     '''
     result = self.paper == printerAdaptor.paper() and self.orientation == printerAdaptor.orientation()
     if not result:
-      print(self.paper, printerAdaptor.paper())
+      print("pageSetup differs:", 
+            self.paper.orientedDescription(self.orientation), 
+            printerAdaptor.paper().orientedDescription(printerAdaptor.orientation()))
     return result
   
   def isStronglyEqualPrinterAdaptor(self, printerAdaptor):

@@ -395,7 +395,8 @@ class PrintConverser(QObject):
       print('>>>> Fixing invariant by setting paperSize on QPrinter', str(paper))
       # self.setPaperSize(paper.paperEnum)
       self.pageSetup.toPrinterAdaptor(printerAdaptor=self.printerAdaptor)
-      
+    
+    """
     if sys.platform.startswith('darwin'):
       paper = self.pageSetup.paper
       print('>>>> Darwin: always set inch paperSize on QPrinter', str(paper))
@@ -407,7 +408,8 @@ class PrintConverser(QObject):
       Call _toPrinterAdaptorByFloatInchSize() which might be more effective.
       '''
       self.pageSetup._toPrinterAdaptorByFloatInchSize(self.printerAdaptor)
-      
+    """
+    
     self.dump("After checkInvariantAndFix")
 
 

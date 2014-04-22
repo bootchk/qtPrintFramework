@@ -134,11 +134,12 @@ class Paper(object):
   
   def __repr__(self):
     ''' 
-    Human readable description including name, dimensions in mm. 
+    Human readable description including name, dimensions in mm.
     
-    !!! Not oriented
+    # !!! Not oriented.  A paper does not know its orientation.
     '''
-    return self.name + " " + self._definedSizeString
+    return "Unoriented " + self.name + " " + self._definedSizeString  
+  
   
   def __eq__(self, other):
     '''
