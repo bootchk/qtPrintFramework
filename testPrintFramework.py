@@ -27,18 +27,24 @@ class ButtonSet(QWidget):
     
     layout = QVBoxLayout()
   
-    button = QPushButton("Setup page")
+    # Dispatches to native or non-native page setup dialog according to current printer
+    button = QPushButton("Page Setup for current printer nativity.")
     button.clicked.connect(printConverser.conversePageSetup)
     
-    button2 = QPushButton("Print PDF")
-    button2.clicked.connect(printConverser.conversePrintPDF)
+    # Always use non-native dialog and apply it to current printer
+    button2 = QPushButton("Page Setup non-native.")
+    button2.clicked.connect(printConverser._conversePageSetupNonNative)
     
     button3 = QPushButton("Print")
     button3.clicked.connect(printConverser.conversePrint)
     
+    button4 = QPushButton("Print PDF")
+    button4.clicked.connect(printConverser.conversePrintPDF)
+    
     layout.addWidget(button)
     layout.addWidget(button2)
     layout.addWidget(button3)
+    layout.addWidget(button4)
     
     self.setLayout(layout)
     
