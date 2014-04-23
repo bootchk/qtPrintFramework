@@ -70,6 +70,8 @@ class PrinterAdaptor(QPrinter):
   def description(self):
     '''
     Description of adapted printer.
+    
+    These are all attributes of QPrinter.
     '''
     # self.paperSize() calls QPrinter.paperSize(), wrong in Qt < 5.3 returns Custom when it shouldn't
     terms = ( "Name:" + self.printerName(),

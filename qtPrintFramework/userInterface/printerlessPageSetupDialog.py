@@ -15,13 +15,12 @@ class PrinterlessPageSetupDialog(QDialog):
   i.e. a PDFWriter when Qt is in charge, on Linux and Win.
   
   Some platforms have native print drivers that are printerless i.e. to-file.
-  This dialog does NOT apply:
   OSX : PDF
   Win : XPS
   
   Should look similar to QPageSetupDialog.
   
-  For now, this omits margins as an element of PageSetup.
+  For now, this omits margins as a feature of PageSetup.
   '''
   
   def __init__(self, pageSetup=None, parentWidget=None):
@@ -30,7 +29,7 @@ class PrinterlessPageSetupDialog(QDialog):
     # Layout components
     dialogLayout = QVBoxLayout()
     
-    title = self.tr('Page Setup PDF')
+    title = self.tr('Page Setup') # OR 'Page Setup PDF' if you also use the native dialog
     if sys.platform.startswith('darwin'):
       # GUI sheet has no title bar
       dialogLayout.addWidget(QLabel(title))
@@ -60,4 +59,5 @@ class PrinterlessPageSetupDialog(QDialog):
     buttonBox.accepted.connect(self.accept)
     buttonBox.rejected.connect(self.reject)
     return buttonBox
+  
   

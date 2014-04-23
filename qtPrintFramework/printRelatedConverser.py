@@ -116,11 +116,15 @@ class PrintConverser(QObject):
   def conversePageSetup(self):
     '''
     Start a Page Setup conversation
+    
+    Dispatch to native or non-native dialog according to current printer.
+    
+    If you use this, you should retitle the non-native dialog to distinguish it from the native one.
     '''
     if self.printerAdaptor.isAdaptingNative():
       self._conversePageSetupNative()
     else:
-      self._conversePageSetupNonNative()
+      self.conversePageSetupNonNative()
 
     
     '''
@@ -136,19 +140,29 @@ class PrintConverser(QObject):
     
   def conversePrint(self):
     '''
-    Start a print conversation.
+    Start a print conversation, using native print dialog.
     
-    This understands differences by platform.
+    On all desktop platforms, the native print dialog supports a paperless printer (PDF or XPS.)
+    Native printer does not imply the printer is a real printer (not paperless.)
+    
+    Native dialog is a different concept than native printer.
+    
+    On OSX, printing to PDF,
+    AND on Win, printing to XPS:
+    does NOT change the current printer to a non-native printer.
+    (Qt will allow the native print and page setup dialogs to be used (whether they work is another story.))
+    
+    On Linux, printing to PDF:
+    DOES change the current printer to a non-native printer
+    (the native print dialog can still be used, but Qt won't allow the native page setup dialog to be used.)
+    
+    On Win, print to PDF requires using non-native print and page setup dialogs.
+    (Implemented by this framework TODO.)
     '''
-    if self.printerAdaptor.isAdaptingNative():
-      self._conversePrintNative()
-    else:
-      if True:
-        self._conversePrintNative()
-      else:
-        self._conversePrintNonNative()
+    self._conversePrintNative()
+    
         
-    '''You can setup
+    '''
     Execution continues, but conversation might be ongoing (if window modal or modeless)
     
     Conversation might be canceled and self's state unchanged (no change in adapted printer.)
@@ -160,7 +174,7 @@ class PrintConverser(QObject):
     '''
     Start a print PDF conversation.
     
-    Only necessary on Win, where native or Qt provided dialog does not offer choice to print PDF.
+    Only necessary on Win, where native print dialog does not offer choice to print PDF.
     
     Optional (shortcutting the PrintDialog) on other platforms.
 
@@ -178,9 +192,15 @@ class PrintConverser(QObject):
   Page setup conversations
   '''
     
-  def _conversePageSetupNonNative(self):
+  def conversePageSetupNonNative(self):
     '''
-    User our own dialog, which works with non-native printers (on some platforms?)
+    Use framework's dialog.
+    This MUST be used with non-native printers (Qt has no PageSetup dialog for non-native printers.)
+    This CAN be used with native printers (thus it is exported from framework.)
+    
+    It omits many page features such as margins and custom paper dimensions.
+    
+    It will not set up a Custom paper.
     '''
     self.dump("NonNative page setup to")
     

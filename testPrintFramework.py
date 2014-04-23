@@ -28,12 +28,12 @@ class ButtonSet(QWidget):
     layout = QVBoxLayout()
   
     # Dispatches to native or non-native page setup dialog according to current printer
-    button = QPushButton("Page Setup for current printer nativity.")
+    button = QPushButton("Page Setup for current printer nativeness.")
     button.clicked.connect(printConverser.conversePageSetup)
     
-    # Always use non-native dialog and apply it to current printer
+    # Use this framework's (non-native) dialog and apply it to QPrinter
     button2 = QPushButton("Page Setup non-native.")
-    button2.clicked.connect(printConverser._conversePageSetupNonNative)
+    button2.clicked.connect(printConverser.conversePageSetupNonNative)
     
     button3 = QPushButton("Print")
     button3.clicked.connect(printConverser.conversePrint)
@@ -76,18 +76,19 @@ class MainWindow(QMainWindow):
   Missing: paint to printer
   '''
   def changedPaper(self):
-    print(">>>Page setup is", self.printConverser.pageSetup)
+    print(">>>Changed paper, page setup is", self.printConverser.pageSetup)
     pass
     
   def acceptedPrint(self):
-    print(">>>Printing to size", self.printConverser.printablePageSize)
+    print(">>>Accepted print to printable size DP", self.printConverser.printablePageSize)
     pass
     
   def acceptedPrintPDF(self):
+    print(">>>Accepted Print PDF (not implemented)", self.printConverser.pageSetup)
     pass
     
   def acceptedPageSetup(self):
-    print(">>>Page setup is", self.printConverser.pageSetup)
+    print(">>>Accepted page setup is", self.printConverser.pageSetup)
     pass
     
   def canceled(self):
