@@ -34,4 +34,3 @@ class AdaptedPaperSizeModel(AdaptedSortedModel):  # !!! Sorted
     self.values.pop("Custom", None)
 
 
-PaperSizeModel = AdaptedPaperSizeModel()

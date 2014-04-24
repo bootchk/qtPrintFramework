@@ -6,10 +6,10 @@ To refresh translations:
 (updates .ts files.)
 >linguist
 (open the .ts files and translate them)
->lrelease5 qtPrintFramework.pro
+>lrelease qtPrintFramework.pro
 (generates new .qm files.)
 
-
+(?lrelease5)
 
 Now refresh the using apps resources
 (which should include the .qm files from qtPrintFramework).

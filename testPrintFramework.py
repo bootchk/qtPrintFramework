@@ -9,7 +9,7 @@ Qt app that exercises qtPrintFramework
 
 import sys
 
-from PyQt5.QtCore import QCoreApplication
+from PyQt5.QtCore import QCoreApplication, QTranslator
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget
 from qtPrintFramework.printRelatedConverser import PrintConverser
         
@@ -101,6 +101,15 @@ def main():
   QCoreApplication.setOrganizationName("testPrintFramework")
   QCoreApplication.setOrganizationDomain("testPrintFramework.com")
   QCoreApplication.setApplicationName("testPrintFramework")
+  
+  # To test translations, in shell  >export LANG=es     or >export LANG=cn
+  translator = QTranslator()
+  result = translator.load("/home/bootch/Downloads/SubprojectsPensool/qtPrintFramework/resources/translations/qtPrintFramework_es.qm")
+  if not result:
+      print("Failed to load translation")
+      # Not an exception: program continues in default (usually English)
+  if not app.installTranslator(translator):
+      print("Failed to install translator.")
   
   mainWindow = MainWindow()
   mainWindow.show()

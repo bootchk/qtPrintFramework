@@ -27,10 +27,8 @@ class AdaptedPageOrientationModel(AdaptedModel):
     This is less flexible, doesn't capture Qt's values automatically.
     But is i18n
     '''
+    print("Translation:", self.tr("Portrait"))
     self.values = {self.tr("Portrait"):QPrinter.Portrait,
                    self.tr("Landscape"):QPrinter.Landscape
                    }
     
-    
-
-PageOrientationModel = AdaptedPageOrientationModel()

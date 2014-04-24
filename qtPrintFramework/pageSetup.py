@@ -8,11 +8,10 @@ from qtPrintFramework.paper.paper import Paper
 from qtPrintFramework.paper.standard import StandardPaper
 from qtPrintFramework.paper.custom import CustomPaper
 from qtPrintFramework.pageAttribute import PageAttribute
-from qtPrintFramework.model.paperSize import PaperSizeModel # singleton
-from qtPrintFramework.model.pageOrientation import PageOrientationModel # singleton
+from qtPrintFramework.model.paperSize import AdaptedPaperSizeModel 
+from qtPrintFramework.model.pageOrientation import AdaptedPageOrientationModel 
 from qtPrintFramework.orientedSize import OrientedSize
-
-import qtPrintFramework.config as config
+from qtPrintFramework.translations import Translations
 
 
 class PageSetup(list):
@@ -56,15 +55,29 @@ class PageSetup(list):
   
   def __init__(self, printerAdaptor):
     
+    '''
+    Create objects requiring translation.
+    You can't do via singletons created at import time.
+    
+    Paper names not translated: metric paper names e.g. A4 are used internationally,
+    and other used exclusively in English measurement countries, e.g. Letter, are not commonly used internationally,
+    so they don't need translation.
+    
+    There are a few other translated message strings in the code.
+    '''
+    self.i18ns = Translations()
+    self.pageOrientationModel = AdaptedPageOrientationModel()
+    self.paperSizeModel = AdaptedPaperSizeModel() 
+    
     " Model "
-    self.paper = StandardPaper(PaperSizeModel.default())
-    self.orientation = PageOrientationModel.default()
+    self.paper = StandardPaper(self.paperSizeModel.default())
+    self.orientation = self.pageOrientationModel.default()
     
     " Control/views"
-    self.append(PageAttribute(label=config.i18ns["Size"],
-                              model=PaperSizeModel))
-    self.append(PageAttribute(label=config.i18ns["Orientation"], 
-                              model=PageOrientationModel))
+    self.append(PageAttribute(label=self.i18ns.Size,
+                              model=self.paperSizeModel))
+    self.append(PageAttribute(label=self.i18ns.Orientation, 
+                              model=self.pageOrientationModel))
     
     " Possibly change default model from settings."
     self.initializeModelFromSettings(getDefaultsFromPrinterAdaptor=printerAdaptor)

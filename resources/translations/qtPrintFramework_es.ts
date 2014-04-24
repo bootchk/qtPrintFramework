@@ -19,12 +19,12 @@
     <message>
         <location filename="../../qtPrintFramework/config.py" line="7"/>
         <source>Size</source>
-        <translation>Tamaño</translation>
+        <translation type="obsolete">Tamaño</translation>
     </message>
     <message>
         <location filename="../../qtPrintFramework/config.py" line="8"/>
         <source>Orientation</source>
-        <translation>Orientación</translation>
+        <translation type="obsolete">Orientación</translation>
     </message>
 </context>
 <context>
@@ -33,6 +33,19 @@
         <location filename="../../qtPrintFramework/userInterface/printerlessPageSetupDialog.py" line="31"/>
         <source>Page Setup</source>
         <translation>Configuración de Página</translation>
+    </message>
+</context>
+<context>
+    <name>Translations</name>
+    <message>
+        <location filename="../../qtPrintFramework/config.py" line="16"/>
+        <source>Size</source>
+        <translation>Tamaño</translation>
+    </message>
+    <message>
+        <location filename="../../qtPrintFramework/config.py" line="17"/>
+        <source>Orientation</source>
+        <translation>Orientación</translation>
     </message>
 </context>
 <context>
@@ -45,7 +58,6 @@
     <message>
         <location filename="../../qtPrintFramework/userInterface/warn.py" line="27"/>
         <source>Printable page size is too small to print.  Please increase paper size or decrease margins.</source>
-        <translatorcomment>Printable paper is too small.  Increase the size or decrease the margins.</translatorcomment>
         <translation>Imprimible papel es muy pequeño.  Aumenta el tamaño o merma los márgenes.</translation>
     </message>
 </context>

@@ -1,18 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS>
-<TS version="2.1" language="zh">
+<!DOCTYPE TS><TS version="2.0" language="zh" sourcelanguage="">
 <context>
     <name>AdaptedPageOrientationModel</name>
     <message>
         <location filename="../../qtPrintFramework/model/pageOrientation.py" line="30"/>
         <source>Portrait</source>
-        <translatorcomment>upright</translatorcomment>
         <translation>竖直的</translation>
     </message>
     <message>
         <location filename="../../qtPrintFramework/model/pageOrientation.py" line="31"/>
         <source>Landscape</source>
-        <translatorcomment>lateral</translatorcomment>
         <translation>横的</translation>
     </message>
 </context>
@@ -21,14 +18,12 @@
     <message>
         <location filename="../../qtPrintFramework/config.py" line="7"/>
         <source>Size</source>
-        <translatorcomment>magnitude</translatorcomment>
-        <translation>大小</translation>
+        <translation type="obsolete">大小</translation>
     </message>
     <message>
         <location filename="../../qtPrintFramework/config.py" line="8"/>
         <source>Orientation</source>
-        <translatorcomment>relative position</translatorcomment>
-        <translation>方位</translation>
+        <translation type="obsolete">方位</translation>
     </message>
 </context>
 <context>
@@ -36,8 +31,20 @@
     <message>
         <location filename="../../qtPrintFramework/userInterface/printerlessPageSetupDialog.py" line="31"/>
         <source>Page Setup</source>
-        <translatorcomment>printing: establishes layout of paper</translatorcomment>
         <translation>页面设置</translation>
+    </message>
+</context>
+<context>
+    <name>Translations</name>
+    <message>
+        <location filename="../../qtPrintFramework/config.py" line="16"/>
+        <source>Size</source>
+        <translation type="unfinished">大小</translation>
+    </message>
+    <message>
+        <location filename="../../qtPrintFramework/config.py" line="17"/>
+        <source>Orientation</source>
+        <translation type="unfinished">方位</translation>
     </message>
 </context>
 <context>

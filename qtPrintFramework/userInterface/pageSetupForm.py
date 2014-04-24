@@ -26,5 +26,6 @@ class PageSetupForm(QFormLayout):
     
   
   def addPropertyToForm(self, attribute):
+    print("adding property", attribute.label)
     self.addRow(attribute.label, attribute.control)
       
