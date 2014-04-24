@@ -29,17 +29,18 @@ class StandardPaper(Paper):
   
   
   @property
-  def integralNormalSizeMM(self):
+  def integralDefinedSizeMM(self):
     '''
     Specialize Paper:  size is constant from a defining, standard model.
     QSize
-    - normalized (width < height)
+    - 
     - integral
     - units mm
     '''
     result = Paper.sizeModel[self.paperEnum]
     assert isinstance(result, QSize)
-    assert result.width() <= result.height()
+    ## Not necessarily normalized (width < height)
+    ## assert result.width() <= result.height()
     return result
     
     

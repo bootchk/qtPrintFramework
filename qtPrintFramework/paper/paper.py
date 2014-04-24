@@ -37,10 +37,10 @@ class Paper(object):
   This IS a binary relation.
   In other words, no two papers (having different names) have the same size.
   
-  The sizes are 'defined size.'
+  The sizes are 'defined size' which are defined in Portrait orientation.
   Not assert every QSize is normalized, i.e. has width < height.
   Two defined sizes are not the same even if they are the same form factor(pair of number in different order.)
-  See Ledger and Tabloid.
+  See Ledger and Tabloid, which have the same form factor (occupies the same space after rotating one) but not same size.
   
   Assert this includes every value from QPagedPaintDevice.PageSize enumerated type, EXCEPT for Custom.
   
@@ -93,7 +93,7 @@ class Paper(object):
     
     
   @classmethod
-  def enumForPageSizeByMatchDimensions(cls, paperSizeMM):
+  def enumForPageSizeByMatchDimensions(cls, paperSizeMM, orientation):
     '''
     Returns enum from type QPagedPaintDevice.PageSize using fuzzy match on paper dimensions.
     
@@ -107,11 +107,11 @@ class Paper(object):
     if roundedSize is None:
       return None
     
-    normalizedRoundedSize = OrientedSize.normalizedSize(roundedSize)
-    hashedNormalizedRoundedSize = (normalizedRoundedSize.width(), normalizedRoundedSize.height())
-    #print(hashedNormalizedRoundedSize)
+    definedRoundedSize = OrientedSize.portraitSizeMM(roundedSize, orientation)
+    hashedDefinedRoundedSize = (definedRoundedSize.width(), definedRoundedSize.height())
+    #print(hashedDefinedRoundedSize)
     try:
-      result = cls.inverseSizeModel[hashedNormalizedRoundedSize]
+      result = cls.inverseSizeModel[hashedDefinedRoundedSize]
     except KeyError:
       print("KeyError in enumForPageSizeByMatchDimensions:", paperSizeMM.width(), ',', paperSizeMM.height())
       result = None
@@ -164,7 +164,7 @@ class Paper(object):
   @property
   def _definedSizeString(self):
     " string for defined size  (not oriented.) "
-    size = self.integralNormalSizeMM
+    size = self.integralDefinedSizeMM
     return str(size.width()) + 'x' + str(size.height()) + 'mm'
   
   def orientedDescription(self, orientation):
@@ -206,8 +206,8 @@ class Paper(object):
     '''
     QSize oriented.  Integer. Units mm
     '''
-    # integralNormalSizeMM is property of subclass
-    result = OrientedSize.orientedSize(self.integralNormalSizeMM, orientation)
+    # integralDefinedSizeMM is property of subclass
+    result = OrientedSize.orientedSize(self.integralDefinedSizeMM, orientation)
     assert isinstance(result, QSize)
     # Oriented does not imply normalized
     # assert result.width() > result.height() or result.width() <= result.height()
@@ -218,10 +218,8 @@ class Paper(object):
   '''
   Tests for epsilon equality.
   
-  Oriented and Normal are two opposing choices:
-  Oriented: width may be greater than height.
-  Normal: width less than or equal to height.
-  Caller must insure the passed size has the same property, oriented or normal.
+  Oriented and Defined are two opposing choices:
+  Caller must insure the passed size has the same property, oriented or defined.
   '''
   
   def isOrientedSizeEpsilonEqual(self, orientation, sizeF):
@@ -231,9 +229,9 @@ class Paper(object):
     return result
   
   
-  def isNormalSizeEpsilonEqual(self, sizeF):
+  def isDefinedSizeEpsilonEqual(self, sizeF):
     assert isinstance(sizeF, QSizeF)  # and is millimeter units
-    integralSize = self.integralNormalSizeMM
+    integralSize = self.integralDefinedSizeMM
     result = OrientedSize.areSizesEpsilonEqual(integralSize, sizeF)
     return result
   

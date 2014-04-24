@@ -61,10 +61,8 @@ class CustomPaper(Paper):
     
   
   @property
-  def integralNormalSizeMM(self):
+  def integralDefinedSizeMM(self):
     '''
-    !!! Hack.  The name says Normal, but it ain't necessarily so.
-    
     Called by Paper.integralOrientedSizeMM()
     '''
     return self._portraitSizeMM
@@ -80,7 +78,7 @@ class CustomPaper(Paper):
 
 
   def hasEqualSizeTo(self, other):
-    result = self.integralNormalSizeMM == other.integralNormalSizeMM
+    result = self.integralDefinedSizeMM == other.integralDefinedSizeMM
     return result
   
   

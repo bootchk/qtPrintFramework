@@ -108,7 +108,7 @@ class PrinterAdaptor(QPrinter):
     # !!! Not call deprecated self.pageSize(), it is in error also.
     # The overloaded paperSize(MM) returns an epsilon correct (except for floating precision) correct result
     floatPaperDimensionsMM = self.paperSizeMM
-    correctPaperEnum = Paper.enumForPageSizeByMatchDimensions(floatPaperDimensionsMM)
+    correctPaperEnum = Paper.enumForPageSizeByMatchDimensions(floatPaperDimensionsMM, self.orientation())
     if correctPaperEnum is None:
       # self's paperSize(Millimeter) doesn't match any StandardPaper therefore self.paperSize() should be Custom
       assert self.paperSize() == QPagedPaintDevice.Custom

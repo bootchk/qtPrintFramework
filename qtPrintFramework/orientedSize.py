@@ -54,6 +54,8 @@ class OrientedSize(object):
     
     size may be QSize or QSizeF, and result is same type
     Returns a copy.
+    
+    Since definitions are portrait, this could also be called 'definedSizeMM.'
     '''
     # i.e. an alias
     return cls.orientedSize(size, orientation)
