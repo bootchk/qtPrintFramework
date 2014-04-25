@@ -4,6 +4,9 @@ import sys
 from PyQt5.QtWidgets import QDialog, QDialogButtonBox, QVBoxLayout, QLabel
 
 from qtPrintFramework.userInterface.pageSetupForm import PageSetupForm
+from qtPrintFramework.pageAttribute import PageAttribute
+from qtPrintFramework.model.paperSize import AdaptedPaperSizeModel 
+from qtPrintFramework.model.pageOrientation import AdaptedPageOrientationModel 
 
 
 class PrinterlessPageSetupDialog(QDialog):
@@ -23,9 +26,18 @@ class PrinterlessPageSetupDialog(QDialog):
   For now, this omits margins as a feature of PageSetup.
   '''
   
-  def __init__(self, pageSetup=None, parentWidget=None):
-    assert pageSetup is not None
-    super(PrinterlessPageSetupDialog, self).__init__(parent=parentWidget) # , flags=flags)
+  def __init__(self, parentWidget=None):
+
+    super(PrinterlessPageSetupDialog, self).__init__(parent=parentWidget)
+    
+    # Models for controls
+    self.pageOrientationModel = AdaptedPageOrientationModel()
+    self.paperSizeModel = AdaptedPaperSizeModel() 
+    
+    # Properties, i.e. label/control rows
+    self.sizeControl = PageAttribute(label=self.tr("Size"),  model=self.paperSizeModel)
+    self.orientationControl = PageAttribute(label=self.tr("Orientation"), model=self.pageOrientationModel)
+    
     # Layout components
     dialogLayout = QVBoxLayout()
     
@@ -36,7 +48,7 @@ class PrinterlessPageSetupDialog(QDialog):
     else:
       self.setWindowTitle(title)
       
-    dialogLayout.addLayout(self._createDialogBody(pageSetup))
+    dialogLayout.addLayout(self._createDialogBody())
     dialogLayout.addWidget(self.buttonBox())
     self.setLayout(dialogLayout)
     
@@ -44,11 +56,12 @@ class PrinterlessPageSetupDialog(QDialog):
     self.setSizeGripEnabled(True)
     
     
-  def _createDialogBody(self, pageSetup):
+    
+  def _createDialogBody(self):
     '''
-    Create body of dialog, on given pageSetup model.
+    Create body of dialog, on self's primitive controls.
     '''
-    return PageSetupForm(pageSetup)
+    return PageSetupForm(controls=(self.sizeControl, self.orientationControl))
   
   
   def buttonBox(self):

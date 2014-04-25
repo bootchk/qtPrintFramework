@@ -32,6 +32,8 @@ class PageAttribute():
     self.control.setValue(value)
     
     
+  def default(self):
+    return self.model.default()
     
   """
   def toPrinterAdaptor(self, printerAdaptor):

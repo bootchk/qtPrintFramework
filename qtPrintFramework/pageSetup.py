@@ -1,26 +1,22 @@
 
 
-from PyQt5.QtCore import QSettings, QSizeF, QSize
+from PyQt5.QtCore import QObject, QSettings, QSizeF, QSize
 from PyQt5.QtGui import QPagedPaintDevice  # !! Not in QtPrintSupport
 from PyQt5.QtPrintSupport import QPrinter
 
 from qtPrintFramework.paper.paper import Paper
 from qtPrintFramework.paper.standard import StandardPaper
 from qtPrintFramework.paper.custom import CustomPaper
-from qtPrintFramework.pageAttribute import PageAttribute
-from qtPrintFramework.model.paperSize import AdaptedPaperSizeModel 
-from qtPrintFramework.model.pageOrientation import AdaptedPageOrientationModel 
 from qtPrintFramework.orientedSize import OrientedSize
-from qtPrintFramework.translations import Translations
 
 
-class PageSetup(list):
+
+class PageSetup(QObject):
   '''
-  Persistent user's choice of page setup.
+  Persistent user's choice of page setup attributes.
   
-  Iterable container of attributes of a page.
-  
-  This defines the set of attributes, their labels and models.
+  This defines the set of attributes.
+  The control (a dialog) defines the labels and models for attribute controls.
   Currently, we omit margins attribute of page setup.
   
   For a CustomPaper, we DO persist user's choice of size for the Custom paper.
@@ -28,9 +24,8 @@ class PageSetup(list):
   Responsibilities:
   - editable via our private PrinterlessPageSetupDialog
     (user can also edit a 'the page setup" using a native dialog, but that comes here via PrinterAdaptor 
-  - iterate PageAttributes (which are editable)
   - save/restore self to settings, so self persists with app, not with a printer
-  - apply/get self to/from PrinterAdaptor
+  - apply/get self to/from PrinterAdaptor (via native dialogs.)
   
   Almost a responsibility:
   - edit: PrinterlessPageSetupDialog edits this, and knows this intimately by iterating over editable PageAttributes.
@@ -38,7 +33,7 @@ class PageSetup(list):
     See PrintRelatedConverser.
   
   For some apps, a PageSetup (as a user choice) is an attribute of a document.
-  For other apps, a PageSetup is only an attribute ofif orientation == a user (a setting.)
+  For other apps, a PageSetup is only an attribute of a user (a setting.)
   Here, we always get it as a setting.
   If your app treats a PageSetup as a document attribute,
   you must call toPrinterAdaptor() (but it may not take.)
@@ -53,37 +48,22 @@ class PageSetup(list):
   They are often both confusingly used for the ideal concept (regardless of whether real thing is involved.)
   '''
   
-  def __init__(self, printerAdaptor):
+  def __init__(self, printerAdaptor, control):
     
-    '''
-    Create objects requiring translation.
-    You can't do via singletons created at import time.
+    super(PageSetup, self).__init__()
     
-    Paper names not translated: metric paper names e.g. A4 are used internationally,
-    and other used exclusively in English measurement countries, e.g. Letter, are not commonly used internationally,
-    so they don't need translation.
+    " Control/view"
+    self.control = control
     
-    There are a few other translated message strings in the code.
-    '''
-    self.i18ns = Translations()
-    self.pageOrientationModel = AdaptedPageOrientationModel()
-    self.paperSizeModel = AdaptedPaperSizeModel() 
-    
-    " Model "
-    self.paper = StandardPaper(self.paperSizeModel.default())
-    self.orientation = self.pageOrientationModel.default()
-    
-    " Control/views"
-    self.append(PageAttribute(label=self.i18ns.Size,
-                              model=self.paperSizeModel))
-    self.append(PageAttribute(label=self.i18ns.Orientation, 
-                              model=self.pageOrientationModel))
+    " Model.  Initialized to default from control's models."
+    self.paper = StandardPaper(self.control.sizeControl.default())
+    self.orientation = self.control.orientationControl.default()
     
     " Possibly change default model from settings."
     self.initializeModelFromSettings(getDefaultsFromPrinterAdaptor=printerAdaptor)
     # Not assert that printerAdaptor equals self yet.
     
-    " Ensure model equals view "
+    " Ensure model equals control/view "
     # TODO only do this just before showing dialog
     self.toControlViewExcludeCustom() # OR toControlView()
     assert self.isModelEqualView()
@@ -94,7 +74,8 @@ class PageSetup(list):
     That is, we don't force a native printer's page setup onto self (on user's preferred pageSetup for document),
     until user actually chooses to print on said native printer.
     '''
-
+    
+  
 
   def __repr__(self):
     '''
@@ -323,8 +304,8 @@ class PageSetup(list):
   '''
   def toControlView(self):
     # Allow Custom
-    self[0].setValue(self.paper.paperEnum)
-    self[1].setValue(self.orientation)
+    self.control.sizeControl.setValue(self.paper.paperEnum)
+    self.control.orientationControl.setValue(self.orientation)
     assert self.isModelEqualView()
     
     
@@ -337,10 +318,10 @@ class PageSetup(list):
     '''
     if self.paper.paperEnum == QPrinter.Custom:
       # Not allow Custom into dialog
-      self[0].setValue(0) # Typically A4 ?
+      self.control.sizeControl.setValue(0) # Typically A4 ?
     else:
-      self[0].setValue(self.paper.paperEnum)
-    self[1].setValue(self.orientation)
+      self.control.sizeControl.setValue(self.paper.paperEnum)
+    self.control.orientationControl.setValue(self.orientation)
     assert self.isModelEqualView()
 
 
@@ -359,10 +340,10 @@ class PageSetup(list):
     the orientation of an existing Custom paper???
     '''
     # Orientation choice is meaningful even if paper is Custom with default size?
-    self.orientation = self[1].value
+    self.orientation = self.control.orientationControl.value
     
     # Create new instance of Paper from enum.  Old instance garbage collected.
-    self.paper = self._paperFromEnum(self[0].value)
+    self.paper = self._paperFromEnum(self.control.sizeControl.value)
     
     assert self.isModelEqualView()
     
@@ -372,10 +353,10 @@ class PageSetup(list):
   '''
   def isModelEqualView(self):
     # allow one disparity: self is Custom and view is A4.  See toControlView.
-    result = ( self.paper.paperEnum == self[0].value or self.paper.paperEnum == QPrinter.Custom and self[0].value == 0) \
-          and self.orientation == self[1].value
+    result = ( self.paper.paperEnum == self.control.sizeControl.value or self.paper.paperEnum == QPrinter.Custom and self.control.sizeControl.value == 0) \
+          and self.orientation == self.control.orientationControl.value
     if not result:
-      print(self.paper, self.orientation, self[0].value, self[1].value)
+      print(self.paper, self.orientation, self.control.sizeControl.value, self.control.orientationControl.value)
     return result
   
   def isEqualPrinterAdaptor(self, printerAdaptor):

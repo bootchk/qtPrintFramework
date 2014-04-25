@@ -87,11 +87,16 @@ class PrintConverser(QObject):
     self.printerAdaptor = PrinterAdaptor(parentWidget=parentWidget)
     
     '''
+    NonNative dialog owned by this framework.
+    '''
+    self.pageSetupDialog = PrinterlessPageSetupDialog(parentWidget=self.parentWidget)
+    
+    '''
     self owns because self mediates use of it: every conversation
     
     PageSetup is initialized from settings OR printerAdaptor.
     '''
-    self.pageSetup = PageSetup(self.printerAdaptor)
+    self.pageSetup = PageSetup(self.printerAdaptor, control=self.pageSetupDialog)
     
     '''
     Not assert that printerAdaptor equal PageSetup.
@@ -208,8 +213,8 @@ class PrintConverser(QObject):
     if self.pageSetup.paper.isCustom:
       self.warn.pageSetupNotUsableOnCustomPaper()
       
-    dialog = PrinterlessPageSetupDialog(pageSetup=self.pageSetup, parentWidget=self.parentWidget)
-    self._showPrintRelatedDialogWindowModal(dialog, acceptSlot=self._acceptNonNativePageSetupSlot)
+    
+    self._showPrintRelatedDialogWindowModal(self.pageSetupDialog, acceptSlot=self._acceptNonNativePageSetupSlot)
     # execution continues but conversation not complete
     
     

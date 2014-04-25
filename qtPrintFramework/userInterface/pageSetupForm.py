@@ -10,7 +10,7 @@ class PageSetupForm(QFormLayout):
   Part of dialog widget for PageSetup.
   '''
   
-  def __init__(self, pageSetup):
+  def __init__(self, controls):
     
     super(PageSetupForm, self).__init__()
     
@@ -20,12 +20,28 @@ class PageSetupForm(QFormLayout):
     self.setFormAlignment(Qt.AlignHCenter | Qt.AlignTop)
     self.setLabelAlignment(Qt.AlignRight)
     
-    # Contains many attribute controls
-    for attribute in pageSetup:
-      self.addPropertyToForm(attribute)
+    # Contains many controls
+    self.addProperties(controls)
     
   
-  def addPropertyToForm(self, attribute):
-    print("adding property", attribute.label)
-    self.addRow(attribute.label, attribute.control)
+  def addProperties(self, controls):
+    for control in controls:
+      self._addPropertyToForm(control)
+      
+      
+  def addPropertiesFromPageSetup(self, pageSetup):
+    '''
+    Not used.
+    The page setup knows properties.
+    '''
+    for control in pageSetup:
+      self._addPropertyToForm(control)
+    
+  
+  def _addPropertyToForm(self, control):
+    '''
+    A property is a row containing a label widget and a subcontrol widget.
+    '''
+    print("adding property", control.label)
+    self.addRow(control.label, control.control)
       
