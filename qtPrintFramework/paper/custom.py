@@ -4,6 +4,7 @@ from PyQt5.QtGui import QPagedPaintDevice  # !! Not in QtPrintSupport
 
 from qtPrintFramework.orientedSize import OrientedSize
 from qtPrintFramework.paper.paper import Paper
+from qtPrintFramework.orientation import Orientation
 
 
 class CustomPaper(Paper):
@@ -22,7 +23,7 @@ class CustomPaper(Paper):
     Is NOT an assertion that size is normalized.
     '''
     assert isinstance(integralOrientedSizeMM, QSize)
-    assert orientation == 0 or orientation == 1
+    assert isinstance(orientation, Orientation)
     self.setSize(integralOrientedSizeMM, orientation)
     ## WAS, EQUIVALENT: self._portraitSizeMM = OrientedSize.portraitSizeMM(integralOrientedSizeMM, orientation)
 

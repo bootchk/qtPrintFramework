@@ -6,10 +6,23 @@
     <message>
         <location filename="../../qtPrintFramework/model/pageOrientation.py" line="30"/>
         <source>Portrait</source>
-        <translation>Vertical</translation>
+        <translation type="obsolete">Vertical</translation>
     </message>
     <message>
         <location filename="../../qtPrintFramework/model/pageOrientation.py" line="31"/>
+        <source>Landscape</source>
+        <translation type="obsolete">Horizontal</translation>
+    </message>
+</context>
+<context>
+    <name>Orientation</name>
+    <message>
+        <location filename="../../qtPrintFramework/orientation.py" line="37"/>
+        <source>Portrait</source>
+        <translation>Vertical</translation>
+    </message>
+    <message>
+        <location filename="../../qtPrintFramework/orientation.py" line="39"/>
         <source>Landscape</source>
         <translation>Horizontal</translation>
     </message>
@@ -30,9 +43,19 @@
 <context>
     <name>PrinterlessPageSetupDialog</name>
     <message>
-        <location filename="../../qtPrintFramework/userInterface/printerlessPageSetupDialog.py" line="31"/>
+        <location filename="../../qtPrintFramework/userInterface/printerlessPageSetupDialog.py" line="43"/>
         <source>Page Setup</source>
         <translation>Configuración de Página</translation>
+    </message>
+    <message>
+        <location filename="../../qtPrintFramework/userInterface/printerlessPageSetupDialog.py" line="37"/>
+        <source>Size</source>
+        <translation>Tamaño</translation>
+    </message>
+    <message>
+        <location filename="../../qtPrintFramework/userInterface/printerlessPageSetupDialog.py" line="38"/>
+        <source>Orientation</source>
+        <translation>Orientación</translation>
     </message>
 </context>
 <context>
@@ -40,12 +63,12 @@
     <message>
         <location filename="../../qtPrintFramework/config.py" line="16"/>
         <source>Size</source>
-        <translation>Tamaño</translation>
+        <translation type="obsolete">Tamaño</translation>
     </message>
     <message>
         <location filename="../../qtPrintFramework/config.py" line="17"/>
         <source>Orientation</source>
-        <translation>Orientación</translation>
+        <translation type="obsolete">Orientación</translation>
     </message>
 </context>
 <context>

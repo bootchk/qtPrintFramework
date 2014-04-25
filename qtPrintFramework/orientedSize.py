@@ -2,11 +2,11 @@
 
 from copy import copy
 
-from PyQt5.QtCore import QSize, QSizeF
-from PyQt5.QtPrintSupport import QPrinter
+from PyQt5.QtCore import QObject, QSize, QSizeF
 
 
-class OrientedSize(object):
+
+class OrientedSize(QObject):
   '''
   General methods for dealing with orientation,
   oriented sizes, and conversions.
@@ -67,21 +67,13 @@ class OrientedSize(object):
     size may be QSize or QSizeF, and result is same type
     Returns a copy.
     '''
-    if orientation == QPrinter.Portrait:
+    if orientation.isPortrait:
       result = copy(size)
     else:
       result = size.transposed() # QSize method, copy with swapped width and height
     assert not result is size
     # it is NOT an assertion that result is normalized
     return result
-  
-  
-  @classmethod
-  def orientationName(cls, orientation):
-      if orientation == 0:
-          return 'Portrait'
-      else:
-          return 'Landscape'
 
 
   @classmethod

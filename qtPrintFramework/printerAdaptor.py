@@ -8,6 +8,8 @@ from qtPrintFramework.orientedSize import OrientedSize
 from qtPrintFramework.paper.paper import Paper
 from qtPrintFramework.paper.standard import StandardPaper
 from qtPrintFramework.paper.custom import CustomPaper
+from qtPrintFramework.orientation import Orientation
+
 
 
 
@@ -83,7 +85,7 @@ class PrinterAdaptor(QPrinter):
               "paper size Inch:"+ str(self.paperSize(QPrinter.Inch)),
               "paper size DP:"+ str(self.paperSize(QPrinter.DevicePixel)),
               "print rect MM:" + str(self.pageRect(QPrinter.Millimeter)),
-              "orientation:" + str(self.orientation()))
+              "orientation:" + str(self.paperOrientation))
     return '\n   '.join(terms)
   
   
@@ -108,7 +110,7 @@ class PrinterAdaptor(QPrinter):
     # !!! Not call deprecated self.pageSize(), it is in error also.
     # The overloaded paperSize(MM) returns an epsilon correct (except for floating precision) correct result
     floatPaperDimensionsMM = self.paperSizeMM
-    correctPaperEnum = Paper.enumForPageSizeByMatchDimensions(floatPaperDimensionsMM, self.orientation())
+    correctPaperEnum = Paper.enumForPageSizeByMatchDimensions(floatPaperDimensionsMM, self.paperOrientation)
     if correctPaperEnum is None:
       # self's paperSize(Millimeter) doesn't match any StandardPaper therefore self.paperSize() should be Custom
       assert self.paperSize() == QPagedPaintDevice.Custom
@@ -117,9 +119,9 @@ class PrinterAdaptor(QPrinter):
         # Rounding failed: Qt passed a long
         # TODO Better to set to some non-zero default, or to emulate Qt's large size?
         print("Rounding failed, setting CustomPaper to default size.")
-        result = CustomPaper(CustomPaper.defaultSize(), orientation=self.orientation)
+        result = CustomPaper(CustomPaper.defaultSize(), orientation=self.paperOrientation)
       else:
-        result = CustomPaper(integralOrientedSizeMM=size, orientation=self.orientation())
+        result = CustomPaper(integralOrientedSizeMM=size, orientation=self.paperOrientation)
     else:
       result = StandardPaper(correctPaperEnum)  
     assert isinstance(result, (StandardPaper, CustomPaper))
@@ -132,10 +134,15 @@ class PrinterAdaptor(QPrinter):
   
   '''
   Methods that alias Qt methods for clarification
-  
-  orientation() is not aliased
   '''
-      
+  @property
+  def paperOrientation(self):
+    '''
+    Orientation object from self.
+    '''
+    return Orientation(self.orientation())  # Call QPrinter.orientation
+  
+  
   def printablePageRect(self):
     '''
     Rect that can be printed. Paper less printer's limitations (unprintable) less user defined margins.

@@ -3,7 +3,7 @@
 from PyQt5.QtPrintSupport import QPrinter
 
 from qtPrintFramework.model.adaptedModel import AdaptedModel
-
+from qtPrintFramework.orientation import Orientation
 
 class AdaptedPageOrientationModel(AdaptedModel):
   '''
@@ -27,8 +27,7 @@ class AdaptedPageOrientationModel(AdaptedModel):
     This is less flexible, doesn't capture Qt's values automatically.
     But is i18n
     '''
-    print("Translation:", self.tr("Portrait"))
-    self.values = {self.tr("Portrait"):QPrinter.Portrait,
-                   self.tr("Landscape"):QPrinter.Landscape
+    self.values = {Orientation(QPrinter.Portrait).name : QPrinter.Portrait,
+                   Orientation(QPrinter.Landscape).name : QPrinter.Landscape
                    }
     

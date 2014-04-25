@@ -1,14 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE TS><TS version="2.0" language="zh" sourcelanguage="">
+<!DOCTYPE TS>
+<TS version="2.1" language="zh">
 <context>
     <name>AdaptedPageOrientationModel</name>
     <message>
         <location filename="../../qtPrintFramework/model/pageOrientation.py" line="30"/>
         <source>Portrait</source>
-        <translation>竖直的</translation>
+        <translation type="obsolete">竖直的</translation>
     </message>
     <message>
         <location filename="../../qtPrintFramework/model/pageOrientation.py" line="31"/>
+        <source>Landscape</source>
+        <translation type="obsolete">横的</translation>
+    </message>
+</context>
+<context>
+    <name>Orientation</name>
+    <message>
+        <location filename="../../qtPrintFramework/orientation.py" line="37"/>
+        <source>Portrait</source>
+        <translation>竖直的</translation>
+    </message>
+    <message>
+        <location filename="../../qtPrintFramework/orientation.py" line="39"/>
         <source>Landscape</source>
         <translation>横的</translation>
     </message>
@@ -29,9 +43,19 @@
 <context>
     <name>PrinterlessPageSetupDialog</name>
     <message>
-        <location filename="../../qtPrintFramework/userInterface/printerlessPageSetupDialog.py" line="31"/>
+        <location filename="../../qtPrintFramework/userInterface/printerlessPageSetupDialog.py" line="43"/>
         <source>Page Setup</source>
         <translation>页面设置</translation>
+    </message>
+    <message>
+        <location filename="../../qtPrintFramework/userInterface/printerlessPageSetupDialog.py" line="37"/>
+        <source>Size</source>
+        <translation>大小</translation>
+    </message>
+    <message>
+        <location filename="../../qtPrintFramework/userInterface/printerlessPageSetupDialog.py" line="38"/>
+        <source>Orientation</source>
+        <translation>方位</translation>
     </message>
 </context>
 <context>
@@ -39,12 +63,12 @@
     <message>
         <location filename="../../qtPrintFramework/config.py" line="16"/>
         <source>Size</source>
-        <translation type="unfinished">大小</translation>
+        <translation type="obsolete">大小</translation>
     </message>
     <message>
         <location filename="../../qtPrintFramework/config.py" line="17"/>
         <source>Orientation</source>
-        <translation type="unfinished">方位</translation>
+        <translation type="obsolete">方位</translation>
     </message>
 </context>
 <context>

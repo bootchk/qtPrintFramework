@@ -8,6 +8,7 @@ from qtPrintFramework.paper.paper import Paper
 from qtPrintFramework.paper.standard import StandardPaper
 from qtPrintFramework.paper.custom import CustomPaper
 from qtPrintFramework.orientedSize import OrientedSize
+from qtPrintFramework.orientation import Orientation
 
 
 
@@ -57,7 +58,7 @@ class PageSetup(QObject):
     
     " Model.  Initialized to default from control's models."
     self.paper = StandardPaper(self.control.sizeControl.default())
-    self.orientation = self.control.orientationControl.default()
+    self.orientation = Orientation(self.control.orientationControl.default())
     
     " Possibly change default model from settings."
     self.initializeModelFromSettings(getDefaultsFromPrinterAdaptor=printerAdaptor)
@@ -126,7 +127,7 @@ class PageSetup(QObject):
     And update controls (which are not visible, and are in parallel with native dialog controls.)
     '''
     self.paper = printerAdaptor.paper() # new instance
-    self.orientation = printerAdaptor.orientation()
+    self.orientation = printerAdaptor.paperOrientation
     if self.paper.isCustom:
       # capture size chosen by user, say in native Print dialog
       integralOrientedSizeMM = OrientedSize.roundedSize(sizeF=printerAdaptor.paperSizeMM)
@@ -153,7 +154,7 @@ class PageSetup(QObject):
     The same applies here; this may not have the intended effect.
     '''
     
-    printerAdaptor.setOrientation(self.orientation)
+    printerAdaptor.setOrientation(self.orientation.value)
     
     # Formerly we called _toPrinterAdaptorByIntegralMMSize() here
     
@@ -260,7 +261,7 @@ class PageSetup(QObject):
     integralOrientedHeightValue = qsettings.value( "paperintegralOrientedHeight", defaultSize.height())
     
     # Orientation first, needed for orienting paper size
-    self.orientation = self._intForSetting(orientationValue)
+    self.orientation = Orientation(self._intForSetting(orientationValue))
     
     size = QSize(self._intForSetting(integralOrientedWidthValue),
                 self._intForSetting(integralOrientedHeightValue))
@@ -269,7 +270,7 @@ class PageSetup(QObject):
                                          orientation=self.orientation)
     qsettings.endGroup()
     assert isinstance(self.paper, Paper)  # !!! Might be custom of unknown size
-    assert isinstance(self.orientation, int)
+    assert isinstance(self.orientation, Orientation)
     print("PageSetup from settings:", str(self))
   
   
@@ -278,7 +279,7 @@ class PageSetup(QObject):
     qsettings.beginGroup( "paperlessPrinter" )
     # Although Paper is pickleable, simplify to int.  QSettings stores objects correctly?
     qsettings.setValue( "paperEnum", self.paper.paperEnum )
-    qsettings.setValue( "paperOrientation", self.orientation )
+    qsettings.setValue( "paperOrientation", self.orientation.value )
     integralOrientedSize = self.paper.integralOrientedSizeMM(self.orientation)
     qsettings.setValue( "paperintegralOrientedWidth", integralOrientedSize.width())
     qsettings.setValue( "paperintegralOrientedHeight", integralOrientedSize.height())
@@ -321,7 +322,7 @@ class PageSetup(QObject):
       self.control.sizeControl.setValue(0) # Typically A4 ?
     else:
       self.control.sizeControl.setValue(self.paper.paperEnum)
-    self.control.orientationControl.setValue(self.orientation)
+    self.control.orientationControl.setValue(self.orientation.value)
     assert self.isModelEqualView()
 
 
@@ -340,7 +341,7 @@ class PageSetup(QObject):
     the orientation of an existing Custom paper???
     '''
     # Orientation choice is meaningful even if paper is Custom with default size?
-    self.orientation = self.control.orientationControl.value
+    self.orientation = Orientation(self.control.orientationControl.value)
     
     # Create new instance of Paper from enum.  Old instance garbage collected.
     self.paper = self._paperFromEnum(self.control.sizeControl.value)
@@ -354,7 +355,7 @@ class PageSetup(QObject):
   def isModelEqualView(self):
     # allow one disparity: self is Custom and view is A4.  See toControlView.
     result = ( self.paper.paperEnum == self.control.sizeControl.value or self.paper.paperEnum == QPrinter.Custom and self.control.sizeControl.value == 0) \
-          and self.orientation == self.control.orientationControl.value
+          and self.orientation.value == self.control.orientationControl.value
     if not result:
       print(self.paper, self.orientation, self.control.sizeControl.value, self.control.orientationControl.value)
     return result
@@ -364,11 +365,11 @@ class PageSetup(QObject):
     Weak comparison: computed printerAdaptor.paper() equal self.
     printerAdaptor.paperSize() might still not equal self.paperEnum
     '''
-    result = self.paper == printerAdaptor.paper() and self.orientation == printerAdaptor.orientation()
+    result = self.paper == printerAdaptor.paper() and self.orientation == printerAdaptor.paperOrientation
     if not result:
       print("pageSetup differs:", 
             self.paper.orientedDescription(self.orientation), 
-            printerAdaptor.paper().orientedDescription(printerAdaptor.orientation()))
+            printerAdaptor.paper().orientedDescription(printerAdaptor.paperOrientation))
     return result
   
   def isStronglyEqualPrinterAdaptor(self, printerAdaptor):
@@ -380,7 +381,7 @@ class PageSetup(QObject):
     '''
     # partialResult: enums and orientation
     partialResult = self.paper.paperEnum == printerAdaptor.paperSize() \
-          and self.orientation == printerAdaptor.orientation()
+          and self.orientation == printerAdaptor.paperOrientation
     
     # Compare sizes.  All Paper including Custom has a size.
     sizeResult = partialResult and self.paper.isOrientedSizeEpsilonEqual(self.orientation, printerAdaptor.paperSizeMM)
@@ -409,7 +410,7 @@ class PageSetup(QObject):
       # TODO warning dialog here
       print(">>>> Warning: PageSetup sets Custom paper to default size.  You may change size when you Print. ")
       result = CustomPaper(integralOrientedSizeMM=CustomPaper.defaultSize(),
-                           orientation=QPrinter.Portrait)
+                           orientation=Orientation()) # default to Portrait
     else:
       result = StandardPaper(paperEnum)
     return result

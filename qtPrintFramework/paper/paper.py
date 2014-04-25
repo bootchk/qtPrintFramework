@@ -169,15 +169,12 @@ class Paper(object):
   
   def orientedDescription(self, orientation):
     ''' Human readable description also oriented. '''
-    return " ".join(( self.name, OrientedSize.orientationName(orientation), self._orientedSizeString(orientation)))
+    return " ".join(( self.name, orientation.name, self._orientedSizeString(orientation)))
   
   def _orientedSizeString(self, orientation):
     " string for oriented size  "
     size = self.integralOrientedSizeMM(orientation)
     return str(size.width()) + 'x' + str(size.height()) + 'mm'
-  
-  
-  
   
   
   @property
