@@ -1,4 +1,5 @@
 
+import sys
 
 from PyQt5.QtCore import QSize
 from PyQt5.QtPrintSupport import QPrinter
@@ -9,7 +10,6 @@ from qtPrintFramework.paper.paper import Paper
 from qtPrintFramework.paper.standard import StandardPaper
 from qtPrintFramework.paper.custom import CustomPaper
 from qtPrintFramework.orientation import Orientation
-
 
 
 
@@ -178,4 +178,26 @@ class PrinterAdaptor(QPrinter):
     return self.paperSize(QPrinter.Millimeter)
     
     
+  def ensureReadyForNativeDialog(self):
+    '''
+    On some platforms (OSX) Qt sets printerAdaptor outputFormat to non-native after printing paperless (PDF.)
+    Yet the platform does NOT treat PDF as a 'printer' that can be made current.
+    (Instead, page setup can be done for 'Any'.)
+    
+    Yet Qt on OSX will refuse to use a native dialog on printerAdaptor when outputFormat is non-native.
+    Coerce it to native in this case.
+    
+    TODO if user prints XPS on Win, need the same coercion?
+    
+    !!! This understands the particular platforms where Qt acts differently.
+    '''
+    if sys.platform.startswith('darwin') or sys.platform.startswith('win') \
+      and not self.outputFormat() == QPrinter.NativeFormat:
+      self.setOutputFormat(QPrinter.NativeFormat)
+    
+    # ensure on any platform, self can be used with native print dialog.
+    
+    # This not ensure for native page setup dialog.
+    # Since we are not currently using native page setup dialog?
+
     

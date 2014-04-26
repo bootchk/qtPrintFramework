@@ -148,14 +148,15 @@ class PrintConverser(QObject):
     Start a print conversation, using native print dialog.
     
     On all desktop platforms, the native print dialog supports a paperless printer (PDF or XPS.)
-    Native printer does not imply the printer is a real printer (not paperless.)
-    
+    Native print dialog does not imply the printer is a real printer (not paperless.)
     Native dialog is a different concept than native printer.
     
-    On OSX, printing to PDF,
-    AND on Win, printing to XPS:
-    does NOT change the current printer to a non-native printer.
-    (Qt will allow the native print and page setup dialogs to be used (whether they work is another story.))
+    On OSX, user using native print dialog and choosing print to PDF, 
+    Qt DOES change QPrinter.outputFormat to non-native printer.
+    This framework ensures the outputFormat is always native, so the same QPrinter can be used again.
+    (Qt will not allow the native print and page setup dialogs to be used when outputFormat is non-native).
+    
+    AND on Win, printing to XPS ??
     
     On Linux, printing to PDF:
     DOES change the current printer to a non-native printer
@@ -247,6 +248,7 @@ class PrintConverser(QObject):
     self.dump("Native print to")
     
     self.checkInvariantAndFix()
+    self.printerAdaptor.ensureReadyForNativeDialog()
     dialog = QPrintDialog(self.printerAdaptor, parent=self.parentWidget)
     self._showPrintRelatedDialogWindowModal(dialog, acceptSlot=self._acceptNativePrintSlot)
     
