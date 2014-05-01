@@ -18,6 +18,7 @@ class Orientation(QObject):
   def __init__(self, enumValue=None):
     super(Orientation, self).__init__()
     if enumValue is None:
+      print("Defaulting orientation to Portrait.")
       self.value = QPrinter.Portrait
     else:
       assert enumValue == QPrinter.Portrait or enumValue == QPrinter.Landscape
