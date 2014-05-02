@@ -40,7 +40,7 @@ class PageAttributeComboBox(QComboBox):
     # !!! connecting to str type signal
     self.currentIndexChanged[str].connect(self.adaptValueChanged)
     
-    self.alignItems()
+    self._alignSelf()
   
 
   '''
@@ -112,12 +112,33 @@ class PageAttributeComboBox(QComboBox):
     return i
 
 
-  def alignItems(self):
-    " See web. "
+  def _alignSelf(self):
+    '''
+    See web for much discussion.
+     
+    lineEdit must be editable to set alignment, but then can be made readOnly
+     
+    right alignment didn't seem to have desired effect on Linux May 2014.
+    right alignment cut off right side of text under scroll bar on Win Vista May 2014 see QTBUG 33176
+    
+    Apple HIG guidelines don't seem to suggest an alignment.
+    But since the widget is left aligned (in a form), might as well left align the items also?
+    
+    If aligning right, does this help:
+    comboBox.view().setLayoutDirection(Qt.RightToLeft)
+    '''
+    direction = Qt.AlignLeft
+    self._alignTextEdit(direction=direction)
+    ##self.view().setLayoutDirection(Qt.RightToLeft)
+    self._alignItems(direction)
+  
+  def _alignItems(self, direction):
+    for i in range(0, self.count()):
+      print("Aligning item")
+      self.setItemData(i, direction, Qt.TextAlignmentRole)
+    
+  def _alignTextEdit(self, direction):
     self.setEditable(True)
     self.lineEdit().setReadOnly(True)
-    self.lineEdit().setAlignment(Qt.AlignRight)
-    for i in range(0, self.count()):
-      self.setItemData(i, Qt.AlignRight, Qt.TextAlignmentRole)
-    
+    self.lineEdit().setAlignment(direction)
     
