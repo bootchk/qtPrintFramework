@@ -454,6 +454,8 @@ class PrintConverser(QObject):
     - not empty (both w and h > 0)
     else InvalidPageSize.
     
+    Units DevicePixel
+    
     Assert not empty implies isValid, which is both w and h >= 0.
     
     Exported because app may wish to know page size even if not printing.
