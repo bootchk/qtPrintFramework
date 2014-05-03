@@ -1,6 +1,5 @@
-'''
-'''
-import sys
+
+
 from copy import copy
 
 from PyQt5.QtCore import QObject
@@ -14,6 +13,10 @@ from qtPrintFramework.userInterface.warn import Warn
 from qtPrintFramework.pageSetup import PageSetup
 
 import qtPrintFramework.config as config
+
+
+class InvalidPageSize(Exception):
+  pass
 
 
 
@@ -297,12 +300,12 @@ class PrintConverser(QObject):
     This may happen if user specifies a small Custom paper and large margins.
     Handler for print requires this, else may throw an exception e.g. for division by zero.
     '''
-    size = self.printerAdaptor.printablePageSize
-    if size.isValid() and not size.isEmpty():
+    try:
+      _ = self.printablePageSize
       self.userAcceptedPrint.emit()
       if config.DEBUG:
         print("Emit userAcceptedPrint")
-    else:
+    except InvalidPageSize:
       self.warn.pageTooSmall()
       # Not emit
     
@@ -446,7 +449,20 @@ class PrintConverser(QObject):
   '''
   @property
   def printablePageSize(self):
-    return self.printerAdaptor.printablePageSize
+    '''
+    QSizeF that is:
+    - not empty (both w and h > 0)
+    else InvalidPageSize.
+    
+    Assert not empty implies isValid, which is both w and h >= 0.
+    
+    Exported because app may wish to know page size even if not printing.
+    '''
+    result = self.printerAdaptor.printablePageSize
+    if result.isEmpty():
+      raise InvalidPageSize
+    return result
+  
   
   def paper(self):
     return self.printerAdaptor.paper()

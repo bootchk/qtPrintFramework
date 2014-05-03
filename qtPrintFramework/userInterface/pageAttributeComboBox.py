@@ -134,7 +134,7 @@ class PageAttributeComboBox(QComboBox):
   
   def _alignItems(self, direction):
     for i in range(0, self.count()):
-      print("Aligning item")
+      #print("Aligning item")
       self.setItemData(i, direction, Qt.TextAlignmentRole)
     
   def _alignTextEdit(self, direction):
