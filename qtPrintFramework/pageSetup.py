@@ -66,6 +66,7 @@ class PageSetup(QObject):
     
     " Ensure model equals control/view "
     # TODO only do this just before showing dialog
+    # TODO if printer has been removed since settings created, this may fail
     self.toControlViewExcludeCustom() # OR toControlView()
     assert self.isModelEqualView()
     

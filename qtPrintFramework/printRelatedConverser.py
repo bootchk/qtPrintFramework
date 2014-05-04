@@ -8,7 +8,8 @@ from PyQt5.QtPrintSupport import QPageSetupDialog, QPrintDialog
 from PyQt5.QtCore import pyqtSignal as Signal
 
 from qtPrintFramework.printerAdaptor import PrinterAdaptor
-from qtPrintFramework.userInterface.printerlessPageSetupDialog import PrinterlessPageSetupDialog
+from qtPrintFramework.userInterface.dialog.printerlessPageSetup import PrinterlessPageSetupDialog
+from qtPrintFramework.userInterface.dialog.realPrinterPageSetup import RealPrinterPageSetupDialog
 from qtPrintFramework.userInterface.warn import Warn
 from qtPrintFramework.pageSetup import PageSetup
 
@@ -90,16 +91,17 @@ class PrintConverser(QObject):
     self.printerAdaptor = PrinterAdaptor(parentWidget=parentWidget)
     
     '''
-    NonNative dialog owned by this framework.
+    Static dialog owned by this framework.
+    Requires no knowledge of printerAdaptor or current printer.
     '''
-    self.pageSetupDialog = PrinterlessPageSetupDialog(parentWidget=self.parentWidget)
+    self.toFilePageSetupDialog = PrinterlessPageSetupDialog(parentWidget=self.parentWidget)
     
     '''
-    self owns because self mediates use of it: every conversation
+    self owns because self mediates use of it on every conversation.
     
     PageSetup is initialized from settings OR printerAdaptor.
     '''
-    self.pageSetup = PageSetup(self.printerAdaptor, control=self.pageSetupDialog)
+    self.pageSetup = PageSetup(self.printerAdaptor, control=self.toFilePageSetupDialog)
     
     '''
     Not assert that printerAdaptor equal PageSetup.
@@ -203,7 +205,8 @@ class PrintConverser(QObject):
     
   def conversePageSetupNonNative(self):
     '''
-    Use framework's dialog.
+    Use framework's dialog (which is non-native, doesn't use native dialogs.)
+    
     This MUST be used with non-native printers (Qt has no PageSetup dialog for non-native printers.)
     This CAN be used with native printers (thus it is exported from framework.)
     
@@ -216,16 +219,26 @@ class PrintConverser(QObject):
     # Do we need this warning? User will learn soon enough?
     if self.pageSetup.paper.isCustom:
       self.warn.pageSetupNotUsableOnCustomPaper()
-      
     
-    self._showPrintRelatedDialogWindowModal(self.pageSetupDialog, acceptSlot=self._acceptNonNativePageSetupSlot)
+    # TODO isAdaptingReal ?
+    if self.printerAdaptor.isAdaptingNative():
+      '''
+      native printer is real printer or to file printer
+      Create new dialog having title and papersizemodel from printerAdaptor.
+      '''
+      dialog = RealPrinterPageSetupDialog(parentWidget=self.parentWidget, printerAdaptor=self.printerAdaptor)
+    else:
+      # Use static dialog having fixed title and paperSize model from Qt
+      dialog = self.toFilePageSetupDialog
+    
+    self._showPrintRelatedDialogWindowModal(dialog, acceptSlot=self._acceptNonNativePageSetupSlot)
     # execution continues but conversation not complete
     
     
     
   def _conversePageSetupNative(self):
     '''
-    Use QPageSetup dialog, which works with native printers.
+    Use QPageSetup dialog, which uses native dialogs and works with native printers.
     
     Here, the native dialog remembers page setup.
     We don't pass a PageSetup.

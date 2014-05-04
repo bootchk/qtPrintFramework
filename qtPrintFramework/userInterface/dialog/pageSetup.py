@@ -5,11 +5,11 @@ from PyQt5.QtWidgets import QDialog, QDialogButtonBox, QVBoxLayout, QLabel
 
 from qtPrintFramework.userInterface.pageSetupForm import PageSetupForm
 from qtPrintFramework.pageAttribute import PageAttribute
-from qtPrintFramework.model.paperSize import AdaptedPaperSizeModel 
-from qtPrintFramework.model.pageOrientation import AdaptedPageOrientationModel 
+from qtPrintFramework.model.pageOrientation import AdaptedPageOrientationModel
+from qtPrintFramework.translations import Translations
 
 
-class PrinterlessPageSetupDialog(QDialog):
+class PageSetupDialog(QDialog):
   
   '''
   An editor (view/controller) for PageSetup model.
@@ -24,24 +24,29 @@ class PrinterlessPageSetupDialog(QDialog):
   Should look similar to QPageSetupDialog.
   
   For now, this omits margins as a feature of PageSetup.
+  
+  Inherited by:
+  - PrinterlessPageSetup
+  - RealPrinterPageSetup
   '''
   
-  def __init__(self, parentWidget=None):
+  def __init__(self, parentWidget=None, title=None, paperSizeModel=None, printerAdaptor=None):
 
-    super(PrinterlessPageSetupDialog, self).__init__(parent=parentWidget)
+    super(PageSetupDialog, self).__init__(parent=parentWidget)
     
     # Models for controls
     self.pageOrientationModel = AdaptedPageOrientationModel()
-    self.paperSizeModel = AdaptedPaperSizeModel() 
+    self.paperSizeModel = paperSizeModel
     
     # Properties, i.e. label/control rows
-    self.sizeControl = PageAttribute(label=self.tr("Size"),  model=self.paperSizeModel)
-    self.orientationControl = PageAttribute(label=self.tr("Orientation"), model=self.pageOrientationModel)
+    translations = Translations()
+    self.sizeControl = PageAttribute(label=translations.Size,  model=self.paperSizeModel)
+    self.orientationControl = PageAttribute(label=translations.Orientation, model=self.pageOrientationModel)
     
     # Layout components
     dialogLayout = QVBoxLayout()
     
-    title = self.tr('Page Setup') # OR 'Page Setup PDF' if you also use the native dialog
+    # Use passed title
     if sys.platform.startswith('darwin'):
       # GUI sheet has no title bar
       dialogLayout.addWidget(QLabel(title))

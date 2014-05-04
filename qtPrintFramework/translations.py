@@ -12,3 +12,4 @@ class Translations(QObject):
     
     self.Size = self.tr("Size")
     self.Orientation = self.tr("Orientation")
+    self.PageSetup = self.tr("Page Setup: ")

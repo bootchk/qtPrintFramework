@@ -89,6 +89,14 @@ class PrinterAdaptor(QPrinter):
     return '\n   '.join(terms)
   
   
+  @property
+  def adaptedPrinterName(self):
+    name = self.printerName()
+    if name == "":
+      result = "To File"
+    else:
+      result = name
+    return result
   
   
   def paper(self):

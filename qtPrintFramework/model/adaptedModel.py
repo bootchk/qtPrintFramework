@@ -15,14 +15,17 @@ class AdaptedModel(QObject):  # for i18n
   - know default value
   
   Design notes:
-  - keys of model are untranslated (i18n) since they are like English language program literals.
-  ??? TODO when do they get translated
+  - for some models, keys are untranslated (i18n) since they are like English language program literals.
+  E.G. paper sizes are not translated since A4 is understood in all languages (?)
+  E.G. paper orientation is translated
+  
+  - some subclasses derive model from a printerAdaptor
   '''
   
   # Responsibility: have attribute 'values'
-  def __init__(self):
+  def __init__(self, printerAdaptor=None):
     super(AdaptedModel, self).__init__()
-    self._createValues()  # call subclass
+    self._createValues(printerAdaptor)  # call subclass
     
     
   def _createValues(self):

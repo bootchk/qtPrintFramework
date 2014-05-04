@@ -8,9 +8,11 @@ from qtPrintFramework.model.adaptedModel import AdaptedSortedModel
 
 class AdaptedPaperSizeModel(AdaptedSortedModel):  # !!! Sorted
   '''
+  PaperSizeModel from Qt's enum.
+  i.e. static, a fixed set for use with paperless printers (PDF) that can 'print' to any size you specify.
   '''
     
-  def _createValues(self):
+  def _createValues(self, printerAdaptor=None):
     ''' See super. '''
     '''
     Dictionary keyed by names of paper sizes, of enum values.

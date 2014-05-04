@@ -9,7 +9,7 @@ class AdaptedPageOrientationModel(AdaptedModel):
   '''
   '''
     
-  def _createValues(self):
+  def _createValues(self, printerAdaptor=None):   # printerAdaptor not used
     ''' See super. '''
     '''
     Dictionary keyed by names of paper orientations, of enum values.

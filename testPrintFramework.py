@@ -28,11 +28,11 @@ class ButtonSet(QWidget):
     layout = QVBoxLayout()
   
     # Dispatches to native or non-native page setup dialog according to current printer
-    button = QPushButton("Page Setup for current printer nativeness.")
+    button = QPushButton("Page Setup native if current printer is native.")
     button.clicked.connect(printConverser.conversePageSetup)
     
     # Use this framework's (non-native) dialog and apply it to QPrinter
-    button2 = QPushButton("Page Setup non-native.")
+    button2 = QPushButton("Page Setup using framework dialog for native and non-native printer.")
     button2.clicked.connect(printConverser.conversePageSetupNonNative)
     
     button3 = QPushButton("Print")
@@ -106,10 +106,10 @@ def main():
   translator = QTranslator()
   result = translator.load("/home/bootch/Downloads/SubprojectsPensool/qtPrintFramework/resources/translations/qtPrintFramework_es.qm")
   if not result:
-      print("Failed to load translation")
-      # Not an exception: program continues in default (usually English)
+      print("Not load translation")
+      # Not a failure nor exception: program continues in default (usually English)
   if not app.installTranslator(translator):
-      print("Failed to install translator.")
+      print("Not install translator.")
   
   mainWindow = MainWindow()
   mainWindow.show()
