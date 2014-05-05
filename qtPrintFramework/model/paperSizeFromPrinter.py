@@ -41,6 +41,8 @@ class PrinterPaperSizeModel(AdaptedSortedModel):  # !!! Sorted
     Create model including only those values reported by adapted printer.
     
     If adapted printer is a PDF printer, includes all values known to Qt?  TODO 
+    
+    Qt <5.3 reports multiple Custom sizes for letter sizes on many printers !!
     '''
     result = {}
     
@@ -49,7 +51,7 @@ class PrinterPaperSizeModel(AdaptedSortedModel):  # !!! Sorted
     printerInfo = QPrinterInfo(printerAdaptor)
     printerPaperSizes = printerInfo.supportedPaperSizes()
     for paperSizeEnum in printerPaperSizes:
-      #print paperSizeEnum
+      # print paperSizeEnum
       
       if paperSizeEnum == QPrinter.Custom:
         # Omit custom.  Why? lazy implementation or impossible to reverse?

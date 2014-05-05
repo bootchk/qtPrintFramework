@@ -1,6 +1,6 @@
 
 
-from copy import copy
+from copy import deepcopy
 
 from PyQt5.QtCore import QObject
 from PyQt5.QtPrintSupport import QPageSetupDialog, QPrintDialog
@@ -380,7 +380,7 @@ class PrintConverser(QObject):
     
   
   def _capturePageSetupChange(self):
-    oldPageSetup = copy(self.pageSetup)
+    oldPageSetup = deepcopy(self.pageSetup)
     self.pageSetup.fromPrinterAdaptor(self.printerAdaptor)
     if not oldPageSetup == self.pageSetup:
       self._emitUserChangedPaper()
@@ -401,7 +401,7 @@ class PrintConverser(QObject):
     
     # !!! This is similar, but not the same as _capturePageSetupChange()
     # Here, user made change in a non-native dialog that hasn't yet affected printerAdaptor
-    oldPageSetup = copy(self.pageSetup)
+    oldPageSetup = deepcopy(self.pageSetup)
     self.pageSetup.fromEditor(self.currentFrameworkPageSetupDialog)
     if not oldPageSetup == self.pageSetup:
       self.pageSetup.toPrinterAdaptor(self.printerAdaptor)
