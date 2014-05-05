@@ -191,14 +191,7 @@ class PageSetup(QObject):
       self._toPrinterAdaptorByFloatInchSize(printerAdaptor)
     """
       
-    if not self.isEqualPrinterAdaptor(printerAdaptor):
-      '''
-      Despite best efforts, could not get printerAdaptor (and the platform)
-      to have page setup we desire.
-      '''
-      print(">>>>>>>>>>>>Warning: printerAdaptor pageSetup disagrees.")
-      
-      
+    self.warnIfDisagreesWithPrinterAdaptor(printerAdaptor)
     # Ideally (if Qt was bug free) these assertions should hold
     #assert self.isStronglyEqualPrinterAdaptor(printerAdaptor)
     #assert self.isEqualPrinterAdaptor(printerAdaptor)
@@ -428,6 +421,18 @@ class PageSetup(QObject):
       if not self.paper.isCustom:
         print (self.paper.integralOrientedSizeMM(self.orientation) )  # our size mm (not defined for Custom)
     return result
+  
+  
+  def warnIfDisagreesWithPrinterAdaptor(self, printerAdaptor):
+    '''
+    Despite best efforts, could not get printerAdaptor to match self.
+    However, the platform native dialogs might be correct,
+    so the situation might correct itself after user uses native dialogs.
+    So only give a warning (and the user may see artifactual wrong page outline.)
+    This situation mainly occurs on OSX.
+    '''
+    if not self.isEqualPrinterAdaptor(printerAdaptor):
+      print(">>>>>>>>>>>>Warning: printerAdaptor pageSetup disagrees.")
     
   
   def _paperFromEnum(self, paperEnum):

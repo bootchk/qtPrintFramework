@@ -384,7 +384,7 @@ class PrintConverser(QObject):
     self.pageSetup.fromPrinterAdaptor(self.printerAdaptor)
     if not oldPageSetup == self.pageSetup:
       self._emitUserChangedPaper()
-    assert self.pageSetup.isEqualPrinterAdaptor(self.printerAdaptor)
+    self.pageSetup.warnIfDisagreesWithPrinterAdaptor(self.printerAdaptor)
     
 
   def _acceptNonNativePageSetupSlot(self):
@@ -406,7 +406,7 @@ class PrintConverser(QObject):
     if not oldPageSetup == self.pageSetup:
       self.pageSetup.toPrinterAdaptor(self.printerAdaptor)
       self._emitUserChangedPaper()
-    assert self.pageSetup.isEqualPrinterAdaptor(self.printerAdaptor)
+    self.pageSetup.warnIfDisagreesWithPrinterAdaptor(self.printerAdaptor)
     
     self.dump("accept nonnative page setup, printerAdaptor after setting it")
 
