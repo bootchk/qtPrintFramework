@@ -17,21 +17,22 @@ class PageSetup(QObject):
   Persistent user's choice of page setup attributes.
   
   This defines the set of attributes.
-  The control (a dialog) defines the labels and models for attribute controls.
+  The editor (a dialog) defines the labels and models for attribute controls.
   Currently, we omit margins attribute of page setup.
   
   For a CustomPaper, we DO persist user's choice of size for the Custom paper.
   
   Responsibilities:
-  - editable via our private PrinterlessPageSetupDialog
+  - editable via a PageSetupDialog
     (user can also edit a 'the page setup" using a native dialog, but that comes here via PrinterAdaptor 
   - save/restore self to settings, so self persists with app, not with a printer
   - apply/get self to/from PrinterAdaptor (via native dialogs.)
   
   Almost a responsibility:
-  - edit: PrinterlessPageSetupDialog edits this, and knows this intimately by iterating over editable PageAttributes.
+  - edit: a PageSetupDialog edits this, and knows this intimately by iterating over editable PageAttributes.
     But other dialogs (native) contribute to self state.
     See PrintRelatedConverser.
+    Editor is also known as control/view.
   
   For some apps, a PageSetup (as a user choice) is an attribute of a document.
   For other apps, a PageSetup is only an attribute of a user (a setting.)
@@ -49,26 +50,31 @@ class PageSetup(QObject):
   They are often both confusingly used for the ideal concept (regardless of whether real thing is involved.)
   '''
   
-  def __init__(self, printerAdaptor, control):
+  def __init__(self, printerAdaptor, masterEditor):
     
     super(PageSetup, self).__init__()
     
-    " Control/view"
-    self.control = control
+    '''
+    masterEditor is an editor whose model is the master, i.e. defined by Qt.
+    All other editor model's are subsets.
+    Self can be edited by many subclasses of editor i.e. RealPrinterPageSetupDialog and PrinterlessPageSetupDialog.
+    I.E. editor is not constant and is passed for many methods.
+    '''
     
-    " Model.  Initialized to default from control's models."
-    self.paper = StandardPaper(self.control.sizeControl.default())
-    self.orientation = Orientation(self.control.orientationControl.default())
+    " Model.  Initialized to default from masterEditor's models."
+    self.paper = StandardPaper(masterEditor.sizeControl.default())
+    self.orientation = Orientation(masterEditor.orientationControl.default())
     
     " Possibly change default model from settings."
     self.initializeModelFromSettings(getDefaultsFromPrinterAdaptor=printerAdaptor)
     # Not assert that printerAdaptor equals self yet.
     
-    " Ensure model equals control/view "
-    # TODO only do this just before showing dialog
-    # TODO if printer has been removed since settings created, this may fail
-    self.toControlViewExcludeCustom() # OR toControlView()
-    assert self.isModelEqualView()
+    '''
+    Is is NOT an assertion that model equals editor.
+    We only ensure that just before showing dialog
+    ##self.toEditorExcludeCustom(masterEditor) # OR toEditor()
+    ##assert self._isModelEqualEditor(masterEditor)
+    '''
     
     '''
     It is NOT an assertion that self.isEqualPrinterAdaptor(printerAdaptor)
@@ -135,9 +141,8 @@ class PageSetup(QObject):
       self.paper.setSize(integralOrientedSizeMM = integralOrientedSizeMM, 
                          orientation=self.orientation)
     # else size of paper is standard.
-                          
-    self.toControlViewExcludeCustom() # OR toControlView()
-    self.toSettings()   # FUTURE optimization: only if non-native
+    
+    # editor and settings are not updated                    
     
     
   def toPrinterAdaptor(self, printerAdaptor):
@@ -235,7 +240,7 @@ class PageSetup(QObject):
     print("setPaperSize(Inch)", newPaperSizeInch)
     printerAdaptor.setPaperSize(newPaperSizeInch, QPrinter.Inch)
     
-    
+  
     
   '''
   To/from settings.
@@ -244,6 +249,8 @@ class PageSetup(QObject):
   QCoreApplication.setOrganizationName("Foo")
   QCoreApplication.setOrganizationDomain("foo.com")
   QCoreApplication.setApplicationName("Bar")
+  
+  toSettings is called in reaction to dialog accept see PrintRelatedConverser.
   '''
   
   def fromSettings(self, getDefaultsFromPrinterAdaptor):
@@ -299,19 +306,22 @@ class PageSetup(QObject):
   
   
   '''
-  Model values to/from control/views
+  Model values to/from editors
   Exported to printRelatedConverser.
   View diverges from model while dialog is active.
   When dialog is accepted or canceled, view and model are made equal again.
+  
+  # TODO if printer has been removed since settings created, this may fail
   '''
-  def toControlView(self):
+  
+  def toEditor(self, editor):
     # Allow Custom
-    self.control.sizeControl.setValue(self.paper.paperEnum)
-    self.control.orientationControl.setValue(self.orientation)
-    assert self.isModelEqualView()
+    editor.sizeControl.setValue(self.paper.paperEnum)
+    editor.orientationControl.setValue(self.orientation.value)
+    assert self._isModelEqualEditor(editor)
     
     
-  def toControlViewExcludeCustom(self):
+  def toEditorExcludeCustom(self, editor):
     '''
     To view, except if self is Custom,
     select another default value in view.
@@ -320,19 +330,21 @@ class PageSetup(QObject):
     '''
     if self.paper.paperEnum == QPrinter.Custom:
       # Not allow Custom into dialog
-      self.control.sizeControl.setValue(0) # Typically A4 ?
+      editor.sizeControl.setValue(0) # Typically A4 ?
     else:
-      self.control.sizeControl.setValue(self.paper.paperEnum)
-    self.control.orientationControl.setValue(self.orientation.value)
-    assert self.isModelEqualView()
+      editor.sizeControl.setValue(self.paper.paperEnum)
+    editor.orientationControl.setValue(self.orientation.value)
+    assert self._isModelEqualEditor(editor)
 
 
-  def restoreViewToModel(self):
+  """
+  def restoreEditorToModel(self, editor):
     # canceled edit
-    self.toControlViewExcludeCustom()
+    self.toEditorExcludeCustom(editor)
+  """
     
   
-  def fromControlView(self):
+  def fromEditor(self, editor):
     ''' 
     NonNative PageSetup Dialog was accepted.  Capture values from view to model.
     
@@ -342,23 +354,23 @@ class PageSetup(QObject):
     the orientation of an existing Custom paper???
     '''
     # Orientation choice is meaningful even if paper is Custom with default size?
-    self.orientation = Orientation(self.control.orientationControl.value)
+    self.orientation = Orientation(editor.orientationControl.value)
     
     # Create new instance of Paper from enum.  Old instance garbage collected.
-    self.paper = self._paperFromEnum(self.control.sizeControl.value)
+    self.paper = self._paperFromEnum(editor.sizeControl.value)
     
-    assert self.isModelEqualView()
+    assert self._isModelEqualEditor(editor)
     
   
   '''
   Assertion support
   '''
-  def isModelEqualView(self):
-    # allow one disparity: self is Custom and view is A4.  See toControlView.
-    result = ( self.paper.paperEnum == self.control.sizeControl.value or self.paper.paperEnum == QPrinter.Custom and self.control.sizeControl.value == 0) \
-          and self.orientation.value == self.control.orientationControl.value
+  def _isModelEqualEditor(self, editor):
+    # allow one disparity: self is Custom and view is A4.  See toEditor.
+    result = ( self.paper.paperEnum == editor.sizeControl.value or self.paper.paperEnum == QPrinter.Custom and editor.sizeControl.value == 0) \
+          and self.orientation.value == editor.orientationControl.value
     if not result:
-      print(self.paper, self.orientation, self.control.sizeControl.value, self.control.orientationControl.value)
+      print(self.paper, self.orientation, editor.sizeControl.value, editor.orientationControl.value)
     return result
   
   def isEqualPrinterAdaptor(self, printerAdaptor):

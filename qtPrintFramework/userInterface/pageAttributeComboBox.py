@@ -56,6 +56,7 @@ class PageAttributeComboBox(QComboBox):
     emits a signal which below we re emit as valueChanged.
     '''
     #print("setValue", newValue)
+    assert isinstance(newValue, int)  # Weak.  Stronger is: instance of a particular enum type.
     self.setCurrentIndex( self._indexOfValue(newValue) )
     
   

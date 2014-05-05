@@ -101,7 +101,7 @@ class PrintConverser(QObject):
     
     PageSetup is initialized from settings OR printerAdaptor.
     '''
-    self.pageSetup = PageSetup(self.printerAdaptor, control=self.toFilePageSetupDialog)
+    self.pageSetup = PageSetup(self.printerAdaptor, masterEditor=self.toFilePageSetupDialog)
     
     '''
     Not assert that printerAdaptor equal PageSetup.
@@ -112,6 +112,10 @@ class PrintConverser(QObject):
     Still not assert that printerAdaptor equal PageSetup, since adapted printer might not support.
     Usually they are equal.  But user might have changed system default printer.
     '''
+    
+    self.currentFrameworkPageSetupDialog = None  # which dialog instance (provided by framework) is in use.
+    
+    
     
   def dump(self, condition):
     if config.DEBUG:
@@ -227,10 +231,15 @@ class PrintConverser(QObject):
       Create new dialog having title and papersizemodel from printerAdaptor.
       '''
       dialog = RealPrinterPageSetupDialog(parentWidget=self.parentWidget, printerAdaptor=self.printerAdaptor)
+      # Ensure editor chosen value matches pageSetup
+      self.pageSetup.toEditor(dialog)
     else:
       # Use static dialog having fixed title and paperSize model from Qt
       dialog = self.toFilePageSetupDialog
+      # Ensure editor chosen value matches pageSetup
+      self.pageSetup.toEditorExcludeCustom(dialog)
     
+    self.currentFrameworkPageSetupDialog = dialog
     self._showPrintRelatedDialogWindowModal(dialog, acceptSlot=self._acceptNonNativePageSetupSlot)
     # execution continues but conversation not complete
     
@@ -311,7 +320,6 @@ class PrintConverser(QObject):
     '''
     Ensure printable rect is valid size (not negative) and not empty (both width and height zero.)
     This may happen if user specifies a small Custom paper and large margins.
-    Handler for print requires this, else may throw an exception e.g. for division by zero.
     '''
     try:
       _ = self.printablePageSize
@@ -320,7 +328,14 @@ class PrintConverser(QObject):
         print("Emit userAcceptedPrint")
     except InvalidPageSize:
       self.warn.pageTooSmall()
-      # Not emit
+      '''
+      Not emit, so that printing will not proceed!!
+      Caller must NOT attempt print with current printerAdaptor and PageSetup,
+      since printablePageSize not isValid() and will typically throw another exception e.g. for division by zero.
+      '''
+      
+    # regardless of validity, choice goes to settings
+    self.pageSetup.toSettings()
     
 
 
@@ -341,6 +356,8 @@ class PrintConverser(QObject):
     if config.DEBUG:
       print("Emit userAcceptedPrintPDF")
 
+    self.pageSetup.toSettings()
+      
 
   def _acceptNativePageSetupSlot(self):
     '''
@@ -358,6 +375,8 @@ class PrintConverser(QObject):
     if config.DEBUG:
       print("Emit userAcceptedPageSetup")
   
+    self.pageSetup.toSettings()
+    
   
   def _capturePageSetupChange(self):
     oldPageSetup = copy(self.pageSetup)
@@ -368,13 +387,13 @@ class PrintConverser(QObject):
     
 
   def _acceptNonNativePageSetupSlot(self):
-    '''paperSizeMM
+    '''
     User accepted NonNative PageSetupDialog.
     
     Dialog does not allow user to change adapted printer.
     User might have changed page setup.
     
-    PageSetup control/view has user's choices,
+    PageSetup editor has user's choices,
     but they have not been applied to a PrinterAdaptor.)
     '''
     self.dump("accept nonnative page setup, printerAdaptor before setting it")
@@ -382,7 +401,7 @@ class PrintConverser(QObject):
     # !!! This is similar, but not the same as _capturePageSetupChange()
     # Here, user made change in a non-native dialog that hasn't yet affected printerAdaptor
     oldPageSetup = copy(self.pageSetup)
-    self.pageSetup.fromControlView()
+    self.pageSetup.fromEditor(self.currentFrameworkPageSetupDialog)
     if not oldPageSetup == self.pageSetup:
       self.pageSetup.toPrinterAdaptor(self.printerAdaptor)
       self._emitUserChangedPaper()
@@ -393,6 +412,8 @@ class PrintConverser(QObject):
     self.userAcceptedPageSetup.emit()
     if config.DEBUG:
       print("Emit userAcceptedPageSetup")
+    
+    self.pageSetup.toSettings()
     
     
   def _emitUserChangedPaper(self):
@@ -414,11 +435,16 @@ class PrintConverser(QObject):
     No choices made by user are kept:
     - printerAdaptor still adapts same printer
     - pageSetup of adapted printer is unchanged.
+    
+    Editor's controls may have different values than the model.
+    Must sync editor with model before using editor again.
+    ##self.pageSetup.restoreEditorToModel()
     '''
-    self.pageSetup.restoreViewToModel()
     self.userCanceledPrintRelatedConversation.emit()
     if config.DEBUG:
       print("Emit userCanceledPrintRelatedConversation")
+      
+    # NOT self.pageSetup.toSettings()
     
   
   def checkInvariantAndFix(self):
@@ -481,3 +507,5 @@ class PrintConverser(QObject):
   
   def paper(self):
     return self.printerAdaptor.paper()
+  
+  

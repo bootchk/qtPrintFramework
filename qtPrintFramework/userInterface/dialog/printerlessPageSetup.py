@@ -17,6 +17,6 @@ class PrinterlessPageSetupDialog(PageSetupDialog):
     
     paperSizeModel = AdaptedPaperSizeModel()
     translations = Translations()
-    title = translations.PageSetup
+    title = translations.PageSetupPDF
     super(PrinterlessPageSetupDialog, self).__init__(parentWidget=parentWidget, title=title, paperSizeModel=paperSizeModel)
     
