@@ -11,5 +11,7 @@ setup(name='qtPrintFramework',
       packages=['qtPrintFramework',
                 'qtPrintFramework.model',
                 'qtPrintFramework.userInterface',
-                'qtPrintFramework.paper', ]
+                'qtPrintFramework.userInterface.dialog',
+                'qtPrintFramework.paper', 
+                ]
      )
