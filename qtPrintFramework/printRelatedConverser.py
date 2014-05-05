@@ -220,10 +220,6 @@ class PrintConverser(QObject):
     '''
     self.dump("NonNative page setup to")
     
-    # Do we need this warning? User will learn soon enough?
-    if self.pageSetup.paper.isCustom:
-      self.warn.pageSetupNotUsableOnCustomPaper()
-    
     # TODO isAdaptingReal ?
     if self.printerAdaptor.isAdaptingNative():
       '''
@@ -231,15 +227,20 @@ class PrintConverser(QObject):
       Create new dialog having title and papersizemodel from printerAdaptor.
       '''
       dialog = RealPrinterPageSetupDialog(parentWidget=self.parentWidget, printerAdaptor=self.printerAdaptor)
-      # Ensure editor chosen value matches pageSetup
-      self.pageSetup.toEditor(dialog)
     else:
       # Use static dialog having fixed title and paperSize model from Qt
       dialog = self.toFilePageSetupDialog
-      # Ensure editor chosen value matches pageSetup
-      self.pageSetup.toEditorExcludeCustom(dialog)
+      
     
-    self.currentFrameworkPageSetupDialog = dialog
+    # Do we need this warning? User will learn soon enough?
+    #OLD paper.isCustom isCompatibleWithEditor
+    if not self.pageSetup.isCompatibleWithEditor(dialog):
+      self.warn.pageSetupNotUsableOnCustomPaper()
+      
+    # Ensure editor value matches pageSetup, or is default
+    self.pageSetup.toEditor(dialog)
+      
+    self.currentFrameworkPageSetupDialog = dialog # remember for use later in accepted slot
     self._showPrintRelatedDialogWindowModal(dialog, acceptSlot=self._acceptNonNativePageSetupSlot)
     # execution continues but conversation not complete
     

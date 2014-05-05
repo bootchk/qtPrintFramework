@@ -71,12 +71,8 @@ class PageSetup(QObject):
     
     '''
     Is is NOT an assertion that model equals editor.
-    We only ensure that just before showing dialog
-    ##self.toEditorExcludeCustom(masterEditor) # OR toEditor()
-    ##assert self._isModelEqualEditor(masterEditor)
-    '''
+    We only ensure that just before showing dialog.
     
-    '''
     It is NOT an assertion that self.isEqualPrinterAdaptor(printerAdaptor)
     in the case that printerAdaptor is adapting a native printer.
     That is, we don't force a native printer's page setup onto self (on user's preferred pageSetup for document),
@@ -308,24 +304,46 @@ class PageSetup(QObject):
   '''
   Model values to/from editors
   Exported to printRelatedConverser.
-  View diverges from model while dialog is active.
-  When dialog is accepted or canceled, view and model are made equal again.
+  Editor diverges from model while dialog is active.
+  When dialog is accepted (and if canceled, before showing editor again) editor and model are made equal again.
   
-  # TODO if printer has been removed since settings created, this may fail
+  Since there are a mix of dialogs (native and non-native),
+  and since there are other situations where a PageSetup is not supported by an editor
+  (e.g. printer has been removed since settings created)
+  caller should call isCompatibleWithEditor()
   '''
   
+  def isCompatibleWithEditor(self, editor):
+    '''
+    Are self's values supported by editor's control's models?
+    
+    !!! Not checking orientation, only paper kind.
+    Compile time assertion that all editors support all known values of orientation.
+    '''
+    result = editor.sizeControl.isValueInModel(self.paper.paperEnum)
+    return result
+  
+  
+    
   def toEditor(self, editor):
-    # Allow Custom
+    '''
+    Set value of editor to self's values.
+    
+    When editor does not support self values, set to a default.
+    Typically, editor does not support Custom paper.
+    '''
+    # When value not in model, this sets it to a default.
     editor.sizeControl.setValue(self.paper.paperEnum)
+    
     editor.orientationControl.setValue(self.orientation.value)
-    assert self._isModelEqualEditor(editor)
+    assert self._isModelWeaklyEqualEditor(editor)
     
-    
+  """
   def toEditorExcludeCustom(self, editor):
     '''
-    To view, except if self is Custom,
-    select another default value in view.
-    (Before displaying view, we will warn the user that the view
+    To editor, except if self is Custom,
+    select another default value in editor.
+    (Before displaying editor, we will warn the user that the editor
     does permit editing a Custom PageSetup.)
     '''
     if self.paper.paperEnum == QPrinter.Custom:
@@ -334,19 +352,12 @@ class PageSetup(QObject):
     else:
       editor.sizeControl.setValue(self.paper.paperEnum)
     editor.orientationControl.setValue(self.orientation.value)
-    assert self._isModelEqualEditor(editor)
-
-
+    assert self._isModelWeaklyEqualEditor(editor)
   """
-  def restoreEditorToModel(self, editor):
-    # canceled edit
-    self.toEditorExcludeCustom(editor)
-  """
-    
   
   def fromEditor(self, editor):
     ''' 
-    NonNative PageSetup Dialog was accepted.  Capture values from view to model.
+    NonNative PageSetup Dialog was accepted.  Capture values from editor to model.
     
     Dialog DOES allow choice of Custom, but not specifying size: will default.
     
@@ -359,19 +370,26 @@ class PageSetup(QObject):
     # Create new instance of Paper from enum.  Old instance garbage collected.
     self.paper = self._paperFromEnum(editor.sizeControl.value)
     
-    assert self._isModelEqualEditor(editor)
+    assert self._isModelWeaklyEqualEditor(editor)
     
   
   '''
   Assertion support
   '''
-  def _isModelEqualEditor(self, editor):
-    # allow one disparity: self is Custom and view is A4.  See toEditor.
-    result = ( self.paper.paperEnum == editor.sizeControl.value or self.paper.paperEnum == QPrinter.Custom and editor.sizeControl.value == 0) \
+  def _isModelWeaklyEqualEditor(self, editor):
+    '''
+    Is editor showing self's values.
+    
+    Allow one disparity: self has value that editor does not support (typically Custom)
+    and editor has default value of 0.  See toEditor.
+    '''
+    result = ( self.paper.paperEnum == editor.sizeControl.value \
+               or editor.sizeControl.value == 0) \
           and self.orientation.value == editor.orientationControl.value
     if not result:
       print(self.paper, self.orientation, editor.sizeControl.value, editor.orientationControl.value)
     return result
+  
   
   def isEqualPrinterAdaptor(self, printerAdaptor):
     '''

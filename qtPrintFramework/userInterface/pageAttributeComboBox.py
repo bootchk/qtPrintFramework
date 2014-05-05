@@ -51,21 +51,27 @@ class PageAttributeComboBox(QComboBox):
   '''
   def setValue(self, newValue):
     '''
+    Set value to newValue OR if newValue is not in model, setValue to 0.
+    
     !!! Note the setValue API requires emit valueChanged.
     Implemented below (not here) because setCurrentIndex()
     emits a signal which below we re emit as valueChanged.
     '''
     #print("setValue", newValue)
     assert isinstance(newValue, int)  # Weak.  Stronger is: instance of a particular enum type.
-    self.setCurrentIndex( self._indexOfValue(newValue) )
+    index, _ = self._indexOfValue(newValue)
+    # Regardless if found, set index
+    self.setCurrentIndex( index )
     
-  
   
   def value(self):
     #print("pageAttributeComboBox.value() returns", self.currentText())
     return self._adaptNewValue(self.currentText())
   
   
+  def isValueInModel(self, value):
+    _, wasFound = self._indexOfValue(value)
+    return wasFound
   
     
   '''
@@ -98,6 +104,10 @@ class PageAttributeComboBox(QComboBox):
     
   
   def _indexOfValue(self, searchValue):
+    '''
+    tuple (index of searchValue in model, True)
+     or tuple (0, False)  if searchValue missing from model
+    '''
     # searchValue is an enum value or None, and None can be a value in dictionary
     i = 0
     foundKey = False
@@ -109,8 +119,13 @@ class PageAttributeComboBox(QComboBox):
         foundKey = True
         break
       i += 1
-    assert foundKey, "Missing value: " + str(searchValue) + " in model" + str(self.model) # dict is complete on values
-    return i
+    
+    #OLD assert foundKey, "Missing value: " + str(searchValue) + " in model" + str(self.model) # dict is complete on values
+    if foundKey:
+      result = i, True
+    else:
+      result = 0, False
+    return result
 
 
   def _alignSelf(self):

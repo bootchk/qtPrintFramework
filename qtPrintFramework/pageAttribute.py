@@ -15,9 +15,11 @@ class PageAttribute():
     self.model = model
     self.control = PageAttributeComboBox(model=model) # widget (view displaying model)
     
-    ## self.printerAdaptorSetMethod = printerAdaptorSetMethod
     
-    
+  
+  '''
+  Methods delegated to owned control.
+  '''
   @property
   def value(self):
     '''
@@ -31,13 +33,13 @@ class PageAttribute():
   def setValue(self, value):
     self.control.setValue(value)
     
-    
+  
+  def isValueInModel(self, value):
+    return self.control.isValueInModel(value)
+  
+  
+  
   def default(self):
     return self.model.default()
     
-  """
-  def toPrinterAdaptor(self, printerAdaptor):
-    '''
-    Knows how to apply self to a PrinterAdaptor
-    '''
-  """
+  
