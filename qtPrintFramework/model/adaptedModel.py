@@ -1,5 +1,6 @@
 
 
+
 from PyQt5.QtCore import QObject
 
 class AdaptedModel(QObject):  # for i18n
@@ -29,7 +30,7 @@ class AdaptedModel(QObject):  # for i18n
     
     
   def _createValues(self):
-    raise NotImplementedError, 'Deferred'
+    raise NotImplementedError('Deferred')
   
   
   '''
@@ -49,13 +50,7 @@ class AdaptedModel(QObject):  # for i18n
     
     So this extracts a dictionary from the dictionary (dir) of the owningClass
     '''
-    
-    '''
-    assertion on repr of types?  Why not on the types?
-    #print(enumOwningClass.__class__, str(type(enumType)) )
-    '''
-    assert str(enumOwningClass.__class__) == "<type 'PyQt5.QtCore.pyqtWrapperType'>" 
-    assert str(type(enumType)) == "<type 'sip.enumtype'>"
+    self._checkEnumParameters(self, enumOwningClass, enumType)
     
     adaptedDictionary = {}
     for key, value in vars(enumOwningClass).items():  # Python2 iteritems():
@@ -71,8 +66,7 @@ class AdaptedModel(QObject):  # for i18n
     
     See forward dictionary above.
     '''
-    assert str(enumOwningClass.__class__) == "<type 'PyQt5.QtCore.pyqtWrapperType'>" 
-    assert str(type(enumType)) == "<type 'sip.enumtype'>"
+    self._checkEnumParameters(self, enumOwningClass, enumType)
     
     adaptedDictionary = {}
     for key, value in vars(enumOwningClass).items():  # Python2 iteritems():
@@ -81,6 +75,20 @@ class AdaptedModel(QObject):  # for i18n
         adaptedDictionary[value] = key
     return adaptedDictionary
     
+  
+  def _checkEnumParameters(self, enumOwningClass, enumType):
+    """
+    Commented out until we fix Python version compatibility
+    Python3
+    from PyQt5.QtCore import pyqtWrapperType
+    assert isinstance(enumOwningClass, pyqtWrapperType)
+    print(str(enumOwningClass.__class__), str(type(enumType)))
+    
+    Python2
+    assert str(enumOwningClass.__class__) == "<type 'PyQt5.QtCore.pyqtWrapperType'>" 
+    assert str(type(enumType)) == "<type 'sip.enumtype'>"
+    """
+    return
     
     
   def default(self):

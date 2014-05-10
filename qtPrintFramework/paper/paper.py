@@ -6,6 +6,7 @@ from PyQt5.QtGui import QPagedPaintDevice  # !! Not in QtPrintSupport
 from qtPrintFramework.model.adaptedModel import AdaptedModel
 from qtPrintFramework.orientedSize import OrientedSize
 
+
 class Paper(object):
   '''
   Wrapper around QPagedPaintDevice.PageSize
@@ -179,7 +180,7 @@ class Paper(object):
   
   @property
   def name(self):
-    raise NotImplementedError, 'Deferred'
+    raise NotImplementedError('Deferred')
   
 
   @property
@@ -192,7 +193,7 @@ class Paper(object):
     
     Deferred: subclasses must reimplement.
     '''
-    raise NotImplementedError, 'Deferred'
+    raise NotImplementedError('Deferred')
     
   @property
   def isCustom(self):
