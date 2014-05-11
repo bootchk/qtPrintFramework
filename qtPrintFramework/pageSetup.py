@@ -1,6 +1,6 @@
 
 
-from PyQt5.QtCore import QObject, QSettings, QSizeF, QSize
+from PyQt5.QtCore import QSettings, QSizeF, QSize
 from PyQt5.QtGui import QPagedPaintDevice  # !! Not in QtPrintSupport
 from PyQt5.QtPrintSupport import QPrinter
 
@@ -12,7 +12,7 @@ from qtPrintFramework.orientation import Orientation
 
 
 
-class PageSetup(QObject):
+class PageSetup(object):  # Not a QObject, no signals or tr(), and is copy()'d
   '''
   Persistent user's choice of page setup attributes.
   

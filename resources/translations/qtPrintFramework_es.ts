@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE TS>
-<TS version="2.0" language="es">
+<TS version="2.1" language="es">
 <context>
     <name>AdaptedPageOrientationModel</name>
     <message>
@@ -74,6 +74,11 @@
         <location filename="../../qtPrintFramework/translations.py" line="14"/>
         <source>Page Setup: </source>
         <translation>Configuración de Página: </translation>
+    </message>
+    <message>
+        <location filename="../../qtPrintFramework/translations.py" line="15"/>
+        <source>Page Setup: PDF</source>
+        <translation>Configuración de Página: PDF</translation>
     </message>
 </context>
 <context>

@@ -42,6 +42,6 @@ class PageSetupForm(QFormLayout):
     '''
     A property is a row containing a label widget and a subcontrol widget.
     '''
-    print("adding property", control.label)
+    #print("adding property", control.label)
     self.addRow(control.label, control.control)
       

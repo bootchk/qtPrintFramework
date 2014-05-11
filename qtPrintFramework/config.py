@@ -2,7 +2,7 @@
 
 
 DEBUG = True
-#DEBUG = False
+DEBUG = False
 
 
     
