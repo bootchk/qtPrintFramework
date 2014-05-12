@@ -39,7 +39,7 @@ class AdaptedModel(QObject):  # for i18n
   '''
   
   @classmethod
-  def _getAdaptedDictionary(self, enumOwningClass, enumType):
+  def _getAdaptedDictionary(cls, enumOwningClass, enumType):
     ''' 
     Dictionary keyed by name of enum values.
     i.e. dict[str]=int
@@ -50,7 +50,7 @@ class AdaptedModel(QObject):  # for i18n
     
     So this extracts a dictionary from the dictionary (dir) of the owningClass
     '''
-    self._checkEnumParameters(self, enumOwningClass, enumType)
+    cls._checkEnumParameters(enumOwningClass, enumType)
     
     adaptedDictionary = {}
     for key, value in vars(enumOwningClass).items():  # Python2 iteritems():
@@ -60,13 +60,13 @@ class AdaptedModel(QObject):  # for i18n
     return adaptedDictionary
   
   @classmethod
-  def _getAdaptedReverseDictionary(self, enumOwningClass, enumType):
+  def _getAdaptedReverseDictionary(cls, enumOwningClass, enumType):
     ''' 
     Dictionary keyed by enum values of names.
     
     See forward dictionary above.
     '''
-    self._checkEnumParameters(self, enumOwningClass, enumType)
+    cls._checkEnumParameters(enumOwningClass, enumType)
     
     adaptedDictionary = {}
     for key, value in vars(enumOwningClass).items():  # Python2 iteritems():
@@ -75,8 +75,8 @@ class AdaptedModel(QObject):  # for i18n
         adaptedDictionary[value] = key
     return adaptedDictionary
     
-  
-  def _checkEnumParameters(self, enumOwningClass, enumType):
+  @classmethod
+  def _checkEnumParameters(cls, enumOwningClass, enumType):
     """
     Commented out until we fix Python version compatibility
     Python3
