@@ -16,6 +16,9 @@ from qtPrintFramework.pageSetup import PageSetup
 import qtPrintFramework.config as config
 
 
+'''
+User chose paper and margins yielding invalid pageSize.
+'''
 class InvalidPageSize(Exception):
   pass
 
@@ -32,6 +35,8 @@ class PrintConverser(QObject):
   Knows attributes of printer and page setup: delegates.
   
   Hides non-native/native printer distinction: dispatches.
+  
+  Knows that a reference to dialogs must be kept so they are not destroyed prematurely (especially native).
   
   Implementation:
   owns a PageSetup and a PrinterAdaptor and Dialogs.
@@ -113,8 +118,10 @@ class PrintConverser(QObject):
     Usually they are equal.  But user might have changed system default printer.
     '''
     
+    # !!! Keep reference to dialogs so they are not prematurely destroyed, especially OSX
     self.currentFrameworkPageSetupDialog = None  # which dialog instance (provided by framework) is in use.
-    
+    self.nativePrintDialog = None
+    self.nativePageSetupDialog = None
     
     
   def dump(self, condition):
@@ -226,22 +233,21 @@ class PrintConverser(QObject):
       native printer is real printer or to file printer
       Create new dialog having title and papersizemodel from printerAdaptor.
       '''
-      dialog = RealPrinterPageSetupDialog(parentWidget=self.parentWidget, printerAdaptor=self.printerAdaptor)
+      self.currentFrameworkPageSetupDialog = RealPrinterPageSetupDialog(parentWidget=self.parentWidget, printerAdaptor=self.printerAdaptor)
     else:
       # Use static dialog having fixed title and paperSize model from Qt
-      dialog = self.toFilePageSetupDialog
-      
+      self.currentFrameworkPageSetupDialog = self.toFilePageSetupDialog
     
     # Do we need this warning? User will learn soon enough?
     #OLD paper.isCustom isCompatibleWithEditor
-    if not self.pageSetup.isCompatibleWithEditor(dialog):
+    if not self.pageSetup.isCompatibleWithEditor(self.currentFrameworkPageSetupDialog):
       self.warn.pageSetupNotUsableOnCustomPaper()
       
     # Ensure editor value matches pageSetup, or is default
-    self.pageSetup.toEditor(dialog)
+    self.pageSetup.toEditor(self.currentFrameworkPageSetupDialog)
       
-    self.currentFrameworkPageSetupDialog = dialog # remember for use later in accepted slot
-    self._showPrintRelatedDialogWindowModal(dialog, acceptSlot=self._acceptNonNativePageSetupSlot)
+    self._showPrintRelatedDialogWindowModal(dialog=self.currentFrameworkPageSetupDialog, 
+                                            acceptSlot=self._acceptNonNativePageSetupSlot)
     # execution continues but conversation not complete
     
     
@@ -261,8 +267,9 @@ class PrintConverser(QObject):
     assert self.parentWidget is not None
     
     self.checkInvariantAndFix()
-    dialog = QPageSetupDialog(self.printerAdaptor, parent=self.parentWidget)
-    self._showPrintRelatedDialogWindowModal(dialog, acceptSlot=self._acceptNativePageSetupSlot)
+    self.nativePageSetupDialog = QPageSetupDialog(self.printerAdaptor, parent=self.parentWidget)
+    self._showPrintRelatedDialogWindowModal(dialog=self.nativePageSetupDialog,
+                                            acceptSlot=self._acceptNativePageSetupSlot)
     
     
   '''
@@ -275,8 +282,9 @@ class PrintConverser(QObject):
     
     self.checkInvariantAndFix()
     self.printerAdaptor.ensureReadyForNativeDialog()
-    dialog = QPrintDialog(self.printerAdaptor, parent=self.parentWidget)
-    self._showPrintRelatedDialogWindowModal(dialog, acceptSlot=self._acceptNativePrintSlot)
+    self.nativePrintDialog = QPrintDialog(self.printerAdaptor, parent=self.parentWidget)
+    self._showPrintRelatedDialogWindowModal(dialog=self.nativePrintDialog, 
+                                            acceptSlot=self._acceptNativePrintSlot)
     
     
   def _conversePrintNonNative(self):
