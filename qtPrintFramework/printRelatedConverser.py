@@ -2,7 +2,7 @@
 
 from copy import copy
 
-from PyQt5.QtCore import QObject
+from PyQt5.QtCore import QObject, QSize, QSizeF
 from PyQt5.QtPrintSupport import QPageSetupDialog, QPrintDialog
 
 from PyQt5.QtCore import pyqtSignal as Signal
@@ -498,7 +498,7 @@ class PrintConverser(QObject):
   @property
   def printablePageSize(self):
     '''
-    QSizeF that is:
+    QSize that is:
     - not empty (both w and h > 0)
     else InvalidPageSize.
     
@@ -511,16 +511,18 @@ class PrintConverser(QObject):
     result = self.printerAdaptor.printablePageSize
     if result.isEmpty():
       raise InvalidPageSize
+    assert isinstance(result, QSize)  # Truncation
     return result
   
   @property
   def printablePageSizeInch(self):
     '''
-    Same as above but units Inches.
+    Same as above but units Inch, and QSizeF
     '''
     result = self.printerAdaptor.printablePageSizeInch
     if result.isEmpty():
       raise InvalidPageSize
+    assert isinstance(result, QSizeF)
     return result
   
   

@@ -1,7 +1,7 @@
 
 import sys
 
-from PyQt5.QtCore import QSize
+from PyQt5.QtCore import QSize, QSizeF
 from PyQt5.QtPrintSupport import QPrinter
 from PyQt5.QtGui import QPagedPaintDevice  # !! Not in QtPrintSupport
 
@@ -171,6 +171,7 @@ class PrinterAdaptor(QPrinter):
     QSize of printable rect.  Units DevicePixel
     '''
     result = self.printablePageRect().size()
+    # Rounding with truncation: QSizeF to QSize
     assert isinstance(result, QSize)
     # !!! not ensuring it isValid() and not isEmpty()
     return result
@@ -178,14 +179,14 @@ class PrinterAdaptor(QPrinter):
   @property
   def printablePageSizeInch(self):
     '''
-    QSize of printable rect.  Units Inch.
+    QSizeF of printable rect.  Units Inch.
     
     !!! Device Pixels are not the same real size on different devices.
     They might not even correspond to dots of ink, or resolution.
     '''
     # Overloaded method of Qt
     result = self.pageRect(QPrinter.Inch).size()  # Delegate to QPrinter
-    assert isinstance(result, QSize)
+    assert isinstance(result, QSizeF)
     # !!! not ensuring it isValid() and not isEmpty()
     return result
   
