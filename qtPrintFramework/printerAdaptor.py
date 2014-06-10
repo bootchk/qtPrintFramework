@@ -153,7 +153,7 @@ class PrinterAdaptor(QPrinter):
   
   def printablePageRect(self):
     '''
-    Rect that can be printed. Paper less printer's limitations (unprintable) less user defined margins.
+    Rect that can be printed. Paper minus printer's limitations (unprintable) less user defined margins.
     
     Units DevicePixel
     '''
@@ -175,6 +175,19 @@ class PrinterAdaptor(QPrinter):
     # !!! not ensuring it isValid() and not isEmpty()
     return result
   
+  @property
+  def printablePageSizeInch(self):
+    '''
+    QSize of printable rect.  Units Inch.
+    
+    !!! Device Pixels are not the same real size on different devices.
+    They might not even correspond to dots of ink, or resolution.
+    '''
+    # Overloaded method of Qt
+    result = self.pageRect(QPrinter.Inch).size()  # Delegate to QPrinter
+    assert isinstance(result, QSize)
+    # !!! not ensuring it isValid() and not isEmpty()
+    return result
   
   @property
   def paperSizeMM(self):

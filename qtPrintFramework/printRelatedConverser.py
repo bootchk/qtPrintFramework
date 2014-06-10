@@ -513,6 +513,16 @@ class PrintConverser(QObject):
       raise InvalidPageSize
     return result
   
+  @property
+  def printablePageSizeInch(self):
+    '''
+    Same as above but units Inches.
+    '''
+    result = self.printerAdaptor.printablePageSizeInch
+    if result.isEmpty():
+      raise InvalidPageSize
+    return result
+  
   
   def paper(self):
     return self.printerAdaptor.paper()
