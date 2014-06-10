@@ -80,7 +80,7 @@ class MainWindow(QMainWindow):
     pass
     
   def acceptedPrint(self):
-    print(">>>Accepted print to printable size DP", self.printConverser.printablePageSize)
+    print(">>>Accepted print to printable size inch", self.printConverser.printablePageSizeInch())
     pass
     
   def acceptedPrintPDF(self):

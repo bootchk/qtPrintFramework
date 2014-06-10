@@ -331,7 +331,8 @@ class PrintConverser(QObject):
     This may happen if user specifies a small Custom paper and large margins.
     '''
     try:
-      _ = self.printablePageSize
+      # Test validity of pagesize
+      _ = self.printablePageSizeInch()
       self.userAcceptedPrint.emit()
       if config.DEBUG:
         print("Emit userAcceptedPrint")
@@ -494,32 +495,23 @@ class PrintConverser(QObject):
   '''
   Exported but delegated methods.
   To hide internal chains of delegation.
+  
+  OBSOLETE in Qt: pageRect() which return DevicePixels
   '''
-  @property
-  def printablePageSize(self):
+  
+  def printablePageSizeInch(self):
     '''
-    QSize that is:
+    QSizeF that is:
     - not empty (both w and h > 0)
     else InvalidPageSize.
     
-    Units DevicePixel
+    Units Inch
     
     Assert not empty implies isValid, which is both w and h >= 0.
     
     Exported because app may wish to know page size even if not printing.
     '''
-    result = self.printerAdaptor.printablePageSize
-    if result.isEmpty():
-      raise InvalidPageSize
-    assert isinstance(result, QSize)  # Truncation
-    return result
-  
-  @property
-  def printablePageSizeInch(self):
-    '''
-    Same as above but units Inch, and QSizeF
-    '''
-    result = self.printerAdaptor.printablePageSizeInch
+    result = self.printerAdaptor.printablePageSizeInch()
     if result.isEmpty():
       raise InvalidPageSize
     assert isinstance(result, QSizeF)

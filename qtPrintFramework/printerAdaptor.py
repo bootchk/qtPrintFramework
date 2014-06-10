@@ -1,7 +1,7 @@
 
 import sys
 
-from PyQt5.QtCore import QSize, QSizeF
+from PyQt5.QtCore import QSize, QSizeF, QRect
 from PyQt5.QtPrintSupport import QPrinter
 from PyQt5.QtGui import QPagedPaintDevice  # !! Not in QtPrintSupport
 
@@ -150,41 +150,22 @@ class PrinterAdaptor(QPrinter):
     '''
     return Orientation(self.orientation())  # Call QPrinter.orientation
   
+  """
+  OBSOLETE QPrinter.pageRect() returning DevicePixel is obsolete
+  """
   
-  def printablePageRect(self):
-    '''
-    Rect that can be printed. Paper minus printer's limitations (unprintable) less user defined margins.
-    
-    Units DevicePixel
-    '''
-    '''
-    If paper is Custom, data is flowing not from a defined paper,
-    but from user using platform native dialog through printerAdaptor,
-    or in some cases, a default size (this framework punts.)
-    Qt may be punting in other situations.
-    '''
-    return self.pageRect()  # Delegate to QPrinter
-  
-  @property
-  def printablePageSize(self):
-    '''
-    QSize of printable rect.  Units DevicePixel
-    '''
-    result = self.printablePageRect().size()
-    # Rounding with truncation: QSizeF to QSize
-    assert isinstance(result, QSize)
-    # !!! not ensuring it isValid() and not isEmpty()
-    return result
-  
-  @property
   def printablePageSizeInch(self):
     '''
     QSizeF of printable rect.  Units Inch.
     
     !!! Device Pixels are not the same real size on different devices.
     They might not even correspond to dots of ink, or resolution.
+    
+    If paper is Custom, data is flowing not from a defined paper,
+    but from user using platform native dialog through printerAdaptor,
+    or in some cases, a default size (this framework punts.)
+    Qt may be punting in other situations.
     '''
-    # Overloaded method of Qt
     result = self.pageRect(QPrinter.Inch).size()  # Delegate to QPrinter
     assert isinstance(result, QSizeF)
     # !!! not ensuring it isValid() and not isEmpty()
