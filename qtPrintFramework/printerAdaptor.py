@@ -1,7 +1,7 @@
 
 import sys
 
-from PyQt5.QtCore import QSize, QSizeF, QRect
+from PyQt5.QtCore import QSizeF # , QSize, QRect
 from PyQt5.QtPrintSupport import QPrinter
 from PyQt5.QtGui import QPagedPaintDevice  # !! Not in QtPrintSupport
 
@@ -10,6 +10,7 @@ from qtPrintFramework.paper.paper import Paper
 from qtPrintFramework.paper.standard import StandardPaper
 from qtPrintFramework.paper.custom import CustomPaper
 from qtPrintFramework.orientation import Orientation
+from qtPrintFramework.alertLog import alertLog
 
 
 
@@ -126,7 +127,7 @@ class PrinterAdaptor(QPrinter):
       if size is None:
         # Rounding failed: Qt passed a long
         # TODO Better to set to some non-zero default, or to emulate Qt's large size?
-        print("Rounding failed, setting CustomPaper to default size.")
+        alertLog("Rounding failed, setting CustomPaper to default size.")
         result = CustomPaper(CustomPaper.defaultSize(), orientation=self.paperOrientation)
       else:
         result = CustomPaper(integralOrientedSizeMM=size, orientation=self.paperOrientation)

@@ -9,6 +9,7 @@ from qtPrintFramework.paper.standard import StandardPaper
 from qtPrintFramework.paper.custom import CustomPaper
 from qtPrintFramework.orientedSize import OrientedSize
 from qtPrintFramework.orientation import Orientation
+from qtPrintFramework.alertLog import alertLog
 
 
 
@@ -226,7 +227,7 @@ class PageSetup(object):  # Not a QObject, no signals or tr(), and is copy()'d
       
     assert newPaperSizeInch.isValid()
     # use overload QPrinter.setPaperSize(QPagedPaintDevice.PageSize, Units)
-    print("setPaperSize(Inch)", newPaperSizeInch)
+    #print("setPaperSize(Inch)", newPaperSizeInch)
     printerAdaptor.setPaperSize(newPaperSizeInch, QPrinter.Inch)
     
   
@@ -268,7 +269,8 @@ class PageSetup(object):  # Not a QObject, no signals or tr(), and is copy()'d
     qsettings.endGroup()
     assert isinstance(self.paper, Paper)  # !!! Might be custom of unknown size
     assert isinstance(self.orientation, Orientation)
-    print("PageSetup from settings:", str(self))
+    ## This crashes on decode exception OSX
+    ##print("PageSetup from settings:", str(self))
   
   
   def toSettings(self):
@@ -380,7 +382,8 @@ class PageSetup(object):  # Not a QObject, no signals or tr(), and is copy()'d
                or editor.sizeControl.value == 0) \
           and self.orientation.value == editor.orientationControl.value
     if not result:
-      print(self.paper, self.orientation, editor.sizeControl.value, editor.orientationControl.value)
+      alertLog("pageSetup weakly differs")
+      #print(self.paper, self.orientation, editor.sizeControl.value, editor.orientationControl.value)
     return result
   
   
@@ -391,9 +394,8 @@ class PageSetup(object):  # Not a QObject, no signals or tr(), and is copy()'d
     '''
     result = self.paper == printerAdaptor.paper() and self.orientation == printerAdaptor.paperOrientation
     if not result:
-      print("pageSetup differs:", 
-            self.paper.orientedDescription(self.orientation), 
-            printerAdaptor.paper().orientedDescription(printerAdaptor.paperOrientation))
+      alertLog("pageSetup differs")
+      self.dumpDisagreement(printerAdaptor)
     return result
   
   def isStronglyEqualPrinterAdaptor(self, printerAdaptor):
@@ -412,14 +414,10 @@ class PageSetup(object):  # Not a QObject, no signals or tr(), and is copy()'d
     
     result = partialResult and sizeResult
       
-      
     if not result:
-      print('isStronglyEqualPrinterAdaptor returns False')
-      print(self.paper.paperEnum, printerAdaptor.paperSize(), # our and Qt enums
-            self.orientation, printerAdaptor.orientation(), # our and Qt orientation
-            printerAdaptor.paperSizeMM ) # Qt paperSize(mm)
-      if not self.paper.isCustom:
-        print (self.paper.integralOrientedSizeMM(self.orientation) )  # our size mm (not defined for Custom)
+      alertLog('isStronglyEqualPrinterAdaptor returns False')
+      self.dumpDisagreement(printerAdaptor)
+      
     return result
   
   
@@ -432,9 +430,23 @@ class PageSetup(object):  # Not a QObject, no signals or tr(), and is copy()'d
     This situation mainly occurs on OSX.
     '''
     if not self.isEqualPrinterAdaptor(printerAdaptor):
-      print(">>>>>>>>>>>>Warning: printerAdaptor pageSetup disagrees.")
-    
+      alertLog("PrinterAdaptor pageSetup disagrees.")
   
+  
+  def dumpDisagreement(self, printerAdaptor):
+    '''
+    For debugging, show disagreement.
+    '''
+    return
+    """
+    #print(self.paper.paperEnum, printerAdaptor.paperSize(), # our and Qt enums
+            self.orientation, printerAdaptor.orientation(), # our and Qt orientation
+            printerAdaptor.paperSizeMM ) # Qt paperSize(mm)
+    if not self.paper.isCustom:
+        #print (self.paper.integralOrientedSizeMM(self.orientation) )  # our size mm (not defined for Custom)
+    """
+    
+    
   def _paperFromEnum(self, paperEnum):
     '''
     Instance of a subclass of Paper for paperEnum.
@@ -444,7 +456,7 @@ class PageSetup(object):  # Not a QObject, no signals or tr(), and is copy()'d
     assert isinstance(paperEnum, int), str(type(paperEnum))
     if paperEnum == QPagedPaintDevice.Custom:
       # TODO warning dialog here
-      print(">>>> Warning: PageSetup sets Custom paper to default size.  You may change size when you Print. ")
+      alertLog("PageSetup sets Custom paper to default size.  You may change size when you Print. ")
       result = CustomPaper(integralOrientedSizeMM=CustomPaper.defaultSize(),
                            orientation=Orientation()) # default to Portrait
     else:
@@ -471,6 +483,7 @@ class PageSetup(object):  # Not a QObject, no signals or tr(), and is copy()'d
     
   def dump(self):
     '''
+    For debugging only, may crash decoding on other languages.
     '''
     print(self.paper, self.orientation)
 

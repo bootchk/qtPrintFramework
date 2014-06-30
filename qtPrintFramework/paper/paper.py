@@ -5,7 +5,7 @@ from PyQt5.QtGui import QPagedPaintDevice  # !! Not in QtPrintSupport
 
 from qtPrintFramework.model.adaptedModel import AdaptedModel
 from qtPrintFramework.orientedSize import OrientedSize
-
+from qtPrintFramework.alertLog import alertLog
 
 class Paper(object):
   '''
@@ -114,7 +114,7 @@ class Paper(object):
     try:
       result = cls.inverseSizeModel[hashedDefinedRoundedSize]
     except KeyError:
-      print("KeyError in enumForPageSizeByMatchDimensions:", paperSizeMM.width(), ',', paperSizeMM.height())
+      alertLog("KeyError in enumForPageSizeByMatchDimensions:", paperSizeMM.width(), ',', paperSizeMM.height())
       result = None
     return result
     

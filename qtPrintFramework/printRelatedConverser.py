@@ -2,7 +2,7 @@
 
 from copy import copy
 
-from PyQt5.QtCore import QObject, QSize, QSizeF
+from PyQt5.QtCore import QObject, QSizeF  # QSize, 
 from PyQt5.QtPrintSupport import QPageSetupDialog, QPrintDialog
 
 from PyQt5.QtCore import pyqtSignal as Signal
@@ -13,7 +13,7 @@ from qtPrintFramework.userInterface.dialog.realPrinterPageSetup import RealPrint
 from qtPrintFramework.userInterface.warn import Warn
 from qtPrintFramework.pageSetup import PageSetup
 
-import qtPrintFramework.config as config
+from qtPrintFramework.alertLog import alertLog, debugLog
 
 
 '''
@@ -125,9 +125,8 @@ class PrintConverser(QObject):
     
     
   def dump(self, condition):
-    if config.DEBUG:
-      print(condition)
-      print(self.printerAdaptor.description)
+    debugLog(condition)
+    debugLog(self.printerAdaptor.description)
 
 
   '''
@@ -334,8 +333,7 @@ class PrintConverser(QObject):
       # Test validity of pagesize
       _ = self.printablePageSizeInch()
       self.userAcceptedPrint.emit()
-      if config.DEBUG:
-        print("Emit userAcceptedPrint")
+      debugLog("Emit userAcceptedPrint")
     except InvalidPageSize:
       self.warn.pageTooSmall()
       '''
@@ -363,8 +361,7 @@ class PrintConverser(QObject):
     self.dump("Accept non-native print dialog on")
 
     self.userAcceptedPrintPDF.emit()
-    if config.DEBUG:
-      print("Emit userAcceptedPrintPDF")
+    debugLog("Emit userAcceptedPrintPDF")
 
     self.pageSetup.toSettings()
       
@@ -382,8 +379,7 @@ class PrintConverser(QObject):
     self.dump("accept native page setup, printerAdaptor after setting it")
     
     self.userAcceptedPageSetup.emit()
-    if config.DEBUG:
-      print("Emit userAcceptedPageSetup")
+    debugLog("Emit userAcceptedPageSetup")
   
     self.pageSetup.toSettings()
     
@@ -420,8 +416,7 @@ class PrintConverser(QObject):
     self.dump("accept nonnative page setup, printerAdaptor after setting it")
 
     self.userAcceptedPageSetup.emit()
-    if config.DEBUG:
-      print("Emit userAcceptedPageSetup")
+    debugLog("Emit userAcceptedPageSetup")
     
     self.pageSetup.toSettings()
     
@@ -432,8 +427,7 @@ class PrintConverser(QObject):
     '''
     # Tell the app
     self.userChangedPaper.emit()
-    if config.DEBUG:
-      print("Emit userChangedPaper")
+    debugLog("Emit userChangedPaper")
     # Persist
     self.pageSetup.toSettings()
     
@@ -451,8 +445,7 @@ class PrintConverser(QObject):
     ##self.pageSetup.restoreEditorToModel()
     '''
     self.userCanceledPrintRelatedConversation.emit()
-    if config.DEBUG:
-      print("Emit userCanceledPrintRelatedConversation")
+    debugLog("Emit userCanceledPrintRelatedConversation")
       
     # NOT self.pageSetup.toSettings()
     
@@ -471,14 +464,15 @@ class PrintConverser(QObject):
     
     if not self.pageSetup.isStronglyEqualPrinterAdaptor(self.printerAdaptor):
       paper = self.pageSetup.paper
-      print('>>>> Fixing invariant by setting paperSize on QPrinter', str(paper))
+      alertLog('Fixing invariant by setting paperSize on QPrinter')
+      debugLog(str(paper))
       # self.setPaperSize(paper.paperEnum)
       self.pageSetup.toPrinterAdaptor(printerAdaptor=self.printerAdaptor)
     
     """
     if sys.platform.startswith('darwin'):
       paper = self.pageSetup.paper
-      print('>>>> Darwin: always set inch paperSize on QPrinter', str(paper))
+      #print('>>>> Darwin: always set inch paperSize on QPrinter', str(paper))
       '''
       Not just toPrinterAdaptor(), since printerAdaptor may agree with pageSetup,
       (on enums, and float sizes to epsilon)

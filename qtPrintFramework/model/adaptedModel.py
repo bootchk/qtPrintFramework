@@ -82,7 +82,7 @@ class AdaptedModel(QObject):  # for i18n
     Python3
     from PyQt5.QtCore import pyqtWrapperType
     assert isinstance(enumOwningClass, pyqtWrapperType)
-    print(str(enumOwningClass.__class__), str(type(enumType)))
+    #print(str(enumOwningClass.__class__), str(type(enumType)))
     
     Python2
     assert str(enumOwningClass.__class__) == "<type 'PyQt5.QtCore.pyqtWrapperType'>" 

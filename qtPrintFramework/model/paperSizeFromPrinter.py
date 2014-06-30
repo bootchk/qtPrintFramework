@@ -5,7 +5,7 @@ from PyQt5.QtPrintSupport import QPrinter, QPrinterInfo
 from PyQt5.QtGui import QPagedPaintDevice # !! Not in QtPrintSupport
 
 from qtPrintFramework.model.adaptedModel import AdaptedSortedModel
-
+from qtPrintFramework.alertLog import alertLog
 
 class PrinterPaperSizeModel(AdaptedSortedModel):  # !!! Sorted
   '''
@@ -60,7 +60,7 @@ class PrinterPaperSizeModel(AdaptedSortedModel):  # !!! Sorted
         # paperSizeEnum known to Qt
         result[qtModel[paperSizeEnum]] = paperSizeEnum
       else:
-        print("Printer reports paper size unknown to Qt.")
+        alertLog("Printer reports paper size unknown to Qt.")
         # omit
     
     assert len(result) > 0  # TODO a warning here

@@ -1,8 +1,0 @@
-
-
-
-DEBUG = True
-DEBUG = False
-
-
-    
