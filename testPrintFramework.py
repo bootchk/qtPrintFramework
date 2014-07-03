@@ -11,7 +11,9 @@ import sys
 
 from PyQt5.QtCore import QCoreApplication, QTranslator
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget
+
 from qtPrintFramework.printRelatedConverser import PrintConverser
+from qtPrintFramework.printerSet import printerSet
         
     
 
@@ -57,6 +59,9 @@ class MainWindow(QMainWindow):
     self.printConverser = PrintConverser(parentWidget=self)
     self.connectPrintConverserSignals()
     self.setCentralWidget(ButtonSet(printConverser=self.printConverser))
+    
+    print("Is physical printer?:", printerSet.isPhysicalPrinterConfigured())
+    printerSet.dumpAvailablePrinters()
     
     
   def connectPrintConverserSignals(self):
