@@ -114,7 +114,7 @@ class Paper(object):
     try:
       result = cls.inverseSizeModel[hashedDefinedRoundedSize]
     except KeyError:
-      alertLog("KeyError in enumForPageSizeByMatchDimensions:", paperSizeMM.width(), ',', paperSizeMM.height())
+      alertLog("KeyError in enumForPageSizeByMatchDimensions: {} {}".format(paperSizeMM.width(),paperSizeMM.height()))
       result = None
     return result
     
