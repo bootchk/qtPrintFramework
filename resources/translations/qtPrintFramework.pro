@@ -21,3 +21,5 @@ SOURCES += ../../qtPrintFramework/orientation.py
 # translations wanted
 TRANSLATIONS += qtPrintFramework_es.ts
 TRANSLATIONS += qtPrintFramework_zh.ts
+TRANSLATIONS += qtPrintFramework_ja.ts
+
