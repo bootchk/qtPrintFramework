@@ -3,10 +3,12 @@
 from copy import copy
 
 from PyQt5.QtCore import QObject, QSizeF  # QSize, 
-from PyQt5.QtPrintSupport import QPageSetupDialog, QPrintDialog
-
 from PyQt5.QtCore import pyqtSignal as Signal
 
+# TODO 2014 certain conversations (PageSetup) should not depend on printing subsystem
+from PyQt5.QtPrintSupport import QPageSetupDialog, QPrintDialog
+
+from qtPrintFramework.exceptions import InvalidPageSize
 from qtPrintFramework.printerAdaptor import PrinterAdaptor
 from qtPrintFramework.userInterface.dialog.printerlessPageSetup import PrinterlessPageSetupDialog
 from qtPrintFramework.userInterface.dialog.realPrinterPageSetup import RealPrinterPageSetupDialog
@@ -16,11 +18,7 @@ from qtPrintFramework.pageSetup import PageSetup
 from qtPrintFramework.alertLog import alertLog, debugLog
 
 
-'''
-User chose paper and margins yielding invalid pageSize.
-'''
-class InvalidPageSize(Exception):
-  pass
+
 
 
 
