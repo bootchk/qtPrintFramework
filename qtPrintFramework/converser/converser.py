@@ -259,7 +259,11 @@ class Converser(QObject):
     Whether native printer or non-native printer (user changed printer)
     reflect user's choices into PageSetup.
     '''
+    """
+    TODO
+    If non-native print allows choice of PageSetup, we need something like:
     self._capturePageSetupChange()
+    """
     self.dump("Accept non-native print dialog on")
 
     self.userAcceptedPrintPDF.emit()
@@ -297,6 +301,9 @@ class Converser(QObject):
     self.pageSetup.toSettings()
     
     
+  def __capturePageSetupChange(self):
+    raise NotImplementedError('Deferred')
+  
   def _propagateChangedPageSetup(self):
     '''
     Some subclasses actually propagate.

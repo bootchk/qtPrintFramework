@@ -13,6 +13,7 @@ from PyQt5.QtCore import QCoreApplication, QTranslator
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget
 
 from qtPrintFramework.converser.printered import PrinteredConverser
+from qtPrintFramework.converser.unprintered import UnprinteredConverser
 from qtPrintFramework.printer.printerSet import printerSet
         
     
@@ -56,7 +57,9 @@ class MainWindow(QMainWindow):
   def __init__(self):
     super(MainWindow, self).__init__()
     self.setGeometry(100, 100, 500, 40)
-    self.printConverser = PrinteredConverser(parentWidget=self)
+    #self.printConverser = PrinteredConverser(parentWidget=self)
+    self.printConverser = UnprinteredConverser(parentWidget=self)
+    UnprinteredConverser
     self.connectPrintConverserSignals()
     self.setCentralWidget(ButtonSet(printConverser=self.printConverser))
     
