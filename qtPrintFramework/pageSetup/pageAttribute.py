@@ -4,6 +4,7 @@ from qtPrintFramework.userInterface.pageAttributeComboBox import PageAttributeCo
 
 class PageAttribute():
   '''
+  Attribute of PageSetup
   
   Responsibilities:
   - standard property responsibilities: get/set value
