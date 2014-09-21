@@ -13,7 +13,8 @@ from qtPrintFramework.printer.printerAdaptor import PrinterAdaptor
 from qtPrintFramework.userInterface.dialog.printerlessPageSetup import PrinterlessPageSetupDialog
 from qtPrintFramework.userInterface.dialog.realPrinterPageSetup import RealPrinterPageSetupDialog
 from qtPrintFramework.userInterface.warn import Warn
-from qtPrintFramework.pageSetup.pageSetup import PageSetup
+
+from qtPrintFramework.pageSetup.printeredPageSetup import PrinteredPageSetup
 
 from qtPrintFramework.alertLog import alertLog, debugLog
 
@@ -101,7 +102,7 @@ class PrintConverser(QObject):
     
     PageSetup is initialized from settings OR printerAdaptor.
     '''
-    self.pageSetup = PageSetup(self.printerAdaptor, masterEditor=self.toFilePageSetupDialog)
+    self.pageSetup = PrinteredPageSetup(masterEditor=self.toFilePageSetupDialog, printerAdaptor=self.printerAdaptor, )
     
     '''
     Not assert that printerAdaptor equal PageSetup.

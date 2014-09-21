@@ -1,13 +1,10 @@
 
-
-
 from PyQt5.QtGui import QPagedPaintDevice  
 
 # !! This should be independent of QtPrintSupport.
 # Instead, use QPageLayout (since Qt5.3) instead of QPrinter for enums 
 
 # Mixins
-from qtPrintFramework.pageSetup.printerable import Printerable
 from qtPrintFramework.pageSetup.settingsable import Settingsable
 
 
@@ -19,7 +16,7 @@ from qtPrintFramework.alertLog import alertLog
 
 
 
-class PageSetup(Settingsable, Printerable, object):  # Not a QObject, no signals or tr(), and is copy()'d
+class PageSetup(Settingsable, object):  # Not a QObject, no signals or tr(), and is copy()'d
   '''
   Persistent user's choice of page setup attributes.
   Basically a QPageLayout (new to Qt5.3) that also persists in settings.
@@ -61,7 +58,7 @@ class PageSetup(Settingsable, Printerable, object):  # Not a QObject, no signals
   They are often both confusingly used for the ideal concept (regardless of whether real thing is involved.)
   '''
   
-  def __init__(self, printerAdaptor, masterEditor):
+  def __init__(self, masterEditor, printerAdaptor=None):
     
     super(PageSetup, self).__init__()
     
@@ -201,65 +198,6 @@ class PageSetup(Settingsable, Printerable, object):  # Not a QObject, no signals
     return result
   
   
-  def isEqualPrinterAdaptor(self, printerAdaptor):
-    '''
-    Weak comparison: computed printerAdaptor.paper() equal self.
-    printerAdaptor.paperSize() might still not equal self.paperEnum
-    '''
-    result = self.paper == printerAdaptor.paper() and self.orientation == printerAdaptor.paperOrientation
-    if not result:
-      alertLog("pageSetup differs")
-      self.dumpDisagreement(printerAdaptor)
-    return result
-  
-  def isStronglyEqualPrinterAdaptor(self, printerAdaptor):
-    '''
-    Strong comparison: enum, orientation, dimensions equal
-    
-    Comparison of dimensions is epsilon (one is integer, one is float.
-    Comparison of dimensions is unoriented (usually, width < height, but not always, Tabloid/Ledger).
-    '''
-    # partialResult: enums and orientation
-    partialResult = self.paper.paperEnum == printerAdaptor.paperSize() \
-          and self.orientation == printerAdaptor.paperOrientation
-    
-    # Compare sizes.  All Paper including Custom has a size.
-    sizeResult = partialResult and self.paper.isOrientedSizeEpsilonEqual(self.orientation, printerAdaptor.paperSizeMM)
-    
-    result = partialResult and sizeResult
-      
-    if not result:
-      alertLog('isStronglyEqualPrinterAdaptor returns False')
-      self.dumpDisagreement(printerAdaptor)
-      
-    return result
-  
-  
-  def warnIfDisagreesWithPrinterAdaptor(self, printerAdaptor):
-    '''
-    Despite best efforts, could not get printerAdaptor to match self.
-    However, the platform native dialogs might be correct,
-    so the situation might correct itself after user uses native dialogs.
-    So only give a warning (and the user may see artifactual wrong page outline.)
-    This situation mainly occurs on OSX.
-    '''
-    if not self.isEqualPrinterAdaptor(printerAdaptor):
-      alertLog("PrinterAdaptor pageSetup disagrees.")
-  
-  
-  def dumpDisagreement(self, printerAdaptor):
-    '''
-    For debugging, show disagreement.
-    '''
-    return
-    """
-    #print(self.paper.paperEnum, printerAdaptor.paperSize(), # our and Qt enums
-            self.orientation, printerAdaptor.orientation(), # our and Qt orientation
-            printerAdaptor.paperSizeMM ) # Qt paperSize(mm)
-    if not self.paper.isCustom:
-        #print (self.paper.integralOrientedSizeMM(self.orientation) )  # our size mm (not defined for Custom)
-    """
-    
     
   def _paperFromEnum(self, paperEnum):
     '''
@@ -276,22 +214,7 @@ class PageSetup(Settingsable, Printerable, object):  # Not a QObject, no signals
     else:
       result = StandardPaper(paperEnum)
     return result
-    
-    
-  def _paperFromSettings(self, paperEnum, integralOrientedPaperSize, orientation ):
-    '''
-    Instance of a subclass of Paper for settings values
-    
-    If Custom, size from settings.
-    Otherwise, size defined for enum.
-    '''
-    assert isinstance(paperEnum, int), str(type(paperEnum))
-    if paperEnum == QPagedPaintDevice.Custom:
-      result = CustomPaper(integralOrientedSizeMM=integralOrientedPaperSize, 
-                           orientation=orientation)
-    else:
-      result = StandardPaper(paperEnum)
-    return result
+
     
     
     

@@ -3,16 +3,17 @@ from PyQt5.QtCore import QSizeF
 from PyQt5.QtGui import QPageLayout
 
 from qtPrintFramework.orientedSize import OrientedSize
-
+from qtPrintFramework.alertLog import alertLog
 
 
 class Printerable(object):
   '''
   Mixin class for PageSetup.
   Talks to (friend of) real printers.
-  '''
   
-  '''
+  !!! This does NOT drag in Qt's QPrintSupport module.
+  It understands PrintAdaptor, but does not require any imports of same.
+  
   To/from printerAdaptor
   
   Alternative design: illustrates general nature.
@@ -92,7 +93,7 @@ class Printerable(object):
     #assert self.isStronglyEqualPrinterAdaptor(printerAdaptor)
     #assert self.isEqualPrinterAdaptor(printerAdaptor)
     
-  
+    
   def _toPrinterAdaptorByIntegralMMSize(self, printerAdaptor):
     '''
     Set my values on printerAdaptor (and whatever printer it is adapting) by setting size.
@@ -125,6 +126,70 @@ class Printerable(object):
     #print("setPaperSize(Inch)", newPaperSizeInch)
     printerAdaptor.setPaperSize(newPaperSizeInch, QPageLayout.Inch)
     
+    
+    
+  '''
+  Support assertions about relations between self and printerAdaptor.
+  '''
+
+  def isEqualPrinterAdaptor(self, printerAdaptor):
+    '''
+    Weak comparison: computed printerAdaptor.paper() equal self.
+    printerAdaptor.paperSize() might still not equal self.paperEnum
+    '''
+    result = self.paper == printerAdaptor.paper() and self.orientation == printerAdaptor.paperOrientation
+    if not result:
+      alertLog("pageSetup differs")
+      self.dumpDisagreement(printerAdaptor)
+    return result
+  
+  def isStronglyEqualPrinterAdaptor(self, printerAdaptor):
+    '''
+    Strong comparison: enum, orientation, dimensions equal
+    
+    Comparison of dimensions is epsilon (one is integer, one is float.
+    Comparison of dimensions is unoriented (usually, width < height, but not always, Tabloid/Ledger).
+    '''
+    # partialResult: enums and orientation
+    partialResult = self.paper.paperEnum == printerAdaptor.paperSize() \
+          and self.orientation == printerAdaptor.paperOrientation
+    
+    # Compare sizes.  All Paper including Custom has a size.
+    sizeResult = partialResult and self.paper.isOrientedSizeEpsilonEqual(self.orientation, printerAdaptor.paperSizeMM)
+    
+    result = partialResult and sizeResult
+      
+    if not result:
+      alertLog('isStronglyEqualPrinterAdaptor returns False')
+      self.dumpDisagreement(printerAdaptor)
+      
+    return result
+  
+  
+  def warnIfDisagreesWithPrinterAdaptor(self, printerAdaptor):
+    '''
+    Despite best efforts, could not get printerAdaptor to match self.
+    However, the platform native dialogs might be correct,
+    so the situation might correct itself after user uses native dialogs.
+    So only give a warning (and the user may see artifactual wrong page outline.)
+    This situation mainly occurs on OSX.
+    '''
+    if not self.isEqualPrinterAdaptor(printerAdaptor):
+      alertLog("PrinterAdaptor pageSetup disagrees.")
+  
+  
+  def dumpDisagreement(self, printerAdaptor):
+    '''
+    For debugging, show disagreement.
+    '''
+    return
+    """
+    #print(self.paper.paperEnum, printerAdaptor.paperSize(), # our and Qt enums
+            self.orientation, printerAdaptor.orientation(), # our and Qt orientation
+            printerAdaptor.paperSizeMM ) # Qt paperSize(mm)
+    if not self.paper.isCustom:
+        #print (self.paper.integralOrientedSizeMM(self.orientation) )  # our size mm (not defined for Custom)
+    """
 
   
   
