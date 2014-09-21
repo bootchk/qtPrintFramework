@@ -1,8 +1,11 @@
 
 
 from PyQt5.QtCore import QSettings, QSizeF, QSize
-from PyQt5.QtGui import QPagedPaintDevice  # !! Not in QtPrintSupport
-from PyQt5.QtPrintSupport import QPrinter
+from PyQt5.QtGui import QPagedPaintDevice  
+
+# !! This should be independent of QtPrintSupport.
+# Instead, use QPageLayout (since Qt5.3) instead of QPrinter for enums 
+from PyQt5.QtGui import QPageLayout
 
 from qtPrintFramework.paper.paper import Paper
 from qtPrintFramework.paper.standard import StandardPaper
@@ -208,7 +211,7 @@ class PageSetup(object):  # Not a QObject, no signals or tr(), and is copy()'d
     newPaperSizeMM = QSizeF(self.paper.integralOrientedSizeMM(self.orientation))
     assert newPaperSizeMM.isValid()
     # use overload QPrinter.setPaperSize(QPagedPaintDevice.PageSize, Units)
-    printerAdaptor.setPaperSize(newPaperSizeMM, QPrinter.Millimeter)
+    printerAdaptor.setPaperSize(newPaperSizeMM, QPageLayout.Millimeter)
     
     
   def _toPrinterAdaptorByFloatInchSize(self, printerAdaptor):
@@ -218,9 +221,9 @@ class PageSetup(object):  # Not a QObject, no signals or tr(), and is copy()'d
     Floating inch size.
     '''
     # TODO oriented, other inch unit sizes
-    if self.paper.paperEnum == QPrinter.Legal:
+    if self.paper.paperEnum == QPageLayout.Legal:
       newPaperSizeInch = QSizeF(8.5, 14)
-    elif self.paper.paperEnum == QPrinter.Letter:
+    elif self.paper.paperEnum == QPageLayout.Letter:
       newPaperSizeInch = QSizeF(8.5, 11)
     else:
       return
@@ -228,7 +231,7 @@ class PageSetup(object):  # Not a QObject, no signals or tr(), and is copy()'d
     assert newPaperSizeInch.isValid()
     # use overload QPrinter.setPaperSize(QPagedPaintDevice.PageSize, Units)
     #print("setPaperSize(Inch)", newPaperSizeInch)
-    printerAdaptor.setPaperSize(newPaperSizeInch, QPrinter.Inch)
+    printerAdaptor.setPaperSize(newPaperSizeInch, QPageLayout.Inch)
     
   
     

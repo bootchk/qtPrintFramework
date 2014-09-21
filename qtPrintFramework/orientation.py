@@ -1,15 +1,13 @@
-'''
-'''
 
 from PyQt5.QtCore import QObject
-from PyQt5.QtPrintSupport import QPrinter
+from PyQt5.QtGui import QPageLayout
 
 
 
 class Orientation(QObject):
   '''
   Paper orientation.
-  Wraps enumType=QPrinter.Orientation
+  Wraps enumType=QPageLayout.Orientation
   
   Primarily for translation, name, and repr.
   '''
@@ -19,9 +17,9 @@ class Orientation(QObject):
     super(Orientation, self).__init__()
     if enumValue is None:
       #print("Defaulting orientation to Portrait.")
-      self.value = QPrinter.Portrait
+      self.value = QPageLayout.Portrait
     else:
-      assert enumValue == QPrinter.Portrait or enumValue == QPrinter.Landscape
+      assert enumValue == QPageLayout.Portrait or enumValue == QPageLayout.Landscape
       self.value = enumValue
   
   def __repr__(self):
@@ -41,5 +39,5 @@ class Orientation(QObject):
   
   @property
   def isPortrait(self):
-    return self.value == QPrinter.Portrait
+    return self.value == QPageLayout.Portrait
   

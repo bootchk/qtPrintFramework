@@ -1,6 +1,5 @@
-'''
-'''
-from PyQt5.QtPrintSupport import QPrinter
+
+from PyQt5.QtGui import QPageLayout
 
 from qtPrintFramework.model.adaptedModel import AdaptedModel
 from qtPrintFramework.orientation import Orientation
@@ -13,21 +12,21 @@ class AdaptedPageOrientationModel(AdaptedModel):
     ''' See super. '''
     '''
     Dictionary keyed by names of paper orientations, of enum values.
-    For all paper orientations in QPrinter enum (not what current printer supports.)
+    For all paper orientations in QPageLayout enum (not what current printer supports.)
     '''
     
     """
     This works but is untranslated:
     
-    self.values = AdaptedModel._getAdaptedDictionary(enumOwningClass=QPrinter, 
-                                                     enumType=QPrinter.Orientation)
+    self.values = AdaptedModel._getAdaptedDictionary(enumOwningClass=QPageLayout, 
+                                                     enumType=QPageLayout.Orientation)
     """
     
     '''
     This is less flexible, doesn't capture Qt's values automatically.
     But is i18n
     '''
-    self.values = {Orientation(QPrinter.Portrait).name : QPrinter.Portrait,
-                   Orientation(QPrinter.Landscape).name : QPrinter.Landscape
+    self.values = {Orientation(QPageLayout.Portrait).name : QPageLayout.Portrait,
+                   Orientation(QPageLayout.Landscape).name : QPageLayout.Landscape
                    }
     
