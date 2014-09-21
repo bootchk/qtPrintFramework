@@ -9,16 +9,13 @@ from PyQt5.QtCore import pyqtSignal as Signal
 from PyQt5.QtPrintSupport import QPageSetupDialog, QPrintDialog
 
 from qtPrintFramework.exceptions import InvalidPageSize
-from qtPrintFramework.printerAdaptor import PrinterAdaptor
+from qtPrintFramework.printer.printerAdaptor import PrinterAdaptor
 from qtPrintFramework.userInterface.dialog.printerlessPageSetup import PrinterlessPageSetupDialog
 from qtPrintFramework.userInterface.dialog.realPrinterPageSetup import RealPrinterPageSetupDialog
 from qtPrintFramework.userInterface.warn import Warn
 from qtPrintFramework.pageSetup import PageSetup
 
 from qtPrintFramework.alertLog import alertLog, debugLog
-
-
-
 
 
 

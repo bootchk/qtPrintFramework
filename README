@@ -23,6 +23,30 @@ When to use this framework
 - you want Print PDF for Win platform (TODO)
 
 
+Discussion
+----------
+
+The use case is a user wants to send content to a printer or PDF file.  
+These are both Painters, and both PaginatedPainters.
+(A user may also want to send content (save or email) without pagination, and free the viewer to paginate it.)
+
+The app needs to have a dialog with the user about pagination (page setup.)
+When the destination is a real printer, the real printer constrains the dialog
+(to the hw limitations of the printer, and the changeable, temporary status of the paper supply.)
+When the destination is a PDF file, there are no constraints (PDF is unlimited re page setup.)
+
+The app should know the proper dialog under conditions:
+- platform (QPrintSupport implemented or not.)
+- a real printer is configured and powered
+- user has chosen a different real printer or to print to PDF
+
+Qt's model and implementation (circa 5.3.2) is not quite right.
+- on some platforms, you can't send to a PDF file unless a real printer exists.
+- on mobile platforms, there is no implementation yet
+
+Qt 5.3 is vastly improved in this area, but still not complete.
+
+
 Status of Page Setup bugs
 -------------------------
 

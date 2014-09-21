@@ -13,7 +13,7 @@ from PyQt5.QtCore import QCoreApplication, QTranslator
 from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout, QWidget
 
 from qtPrintFramework.printRelatedConverser import PrintConverser
-from qtPrintFramework.printerSet import printerSet
+from qtPrintFramework.printer.printerSet import printerSet
         
     
 
