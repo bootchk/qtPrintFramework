@@ -1,0 +1,4 @@
+This package is about real printers.
+It depends on Qt's QPrintSupport module (which might not exist on mobile platforms iOS and Android.)
+No other package/modules in qtPrintFramework should depend on QtPrintSupport.
+So you can use qtPrintFramework on mobile platforms if you exclude the package 'printer.'

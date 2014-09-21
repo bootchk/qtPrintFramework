@@ -1,28 +1,35 @@
 
 
-from PyQt5.QtCore import QSettings, QSizeF, QSize
+
 from PyQt5.QtGui import QPagedPaintDevice  
 
 # !! This should be independent of QtPrintSupport.
 # Instead, use QPageLayout (since Qt5.3) instead of QPrinter for enums 
-from PyQt5.QtGui import QPageLayout
 
-from qtPrintFramework.paper.paper import Paper
+# Mixins
+from qtPrintFramework.pageSetup.printerable import Printerable
+from qtPrintFramework.pageSetup.settingsable import Settingsable
+
+
 from qtPrintFramework.paper.standard import StandardPaper
 from qtPrintFramework.paper.custom import CustomPaper
-from qtPrintFramework.orientedSize import OrientedSize
+
 from qtPrintFramework.orientation import Orientation
 from qtPrintFramework.alertLog import alertLog
 
 
 
-class PageSetup(object):  # Not a QObject, no signals or tr(), and is copy()'d
+class PageSetup(Settingsable, Printerable, object):  # Not a QObject, no signals or tr(), and is copy()'d
   '''
   Persistent user's choice of page setup attributes.
+  Basically a QPageLayout (new to Qt5.3) that also persists in settings.
   
-  This defines the set of attributes.
+  This defines the set of attributes:
+  - page size
+  - page orientation
+  - (currently, we omit margins)
+  
   The editor (a dialog) defines the labels and models for attribute controls.
-  Currently, we omit margins attribute of page setup.
   
   For a CustomPaper, we DO persist user's choice of size for the Custom paper.
   
@@ -82,7 +89,6 @@ class PageSetup(object):  # Not a QObject, no signals or tr(), and is copy()'d
     That is, we don't force a native printer's page setup onto self (on user's preferred pageSetup for document),
     until user actually chooses to print on said native printer.
     '''
-    
   
 
   def __repr__(self):
@@ -102,202 +108,7 @@ class PageSetup(object):  # Not a QObject, no signals or tr(), and is copy()'d
     return self.paper == other.paper and self.orientation == other.orientation
   
 
-  '''
-  A NonNative printer by definition does not own a persistent page setup,
-  i.e. the platform doesn't necessarily know of the printer, let alone know its page setup.
-  The app persists a PageSetup for such printers.)
-  
-  A user might have used another real or native paperless printer since this app was last used.
-  This PageSetup (and its persistent value)
-  should be tryImpressed on adatped printer before it's dialogs are shown.
-  Otherwise, the dialogs may show persistent (persisted by the platform) page setup
-  of the adapted printer, or some other page setup.
-  After user accepts such a dialog, we capture its page setup to self.
-  '''
-  def initializeModelFromSettings(self, getDefaultsFromPrinterAdaptor):
-    #if not printerAdaptor.isAdaptingNative():
-    self.fromSettings(getDefaultsFromPrinterAdaptor=getDefaultsFromPrinterAdaptor)
     
-    
-    
-  '''
-  To/from printerAdaptor
-  
-  Alternative design: illustrates general nature.
-    for attribute in self:
-      attribute.toPrinterAdaptor(printerAdaptor)
-  '''
-
-  def fromPrinterAdaptor(self, printerAdaptor):
-    '''
-    Copy values from printerAdaptor into self.
-    And update controls (which are not visible, and are in parallel with native dialog controls.)
-    '''
-    self.paper = printerAdaptor.paper() # new instance
-    self.orientation = printerAdaptor.paperOrientation
-    if self.paper.isCustom:
-      # capture size chosen by user, say in native Print dialog
-      integralOrientedSizeMM = OrientedSize.roundedSize(sizeF=printerAdaptor.paperSizeMM)
-      self.paper.setSize(integralOrientedSizeMM = integralOrientedSizeMM, 
-                         orientation=self.orientation)
-    # else size of paper is standard.
-    
-    # editor and settings are not updated                    
-    
-    
-  def toPrinterAdaptor(self, printerAdaptor):
-    '''
-    Set my values on printerAdaptor (and whatever printer it is adapting.)
-    
-    1. !!! setPaperSize,  setPageSize() is Qt obsolete
-    2. printerAdaptor wants oriented size
-    
-    !!! setPaperSize is overloaded.
-    # TODO should this be orientedPaperSizeDevicePixels ?
-    
-    Qt docs for setPaperSize() say: "Sets the printer paper size to newPaperSize if that size is supported. 
-    The result is undefined if newPaperSize is not supported."
-    The same applies here; this may not have the intended effect.
-    '''
-    
-    printerAdaptor.setOrientation(self.orientation.value)
-    
-    # Formerly we called _toPrinterAdaptorByIntegralMMSize() here
-    
-    '''
-    Set paper by enum where possible.  Why do we need this is additon to the above?
-    Because floating point errors in some versions of Qt, 
-    setting paperSize by a QSizeF does not always have the intended effect on enum.
-    '''
-    if self.paper.isCustom :
-      # Illegal to call setPaperSize(QPrinter.Custom)
-      self._toPrinterAdaptorByIntegralMMSize(printerAdaptor)
-    else:
-      printerAdaptor.setPaperSize(self.paper.paperEnum)
-    
-    '''
-    Strong assertion might not hold: Qt might be showing paper dimensions QSizeF(0,0) for Custom
-    (Which is bad programming.  None or Null should represent unknown.)
-    
-    Or, despite trying to set QPrinter consistent, Qt bugs still don't meet strong assertion.
-    '''
-    if not self.isEqualPrinterAdaptor(printerAdaptor):
-      '''
-      Setting by enum (non-custom) has failed.  (Typically on OSX?)
-      Fallback: attempt to set by size.
-      '''
-      self._toPrinterAdaptorByIntegralMMSize(printerAdaptor)
-    
-    """
-    Tried this for OSX, but it did not succeed in getting native dialog to agree with self.
-    So Qt versions < 5.3 have a bug that cannot be worked around by this framework.
-    if not self.isEqualPrinterAdaptor(printerAdaptor):
-      self._toPrinterAdaptorByFloatInchSize(printerAdaptor)
-    """
-      
-    self.warnIfDisagreesWithPrinterAdaptor(printerAdaptor)
-    # Ideally (if Qt was bug free) these assertions should hold
-    #assert self.isStronglyEqualPrinterAdaptor(printerAdaptor)
-    #assert self.isEqualPrinterAdaptor(printerAdaptor)
-    
-  
-  def _toPrinterAdaptorByIntegralMMSize(self, printerAdaptor):
-    '''
-    Set my values on printerAdaptor (and whatever printer it is adapting) by setting size.
-    
-    Take integral size, convert to float.
-    '''
-    # Even a Custom paper has a size, even if it is defaulted.
-    newPaperSizeMM = QSizeF(self.paper.integralOrientedSizeMM(self.orientation))
-    assert newPaperSizeMM.isValid()
-    # use overload QPrinter.setPaperSize(QPagedPaintDevice.PageSize, Units)
-    printerAdaptor.setPaperSize(newPaperSizeMM, QPageLayout.Millimeter)
-    
-    
-  def _toPrinterAdaptorByFloatInchSize(self, printerAdaptor):
-    '''
-    Set my values on printerAdaptor (and whatever printer it is adapting) by setting size.
-    
-    Floating inch size.
-    '''
-    # TODO oriented, other inch unit sizes
-    if self.paper.paperEnum == QPageLayout.Legal:
-      newPaperSizeInch = QSizeF(8.5, 14)
-    elif self.paper.paperEnum == QPageLayout.Letter:
-      newPaperSizeInch = QSizeF(8.5, 11)
-    else:
-      return
-      
-    assert newPaperSizeInch.isValid()
-    # use overload QPrinter.setPaperSize(QPagedPaintDevice.PageSize, Units)
-    #print("setPaperSize(Inch)", newPaperSizeInch)
-    printerAdaptor.setPaperSize(newPaperSizeInch, QPageLayout.Inch)
-    
-  
-    
-  '''
-  To/from settings.
-  
-  Assert that QSettings have been established on client app startup:
-  QCoreApplication.setOrganizationName("Foo")
-  QCoreApplication.setOrganizationDomain("foo.com")
-  QCoreApplication.setApplicationName("Bar")
-  
-  toSettings is called in reaction to dialog accept see PrintRelatedConverser.
-  '''
-  
-  def fromSettings(self, getDefaultsFromPrinterAdaptor):
-    '''
-    Set my values from settings (that persist across app sessions.)
-    If settings don't exist yet, use default value from printerAdaptor
-    Formerly, from model: PaperSizeModel.default(), PageOrientationModel.default()
-    '''
-    qsettings = QSettings()
-    qsettings.beginGroup( "paperlessPrinter" )
-    
-    enumValue = qsettings.value( "paperEnum", getDefaultsFromPrinterAdaptor.paper().paperEnum)
-    orientationValue = qsettings.value( "paperOrientation", getDefaultsFromPrinterAdaptor.orientation() )
-    defaultSize = CustomPaper.defaultSize()
-    integralOrientedWidthValue = qsettings.value( "paperintegralOrientedWidth", defaultSize.width())
-    integralOrientedHeightValue = qsettings.value( "paperintegralOrientedHeight", defaultSize.height())
-    
-    # Orientation first, needed for orienting paper size
-    self.orientation = Orientation(self._intForSetting(orientationValue))
-    
-    size = QSize(self._intForSetting(integralOrientedWidthValue),
-                self._intForSetting(integralOrientedHeightValue))
-    self.paper = self._paperFromSettings(paperEnum=self._intForSetting(enumValue),
-                                         integralOrientedPaperSize=size,
-                                         orientation=self.orientation)
-    qsettings.endGroup()
-    assert isinstance(self.paper, Paper)  # !!! Might be custom of unknown size
-    assert isinstance(self.orientation, Orientation)
-    ## This crashes on decode exception OSX
-    ##print("PageSetup from settings:", str(self))
-  
-  
-  def toSettings(self):
-    qsettings = QSettings()
-    qsettings.beginGroup( "paperlessPrinter" )
-    # Although Paper is pickleable, simplify to int.  QSettings stores objects correctly?
-    qsettings.setValue( "paperEnum", self.paper.paperEnum )
-    qsettings.setValue( "paperOrientation", self.orientation.value )
-    integralOrientedSize = self.paper.integralOrientedSizeMM(self.orientation)
-    qsettings.setValue( "paperintegralOrientedWidth", integralOrientedSize.width())
-    qsettings.setValue( "paperintegralOrientedHeight", integralOrientedSize.height())
-    qsettings.endGroup()
-  
-  def _intForSetting(self, value):
-    '''
-    Ensure a settings value is type int, or 0 if can't convert.
-    Settings values are unicode in PyQt.
-    '''
-    try:
-      result = int(value)
-    except ValueError:
-      result = 0
-    return result
-  
   
   '''
   Model values to/from editors
