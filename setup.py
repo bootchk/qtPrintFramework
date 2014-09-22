@@ -9,9 +9,12 @@ setup(name='qtPrintFramework',
       author_email='bootch@nc.rr.com',
       url='https://github.com/bootchk/qtPrintFramework',
       packages=['qtPrintFramework',
+                'qtPrintFramework.converser',
                 'qtPrintFramework.model',
+                'qtPrintFramework.pageSetup',
+                'qtPrintFramework.paper',
+                'qtPrintFramework.printer',
                 'qtPrintFramework.userInterface',
                 'qtPrintFramework.userInterface.dialog',
-                'qtPrintFramework.paper', 
                 ]
      )
