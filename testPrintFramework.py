@@ -57,8 +57,9 @@ class MainWindow(QMainWindow):
   def __init__(self):
     super(MainWindow, self).__init__()
     self.setGeometry(100, 100, 500, 40)
-    #self.printConverser = PrinteredConverser(parentWidget=self)
-    self.printConverser = UnprinteredConverser(parentWidget=self)
+    ## Choose one to debug
+    self.printConverser = PrinteredConverser(parentWidget=self)
+    ## self.printConverser = UnprinteredConverser(parentWidget=self)
     UnprinteredConverser
     self.connectPrintConverserSignals()
     self.setCentralWidget(ButtonSet(printConverser=self.printConverser))

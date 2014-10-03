@@ -53,7 +53,8 @@ class Printerable(object):
     The same applies here; this may not have the intended effect.
     '''
     
-    printerAdaptor.setOrientation(self.orientation.value)
+    # !!! Requires Qt 5.3 setPageO instead of setOrientation
+    printerAdaptor.setPageOrientation(self.orientation.value)
     
     # Formerly we called _toPrinterAdaptorByIntegralMMSize() here
     

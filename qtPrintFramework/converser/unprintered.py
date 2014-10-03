@@ -1,7 +1,11 @@
 
-from copy import copy
 
-# !!! NOT depend on QtPrintSupport printing subsystem
+'''
+!!! NOT depend on QtPrintSupport printing subsystem
+
+Use on mobile platforms where QtPrintSupport is not compiled.
+Or use while Qt print framework has bugs re systems without real printers on certain platforms (Linux.)
+'''
 
 from qtPrintFramework.converser.converser import Converser
 
