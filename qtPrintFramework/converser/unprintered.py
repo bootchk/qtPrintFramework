@@ -1,5 +1,4 @@
 
-
 '''
 !!! NOT depend on QtPrintSupport printing subsystem
 
@@ -7,11 +6,14 @@ Use on mobile platforms where QtPrintSupport is not compiled.
 Or use while Qt print framework has bugs re systems without real printers on certain platforms (Linux.)
 '''
 
+from PyQt5.QtCore import QSizeF
+
 from qtPrintFramework.converser.converser import Converser
 
 from qtPrintFramework.pageSetup.printerlessPageSetup import PrinterlessPageSetup
 from qtPrintFramework.userInterface.dialog.printerlessPageSetup import PrinterlessPageSetupDialog
 
+from qtPrintFramework.paper.standard import StandardPaper
 # from qtPrintFramework.alertLog import debugLog, alertLog
 
 
@@ -71,48 +73,28 @@ class UnprinteredConverser(Converser):
   
   def printablePageSizeInch(self):
     '''
-    QSizeF that is:
-    - not empty (both w and h > 0)
-    else InvalidPageSize.
+    Implement deferred.
     
-    Units Inch
-    
-    Assert not empty implies isValid, which is both w and h >= 0.
-    
-    Exported because app may wish to know page size even if not printing.
+    Specialize: return what user chose in PageSetup dialog
     '''
-    result = self.printerAdaptor.printablePageSizeInch()
+    #TODO get from PageSetup
+    # TEMP Hack: return fixed size
+    result = QSizeF(8.5, 11)
     self._checkPrintablePageSizeInch(result)
     return result
   
   
   def paper(self):
     '''
-    Specialize: delegate to printerAdaptor.
-    '''
-    return self.printerAdaptor.paper()
-  
-  
-  
+    Implement deferred.
     
-  """
-  def _acceptNativePageSetupSlot(self):
+    Specialize: return what user chose in PageSetup dialog
     '''
-    User accepted NonNative PageSetupDialog.
-    User may have changed real printer and/or it's page setup.
-    
-    TODO are the semantics the same on all platforms?
-    or do some platforms not allow user to choose a new printer (make it current.)
-    '''
-    self.dump("Accept native page setup, printerAdaptor before setting it ")
-    self._capturePageSetupChange()
-    self.dump("accept native page setup, printerAdaptor after setting it")
-    
-    self.userAcceptedPageSetup.emit()
-    debugLog("Emit userAcceptedPageSetup")
+    # TEMP hack: return fixed paper
+    result = StandardPaper(1)
+    return result
   
-    self.pageSetup.toSettings()
-  """ 
+  
   
   '''
   Implement deferred methods that capture/propagate
