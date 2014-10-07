@@ -20,6 +20,25 @@ When to use this framework
 - you want a component with a simple API, that can mask Qt bugs and changes
 - you want PageSetup for non-native printers (PDF)
 - you want Print PDF for Win platform (TODO)
+- you want user to be able to choose a page (page setup) but the platform/toolchain has no support for printers
+
+
+QtPrintSupport module and mobile platforms
+------------------------------------------
+
+As of this writing, Qt does not compile QtPrintSupport module for mobile platforms (iOS and Android.)
+While those platforms may provide native support for printing (?) Qt doesn't yet adapt the native support.
+(The alternative is to save to the cloud, or email, a document, and print it from another platform?)
+Yet your app may want to offer a PageSetup dialog, for example to display a page.
+You can still use this framework but you must not import the following modules which import QtPrintSupport:
+- converser.printered
+- pageSetup.printeredPageSetup
+- printer
+Also, your app should not call the Print dialogs.
+
+Another way of discussing this is: is printing to PDF really printing, or just saving?
+Why on some platforms do you need a Print dialog to save PDF, isn't that just exporting?
+Shouldn't the notion of pagination be separate from printing? (PDF is paginated.)
 
 
 Discussion
