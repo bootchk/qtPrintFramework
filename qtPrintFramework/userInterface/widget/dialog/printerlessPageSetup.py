@@ -1,6 +1,7 @@
 
 
-from qtPrintFramework.userInterface.dialog.pageSetup import PageSetupDialog
+from qtPrintFramework.userInterface.widget.dialog.pageSetup import PageSetupDialog
+
 from qtPrintFramework.model.paperSize import AdaptedPaperSizeModel
 from qtPrintFramework.translations import Translations
 

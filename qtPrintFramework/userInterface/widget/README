@@ -1,0 +1,3 @@
+Classes for QWidget based UIView.
+
+Optional to package these in a QML based UIView.

@@ -9,8 +9,8 @@ from qtPrintFramework.converser.converser import Converser
 
 from qtPrintFramework.printer.printerAdaptor import PrinterAdaptor
 from qtPrintFramework.pageSetup.printeredPageSetup import PrinteredPageSetup
-from qtPrintFramework.userInterface.dialog.printerlessPageSetup import PrinterlessPageSetupDialog
-from qtPrintFramework.userInterface.dialog.realPrinterPageSetup import RealPrinterPageSetupDialog
+from qtPrintFramework.userInterface.widget.dialog.printerlessPageSetup import PrinterlessPageSetupDialog
+from qtPrintFramework.userInterface.widget.dialog.realPrinterPageSetup import RealPrinterPageSetupDialog
 
 from qtPrintFramework.alertLog import debugLog, alertLog
 

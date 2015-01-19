@@ -11,7 +11,7 @@ from PyQt5.QtCore import QSizeF
 from qtPrintFramework.converser.converser import Converser
 
 from qtPrintFramework.pageSetup.printerlessPageSetup import PrinterlessPageSetup
-from qtPrintFramework.userInterface.dialog.printerlessPageSetup import PrinterlessPageSetupDialog
+from qtPrintFramework.userInterface.widget.dialog.printerlessPageSetup import PrinterlessPageSetupDialog
 
 from qtPrintFramework.paper.standard import StandardPaper
 # from qtPrintFramework.alertLog import debugLog, alertLog

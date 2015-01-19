@@ -8,7 +8,7 @@ from PyQt5.QtCore import pyqtSignal as Signal
 # !!! This does not depend on QtPrintSupport, but certain subclasses do
 
 from qtPrintFramework.exceptions import InvalidPageSize
-from qtPrintFramework.userInterface.warn import Warn
+from qtPrintFramework.warn import Warn
 from qtPrintFramework.alertLog import debugLog # alertLog, 
 
 

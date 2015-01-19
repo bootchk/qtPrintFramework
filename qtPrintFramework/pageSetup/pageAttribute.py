@@ -1,5 +1,5 @@
 
-from qtPrintFramework.userInterface.pageAttributeComboBox import PageAttributeComboBox
+from qtPrintFramework.userInterface.widget.pageAttributeComboBox import PageAttributeComboBox
 
 
 class PageAttribute():

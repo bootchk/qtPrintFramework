@@ -3,7 +3,7 @@ import sys
 
 from PyQt5.QtWidgets import QDialog, QDialogButtonBox, QVBoxLayout, QLabel
 
-from qtPrintFramework.userInterface.pageSetupForm import PageSetupForm
+from qtPrintFramework.userInterface.widget.pageSetupForm import PageSetupForm
 from qtPrintFramework.pageSetup.pageAttribute import PageAttribute
 from qtPrintFramework.model.pageOrientation import AdaptedPageOrientationModel
 from qtPrintFramework.translations import Translations
