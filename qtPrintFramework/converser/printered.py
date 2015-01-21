@@ -9,11 +9,11 @@ from qtPrintFramework.converser.converser import Converser
 
 from qtPrintFramework.printer.printerAdaptor import PrinterAdaptor
 from qtPrintFramework.pageSetup.printeredPageSetup import PrinteredPageSetup
-from qtPrintFramework.userInterface.widget.dialog.printerlessPageSetup import PrinterlessPageSetupDialog
-from qtPrintFramework.userInterface.widget.dialog.realPrinterPageSetup import RealPrinterPageSetupDialog
 
 from qtPrintFramework.alertLog import debugLog, alertLog
 
+import qtPrintFramework.config as config
+# Dynamic imports below for QML/QWidget
 
 class PrinteredConverser(Converser):
   '''
@@ -40,15 +40,23 @@ class PrinteredConverser(Converser):
     Static dialog owned by this framework.
     Requires no knowledge of printerAdaptor or current printer.
     '''
-    self.toFilePageSetupDialog = PrinterlessPageSetupDialog(parentWidget=self.parentWidget)
+    if config.useQML:
+      from qtPrintFramework.userInterface.qml.dialog.pageSetupDialogQML import pageSetupDialogMgr
+
+      self.toFilePageSetupDialog = pageSetupDialogMgr.pageSetupDialogDelegate()
+    else: # QWidget
+      from qtPrintFramework.userInterface.widget.dialog.printerlessPageSetup import PrinterlessPageSetupDialog
+
+      self.toFilePageSetupDialog = PrinterlessPageSetupDialog(parentWidget=self.parentWidget)
     
     '''
     self owns because self mediates use of it on every conversation.
     
     PageSetup is initialized from settings OR printerAdaptor.
     '''
-    self.pageSetup = PrinteredPageSetup(masterEditor=self.toFilePageSetupDialog, printerAdaptor=self.printerAdaptor, )
-    
+    ##self.pageSetup = PrinteredPageSetup(masterEditor=self.toFilePageSetupDialog, printerAdaptor=self.printerAdaptor, )
+    self.pageSetup = PrinteredPageSetup(printerAdaptor=self.printerAdaptor)
+
     '''
     Not assert that printerAdaptor equal PageSetup.
     Try to make them equal now.
@@ -66,7 +74,7 @@ class PrinteredConverser(Converser):
     if self.printerAdaptor.isAdaptingNative():
       self._conversePageSetupNative()
     else:
-      self.conversePageSetupNonNative()
+      self.conversePageSetupNonNative() # superclass method
       
       
   def conversePrint(self):
@@ -97,17 +105,39 @@ class PrinteredConverser(Converser):
   
   
   def setCurrentFrameworkPageSetupDialog(self):
-    # TODO isAdaptingReal ?
+    '''
+    Configure dispatch of 'page setup' action to an appropriate dialog defined by this .
+    
+    '''
     if self.printerAdaptor.isAdaptingNative():
       '''
-      native printer is real printer or to file printer
+      The adapted printer is a native printer: real printer or to-file printer
       Create new dialog having title and papersizemodel from printerAdaptor.
       '''
-      self.currentFrameworkPageSetupDialog = RealPrinterPageSetupDialog(parentWidget=self.parentWidget, printerAdaptor=self.printerAdaptor)
+      if not config.useQML:
+        '''
+        Platform is a desktop and we are using QWidget implementation of framework defined PageSetup dialog.
+        '''
+        from qtPrintFramework.userInterface.widget.dialog.realPrinterPageSetup import RealPrinterPageSetupDialog
+        
+        self.currentFrameworkPageSetupDialog = RealPrinterPageSetupDialog(parentWidget=self.parentWidget, printerAdaptor=self.printerAdaptor)
+      else:
+        '''
+        Platform is mobile (QtPrintFramework and QPageSetupDialog not defined.)
+        OR platform is desktop but we want to use QML PageSetup dialog defined by this framework.
+        '''
+        self.currentFrameworkPageSetupDialog = self.toFilePageSetupDialog
     else:
-      # Use static dialog having fixed title and paperSize model from Qt
+      '''
+      The printer is non-native (as far as this framework is concerned.)
+      Use this framework's static dialog having fixed title and paperSize model from Qt.
+      It is already configure re QML/QWidget.
+      '''
       self.currentFrameworkPageSetupDialog = self.toFilePageSetupDialog
-  
+      
+    " assert currentFrameworkPageSetupDialog is one defined by this framework (not a native dialog of the OS.)"
+
+    
   
   def printablePageSizeInch(self):
     '''

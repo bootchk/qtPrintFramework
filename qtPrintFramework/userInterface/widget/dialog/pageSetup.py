@@ -34,7 +34,11 @@ class PageSetupDialog(QDialog):
 
     super(PageSetupDialog, self).__init__(parent=parentWidget)
     
-    # Models for controls
+    '''
+    Models for controls.
+    paperSizeModel may vary (come from a printer or the OS.)
+    pageOrientationModel is fixed.
+    '''
     self.pageOrientationModel = AdaptedPageOrientationModel()
     self.paperSizeModel = paperSizeModel
     

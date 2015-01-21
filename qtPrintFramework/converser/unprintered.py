@@ -9,20 +9,21 @@ Or use while Qt print framework has bugs re systems without real printers on cer
 from PyQt5.QtCore import QSizeF
 
 from qtPrintFramework.converser.converser import Converser
-
 from qtPrintFramework.pageSetup.printerlessPageSetup import PrinterlessPageSetup
-from qtPrintFramework.userInterface.widget.dialog.printerlessPageSetup import PrinterlessPageSetupDialog
-
 from qtPrintFramework.paper.standard import StandardPaper
 # from qtPrintFramework.alertLog import debugLog, alertLog
+
+import qtPrintFramework.config as config
+# Dynamic imports below for QML/QWidget
+
 
 
 class UnprinteredConverser(Converser):
   '''
-  A Converser that has NO real printer.
+  A Converser subclass that has NO real printer.
   
   Does NOT need QtPrintSupport.
-  Uses dialogs provided by this framework
+  Uses non-native dialogs provided by this framework.
   '''
   def __init__(self, parentWidget):
     super(UnprinteredConverser, self).__init__(parentWidget)
@@ -34,14 +35,20 @@ class UnprinteredConverser(Converser):
 
   def _getUnprinteredPageSetupAndDialog(self, parentWidget):
     '''
-  
+    Create a PageSetup and a view (GUI dialog) on it.
     '''
-    
     '''
     Static dialog owned by this framework.
     Requires no knowledge of printerAdaptor or current printer.
     '''
-    self.toFilePageSetupDialog = PrinterlessPageSetupDialog(parentWidget=self.parentWidget)
+    if config.useQML:
+      from qtPrintFramework.userInterface.qml.dialog.pageSetupDialogQML import pageSetupDialogMgr
+
+      self.toFilePageSetupDialog = pageSetupDialogMgr.pageSetupDialogDelegate()
+    else: # QWidget
+      from qtPrintFramework.userInterface.widget.dialog.printerlessPageSetup import PrinterlessPageSetupDialog
+
+      self.toFilePageSetupDialog = PrinterlessPageSetupDialog(parentWidget=self.parentWidget)
     
     '''
     self owns because self mediates use of it on every conversation.
@@ -62,12 +69,16 @@ class UnprinteredConverser(Converser):
     '''
     Implement deferred.
     
-    Use this framework's dialog and implementation of 'printing'
+    Use this framework's dialog and implementation of 'printing' (to a file.)
     '''
     print("Not implemented")
   
   
   def setCurrentFrameworkPageSetupDialog(self):
+    '''
+    Set current page setup dialog to:
+    a non-native dialog independent of print subsystem and OS.
+    '''
     self.currentFrameworkPageSetupDialog = self.toFilePageSetupDialog
   
   
@@ -119,3 +130,4 @@ class UnprinteredConverser(Converser):
     pass
     
 
+  

@@ -168,6 +168,9 @@ Use cases (GUI test sequences)
 - remembers current printer (may be Paperless printer: PDF or XPS) ???
 - remembers PageSetup of current printer if Paperless
 - PageSetup is a setting of the app, and is applied on app startup to Paperless printer only (???)
+- PageSetup is functional even on a mobile device (with no OS support for printing via dialogs)
+  (OS may support 'Sharing' to a printer via a file.)
+- PageSetup can use QML implementation even on a desktop platform
 
 
 TODO explain this: I inconsistently call a NonNative printer a Paperless printer, meaning only 'no cellulose'
@@ -175,3 +178,16 @@ Qt's notion of a NonNative printer is: native platform has no interaction with p
 OR some Qt dialog (typically QPageSetupDialog on Linux) refuse to work with it.
 A NonNative printer is typically cellulose free, but has pages and pagination (PDF.)
 But some native printers (i.e. Win XPS) are also cellulose free.
+
+
+QML
+---
+Using a QML user interface is a configurable option.  See config.py.  
+Formerly, the user interface was only QWidget based.
+
+If using QML, only the non-native Page Setup dialog is implemented.  
+The other dialogs (Print and native Page Setup) are native,
+i.e. implemented by the OS (via Qt.)
+
+If QML is used, this project (package) depends on the qtEmbeddedQmlFramework.
+

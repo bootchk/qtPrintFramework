@@ -39,7 +39,6 @@ class PageAttribute():
     return self.control.isValueInModel(value)
   
   
-  
   def default(self):
     return self.model.default()
     

@@ -13,14 +13,14 @@ class Orientation(QObject):
   '''
   
   
-  def __init__(self, enumValue=None):
+  def __init__(self, initialValue=None):
     super(Orientation, self).__init__()
-    if enumValue is None:
+    if initialValue is None:
       #print("Defaulting orientation to Portrait.")
       self.value = QPageLayout.Portrait
     else:
-      assert enumValue == QPageLayout.Portrait or enumValue == QPageLayout.Landscape
-      self.value = enumValue
+      assert initialValue == QPageLayout.Portrait or initialValue == QPageLayout.Landscape
+      self.value = initialValue
   
   def __repr__(self):
     return self.name

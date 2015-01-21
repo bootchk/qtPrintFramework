@@ -120,17 +120,19 @@ class Paper(object):
     
    
   
-  def __init__(self, paperEnum):
+  def __init__(self, initialValue):
     '''
     Default: CustomPaper overrides: still has this attribute but is constant
     '''
     # this is the best assertion we can do?  Fragile?
-    assert paperEnum is not None
-    assert isinstance(paperEnum, int), str(type(paperEnum))
-    #assert str(type(paperEnum)) == "<type 'sip.enumtype'>"
-    #assert isinstance(paperEnum, QPagedPaintDevice.PageSize)
-    
-    self.paperEnum = paperEnum
+    if initialValue is not None:
+      assert isinstance(initialValue, int), str(type(initialValue))
+      #assert str(type(paperEnum)) == "<type 'sip.enumtype'>"
+      #assert isinstance(paperEnum, QPagedPaintDevice.PageSize)
+      
+      self.paperEnum = initialValue
+    else:
+      self.paperEnum = 0  # QPagedPaintDevice.A0 ?
   
   
   def __repr__(self):

@@ -165,7 +165,7 @@ class Converser(QObject):
     '''
     self.dump("NonNative page setup to")
     
-    self.setCurrentFrameworkPageSetupDialog()
+    self.setCurrentFrameworkPageSetupDialog() # responsibility of subclass
     assert self.currentFrameworkPageSetupDialog is not None
     
     

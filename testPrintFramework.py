@@ -15,7 +15,8 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QPushButton, QVBoxLayout,
 from qtPrintFramework.converser.printered import PrinteredConverser
 from qtPrintFramework.converser.unprintered import UnprinteredConverser
 from qtPrintFramework.printer.printerSet import printerSet
-        
+
+import qtPrintFramework.config as config
     
 
 class ButtonSet(QWidget):
@@ -120,6 +121,10 @@ def main():
   if not app.installTranslator(translator):
       print("Not install translator.")
   
+  if config.useQML:
+    from qtEmbeddedQmlFramework.resourceManager import resourceMgr
+    resourceMgr.setResourceRoot(__file__, 'qtPrintFramework')
+    
   mainWindow = MainWindow()
   mainWindow.show()
   sys.exit(app.exec_())
