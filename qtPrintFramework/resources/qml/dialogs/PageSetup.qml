@@ -1,7 +1,8 @@
 import QtQuick 2.3
 import QtQuick.Dialogs 1.2
-//import QtQuick.Controls 1.1
 
+import "../controls" as MyControls
+import "../domains" as MyDomains
 
 
 // Editor of PageSetup
@@ -21,17 +22,15 @@ Dialog {
 	// | StandardButton.Cancel
 
 	//MyDialogContents()
-	//console.log("Here")
-	/*
-	 Column {
-		Text {
-			text: "foo"
+	Column {
+		MyControls.LabeledComboBox {
+			text: "Orientation"
+			// bind model to delegate
+			model: delegate.orientation
+			domain: MyDomains.Orientation{}
 		}
 	}
-	* 
-	 */
-	
-	
+
 	onAccepted: {
 		console.log("Accepted")
 		delegate.accept()
@@ -43,6 +42,7 @@ Dialog {
 	}
 	
 	Component.onCompleted: {
+		console.log("delegate.orientation", delegate.orientation)
 		print("Completed PageSetup QML")
 	}
 }

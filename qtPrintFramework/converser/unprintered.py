@@ -9,8 +9,8 @@ Or use while Qt print framework has bugs re systems without real printers on cer
 from PyQt5.QtCore import QSizeF
 
 from qtPrintFramework.converser.converser import Converser
-from qtPrintFramework.pageSetup.printerlessPageSetup import PrinterlessPageSetup
-from qtPrintFramework.paper.standard import StandardPaper
+from qtPrintFramework.pageLayout.printerlessPageLayout import PrinterlessPageLayout
+from qtPrintFramework.pageLayout.components.paper.standard import StandardPaper
 # from qtPrintFramework.alertLog import debugLog, alertLog
 
 import qtPrintFramework.config as config
@@ -29,13 +29,13 @@ class UnprinteredConverser(Converser):
     super(UnprinteredConverser, self).__init__(parentWidget)
     
     # Specialized
-    self._getUnprinteredPageSetupAndDialog(parentWidget)
+    self._getUnprinteredPageLayoutAndDialog(parentWidget)
 
 
 
-  def _getUnprinteredPageSetupAndDialog(self, parentWidget):
+  def _getUnprinteredPageLayoutAndDialog(self, parentWidget):
     '''
-    Create a PageSetup and a view (GUI dialog) on it.
+    Create a PageLayout and a view (GUI dialog) on it.
     '''
     '''
     Static dialog owned by this framework.
@@ -53,9 +53,9 @@ class UnprinteredConverser(Converser):
     '''
     self owns because self mediates use of it on every conversation.
     
-    PageSetup is initialized from settings OR printerAdaptor.
+    PageLayout is initialized from settings OR printerAdaptor.
     '''
-    self.pageSetup = PrinterlessPageSetup(masterEditor=self.toFilePageSetupDialog)
+    self.pageLayout = PrinterlessPageLayout(masterEditor=self.toFilePageSetupDialog)
     
   
   def conversePageSetup(self):
@@ -88,7 +88,7 @@ class UnprinteredConverser(Converser):
     
     Specialize: return what user chose in PageSetup dialog
     '''
-    #TODO get from PageSetup
+    #TODO get from PageLayout
     # TEMP Hack: return fixed size
     result = QSizeF(8.5, 11)
     self._checkPrintablePageSizeInch(result)
@@ -116,11 +116,11 @@ class UnprinteredConverser(Converser):
   def _capturePageSetupChange(self):
     
     OLD
-    oldPageSetup = copy(self.pageSetup)
-    self.pageSetup.fromPrinterAdaptor(self.printerAdaptor)
-    if not oldPageSetup == self.pageSetup:
+    oldPageSetup = copy(self.pageLayout)
+    self.pageLayout.fromPrinterAdaptor(self.printerAdaptor)
+    if not oldPageSetup == self.pageLayout:
       self._emitUserChangedPaper()
-    self.pageSetup.warnIfDisagreesWithPrinterAdaptor(self.printerAdaptor)
+    self.pageLayout.warnIfDisagreesWithPrinterAdaptor(self.printerAdaptor)
   """
 
   def _propagateChangedPageSetup(self):

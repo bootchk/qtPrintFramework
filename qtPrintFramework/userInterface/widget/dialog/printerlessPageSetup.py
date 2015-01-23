@@ -2,7 +2,7 @@
 
 from qtPrintFramework.userInterface.widget.dialog.pageSetup import PageSetupDialog
 
-from qtPrintFramework.model.paperSize import AdaptedPaperSizeModel
+from qtPrintFramework.pageLayout.model.paperSize import AdaptedPaperSizeModel
 from qtPrintFramework.translations import Translations
 
 

@@ -3,7 +3,7 @@ from PyQt5.QtCore import QSize, QSizeF
 from PyQt5.QtGui import QPagedPaintDevice  # !! Not in QtPrintSupport
 
 
-from qtPrintFramework.model.adaptedModel import AdaptedModel
+from qtPrintFramework.pageLayout.model.adaptedModel import AdaptedModel
 from qtPrintFramework.orientedSize import OrientedSize
 from qtPrintFramework.alertLog import alertLog
 

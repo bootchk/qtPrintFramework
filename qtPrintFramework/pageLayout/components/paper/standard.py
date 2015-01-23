@@ -2,7 +2,7 @@
 
 from PyQt5.QtCore import QSize
 
-from qtPrintFramework.paper.paper import Paper
+from qtPrintFramework.pageLayout.components.paper.paper import Paper
 
 
 class StandardPaper(Paper):

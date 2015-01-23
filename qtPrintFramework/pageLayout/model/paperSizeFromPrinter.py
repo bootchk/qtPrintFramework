@@ -4,7 +4,7 @@
 from PyQt5.QtPrintSupport import QPrinter, QPrinterInfo
 from PyQt5.QtGui import QPagedPaintDevice # !! Not in QtPrintSupport
 
-from qtPrintFramework.model.adaptedModel import AdaptedSortedModel
+from qtPrintFramework.pageLayout.model.adaptedModel import AdaptedSortedModel
 from qtPrintFramework.alertLog import alertLog
 
 class PrinterPaperSizeModel(AdaptedSortedModel):  # !!! Sorted

@@ -2,7 +2,7 @@
 
 from copy import copy
 
-from PyQt5.QtCore import QObject, QSizeF  # QSize, 
+from PyQt5.QtCore import QObject, QSizeF, pyqtSlot  # QSize, 
 from PyQt5.QtCore import pyqtSignal as Signal
 
 # !!! This does not depend on QtPrintSupport, but certain subclasses do
@@ -72,7 +72,7 @@ class Converser(QObject):
   
   
   def __init__(self, parentWidget):
-    super(Converser, self).__init__()
+    super().__init__()
     self.parentWidget = parentWidget
     self.warn = Warn(parentWidget)
     
@@ -215,7 +215,7 @@ class Converser(QObject):
     dialog.open() # window modal
     
   
-
+  @pyqtSlot()
   def _acceptNativePrintSlot(self):
     '''
     A native PrintDialog was accepted.
@@ -248,7 +248,7 @@ class Converser(QObject):
     self.pageSetup.toSettings()
     
 
-
+  @pyqtSlot()
   def _acceptNonNativePrintSlot(self):
     '''
     A nonnative PrintDialog was accepted.
@@ -272,7 +272,7 @@ class Converser(QObject):
     self.pageSetup.toSettings()
 
     
-
+  @pyqtSlot()
   def _acceptNonNativePageSetupSlot(self):
     '''
     User accepted NonNative PageSetupDialog.
@@ -322,7 +322,7 @@ class Converser(QObject):
     # Persist
     self.pageSetup.toSettings()
     
-    
+  @pyqtSlot()
   def _cancelSlot(self):
     '''
     PageSetupDialog or PrintDialog was canceled.

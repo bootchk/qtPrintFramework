@@ -1,18 +1,19 @@
 
-#from PyQt5.QtGui import QPagedPaintDevice  
+from PyQt5.QtCore import QObject, pyqtProperty, pyqtSignal
 
 # !! This should be independent of QtPrintSupport.
 # Instead, use QPageLayout (since Qt5.3) instead of QPrinter for enums 
 
+from qtEmbeddedQmlFramework.qmlDelegate import QmlDelegate
+
+
 # Mixins
-from qtPrintFramework.pageSetup.settingsable import Settingsable
+from qtPrintFramework.pageLayout.able.settingsable import Settingsable
 
 
-from qtPrintFramework.paper.standard import StandardPaper
-#from qtPrintFramework.paper.custom import CustomPaper
+from qtPrintFramework.pageLayout.components.paper.standard import StandardPaper
+from qtPrintFramework.pageLayout.components.orientation import Orientation
 
-from qtPrintFramework.orientation import Orientation
-#from qtPrintFramework.alertLog import alertLog
 
 '''
 Derived from PageSetup.py during implementation of QML PageSetup dialog.
@@ -20,10 +21,13 @@ PageSetup.py was flawed, it knew the view (editor.)  A model should not know any
 '''
 
 
-class PageLayout(Settingsable):  # Not a QObject, no signals or tr(), and is copy()'d
+# WAS a object, no signals or tr(), and is copy()'d
+class PageLayout(QmlDelegate, Settingsable):  
   '''
   Persistent user's choice of page setup attributes.
   Basically a QPageLayout (new to Qt5.3) that also persists in settings.
+  
+  A PageLayout is data, a PageSetup is a dialog or user interaction.
   
   This defines the set of attributes:
   - page size
@@ -62,9 +66,12 @@ class PageLayout(Settingsable):  # Not a QObject, no signals or tr(), and is cop
   They are often both confusingly used for the ideal concept (regardless of whether real thing is involved.)
   '''
   
+  orientationChanged = pyqtSignal()
+  
+  
   def __init__(self, printerAdaptor=None):
     
-    super().__init__()
+    super().__init__()  # Must init QObject 
     
     '''
     A PageLayout is basically a structured model (a set of properties.)
@@ -85,14 +92,16 @@ class PageLayout(Settingsable):  # Not a QObject, no signals or tr(), and is cop
     
     It is NOT an assertion that self.isEqualPrinterAdaptor(printerAdaptor)
     in the case that printerAdaptor is adapting a native printer.
-    That is, we don't force a native printer's page setup onto self (on user's preferred pageSetup for document),
+    That is, we don't force a native printer's pageLayout onto self (on user's preferred pageLayout for document),
     until user actually chooses to print on said native printer.
     '''
+  
   
 
   def __repr__(self):
     '''
     Not strict: result will not recreate object.
+    TODO should be __str__
     
     paperName orientationName orientedDimensions
     e.g. 'A4 Landscape 297x219mm'
@@ -107,6 +116,15 @@ class PageLayout(Settingsable):  # Not a QObject, no signals or tr(), and is cop
     return self.paper == other.paper and self.orientation == other.orientation
   
 
+  # A property so QML can access
+  @pyqtProperty(int, notify=orientationChanged)
+  def orientation(self):
+    return self._orientation
+  
+  @orientation.setter
+  def orientation(self, newValue):
+    self._orientation = newValue
+    self.orientationChanged.emit()
     
   
   '''

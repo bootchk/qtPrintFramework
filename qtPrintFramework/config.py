@@ -2,4 +2,4 @@
 Package level configuration
 '''
 
-useQML = True # False means use QWidget GUI
+useQML = False # False means use QWidget GUI

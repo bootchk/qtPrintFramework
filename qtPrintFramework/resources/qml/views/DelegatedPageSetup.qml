@@ -6,7 +6,7 @@ This is outer shell with delegate and connections.
 
 import QtQuick 2.3
 
-import QmlDelegate 1.0
+import PageLayout 1.0
 import "../dialogs" as MyDialogs
 
 Item {
@@ -16,7 +16,7 @@ Item {
 	property string titlePrefix
 	
 	// Delegate allowing Python side to open this dialog
-	QmlDelegate {
+	PageLayout {
 		id: pageSetupDelegate
 		objectName: "pageSetupDelegate"
 	}

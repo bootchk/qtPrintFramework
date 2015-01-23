@@ -1,8 +1,8 @@
 
 from PyQt5.QtGui import QPageLayout
 
-from qtPrintFramework.model.adaptedModel import AdaptedModel
-from qtPrintFramework.orientation import Orientation
+from qtPrintFramework.pageLayout.model.adaptedModel import AdaptedModel
+from qtPrintFramework.pageLayout.components.orientation import Orientation
 
 class AdaptedPageOrientationModel(AdaptedModel):
   '''

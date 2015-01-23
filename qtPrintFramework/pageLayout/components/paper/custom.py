@@ -3,8 +3,8 @@ from PyQt5.QtCore import QSize
 from PyQt5.QtGui import QPagedPaintDevice  # !! Not in QtPrintSupport
 
 from qtPrintFramework.orientedSize import OrientedSize
-from qtPrintFramework.paper.paper import Paper
-from qtPrintFramework.orientation import Orientation
+from qtPrintFramework.pageLayout.components.paper.paper import Paper
+from qtPrintFramework.pageLayout.components.orientation import Orientation
 
 
 class CustomPaper(Paper):

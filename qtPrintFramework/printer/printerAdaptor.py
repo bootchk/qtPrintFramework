@@ -6,10 +6,10 @@ from PyQt5.QtPrintSupport import QPrinter
 from PyQt5.QtGui import QPagedPaintDevice  # !! Not in QtPrintSupport
 
 from qtPrintFramework.orientedSize import OrientedSize
-from qtPrintFramework.paper.paper import Paper
-from qtPrintFramework.paper.standard import StandardPaper
-from qtPrintFramework.paper.custom import CustomPaper
-from qtPrintFramework.orientation import Orientation
+from qtPrintFramework.pageLayout.components.paper.paper import Paper
+from qtPrintFramework.pageLayout.components.paper.standard import StandardPaper
+from qtPrintFramework.pageLayout.components.paper.custom import CustomPaper
+from qtPrintFramework.pageLayout.components.orientation import Orientation
 from qtPrintFramework.alertLog import alertLog
 
 

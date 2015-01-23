@@ -1,17 +1,18 @@
 
 from qtEmbeddedQmlFramework.embeddedQmlManager import EmbeddedQmlManager
 from qtEmbeddedQmlFramework.embeddedQmlInterface import EmbeddedQmlInterface
-from qtEmbeddedQmlFramework.qmlDelegate import QmlDelegate
+
+from qtPrintFramework.pageSetup.pageLayout import PageLayout
 
 class PageSetupDialogQMLManager():
   
   def __init__(self):
     '''
-    Create delegate to PageSetupDialog implemented in QML.
+    Create delegate to PageSetup dialog implemented in QML.
     '''
     self.delegates = {}
     
-    interfaces = [EmbeddedQmlInterface(QmlDelegate, 'pageSetup', 'DelegatedPageSetup.qml', 
+    interfaces = [EmbeddedQmlInterface(PageLayout, 'pageSetup', 'DelegatedPageSetup.qml', 
                                          modelDelegateName='pageSetupDelegate',
                                          modelContextMenuName=None)
                     ]
@@ -29,7 +30,7 @@ class PageSetupDialogQMLManager():
     
   def pageSetupDialogDelegate(self):
     result = self.delegates['pageSetupDelegate']
-    assert isinstance(result, QmlDelegate)
+    assert isinstance(result, PageLayout)
     return result
 
 

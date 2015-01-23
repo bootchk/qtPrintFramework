@@ -5,7 +5,7 @@ from PyQt5.QtCore import QObject  # , QUrl
 from PyQt5.QtCore import pyqtSignal as Signal
 
 
-class PageSetupDialogQML(QObject):
+class PageSetupDialogDelegate(QObject):
   '''
   QML GUI form of PageSetupDialog
   '''

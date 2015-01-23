@@ -1,15 +1,16 @@
 
-from PyQt5.QtCore import QSettings, QSize
+from PyQt5.QtCore import QObject, QSettings, QSize
 from PyQt5.QtGui import QPagedPaintDevice
 
-from qtPrintFramework.paper.paper import Paper
-from qtPrintFramework.paper.custom import CustomPaper
-from qtPrintFramework.paper.standard import StandardPaper
-from qtPrintFramework.orientation import Orientation
+from qtPrintFramework.pageLayout.components.paper.paper import Paper
+from qtPrintFramework.pageLayout.components.paper.custom import CustomPaper
+from qtPrintFramework.pageLayout.components.paper.standard import StandardPaper
+from qtPrintFramework.pageLayout.components.orientation import Orientation
 
 
 
-class Settingsable(object):
+# ??? Must inherit QObject to prevent: Runtime Error: super-class __init__() of type PrinteredPageSetup was never called.
+class Settingsable():
   '''
   Mixin behaviour for PageSetup.
   Persists itself to/from Settings.

@@ -9,7 +9,7 @@ from PyQt5.QtCore import pyqtSlot as Slot
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QComboBox
 
-from qtPrintFramework.model.adaptedModel import AdaptedModel
+from qtPrintFramework.pageLayout.model.adaptedModel import AdaptedModel
 
 
 class PageAttributeComboBox(QComboBox):

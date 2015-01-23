@@ -8,12 +8,14 @@ from PyQt5.QtPrintSupport import QPageSetupDialog, QPrintDialog
 from qtPrintFramework.converser.converser import Converser
 
 from qtPrintFramework.printer.printerAdaptor import PrinterAdaptor
-from qtPrintFramework.pageSetup.printeredPageSetup import PrinteredPageSetup
+from qtPrintFramework.pageLayout.printeredPageLayout import PrinteredPageLayout
 
 from qtPrintFramework.alertLog import debugLog, alertLog
 
 import qtPrintFramework.config as config
 # Dynamic imports below for QML/QWidget
+
+
 
 class PrinteredConverser(Converser):
   '''
@@ -25,11 +27,11 @@ class PrinteredConverser(Converser):
     super(PrinteredConverser, self).__init__(parentWidget)
     
     # Specialized
-    self._getPrinteredPageSetupAndDialog(parentWidget)
+    self._getPrinteredpageLayoutAndDialog(parentWidget)
 
 
 
-  def _getPrinteredPageSetupAndDialog(self, parentWidget):
+  def _getPrinteredpageLayoutAndDialog(self, parentWidget):
     '''
     PrintConverser has-a PrinterAdaptor (unidirectional link.)
     See below, this is used in signal handlers.
@@ -52,10 +54,10 @@ class PrinteredConverser(Converser):
     '''
     self owns because self mediates use of it on every conversation.
     
-    PageSetup is initialized from settings OR printerAdaptor.
+    pageLayout is initialized from settings OR printerAdaptor.
     '''
-    ##self.pageSetup = PrinteredPageSetup(masterEditor=self.toFilePageSetupDialog, printerAdaptor=self.printerAdaptor, )
-    self.pageSetup = PrinteredPageSetup(printerAdaptor=self.printerAdaptor)
+    ##self.pageSetup = PrinteredpageLayout(masterEditor=self.toFilePageSetupDialog, printerAdaptor=self.printerAdaptor, )
+    self.pageSetup = PrinteredPageLayout(printerAdaptor=self.printerAdaptor)
 
     '''
     Not assert that printerAdaptor equal PageSetup.
@@ -168,7 +170,7 @@ class PrinteredConverser(Converser):
     Use QPageSetup dialog, which uses native dialogs and works with native printers.
     
     Here, the native dialog remembers page setup.
-    We don't pass a PageSetup.
+    We don't pass a pageLayout.
     Native dialog correctly shows user's last choices for printer, page setup.
     '''
     self.dump("Native page setup to")
