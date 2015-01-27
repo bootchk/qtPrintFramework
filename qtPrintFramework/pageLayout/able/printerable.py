@@ -1,14 +1,18 @@
 
 from PyQt5.QtCore import QSizeF
-from PyQt5.QtGui import QPageLayout
+from PyQt5.QtGui import QPageLayout # , QPageSize
 
 from qtPrintFramework.orientedSize import OrientedSize
 from qtPrintFramework.alertLog import alertLog
 
+from qtPrintFramework.pageLayout.components.orientation import Orientation
+from qtPrintFramework.pageLayout.components.paper.paper import Paper
 
-class Printerable(object):
+
+
+class Printerable():
   '''
-  Mixin class for PageSetup.
+  Mixin class for PageLayout.
   Talks to (friend of) real printers.
   
   !!! This does NOT drag in Qt's QPrintSupport module.
@@ -27,7 +31,7 @@ class Printerable(object):
     And update controls (which are not visible, and are in parallel with native dialog controls.)
     '''
     self.paper = printerAdaptor.paper() # new instance
-    self.orientation = printerAdaptor.paperOrientation
+    self.orientation = printerAdaptor.orientation()
     if self.paper.isCustom:
       # capture size chosen by user, say in native Print dialog
       integralOrientedSizeMM = OrientedSize.roundedSize(sizeF=printerAdaptor.paperSizeMM)
@@ -36,6 +40,8 @@ class Printerable(object):
     # else size of paper is standard.
     
     # editor and settings are not updated                    
+    assert isinstance(self.paper, Paper)
+    assert isinstance(self.orientation, Orientation)
     
     
   def toPrinterAdaptor(self, printerAdaptor):
@@ -63,11 +69,13 @@ class Printerable(object):
     Because floating point errors in some versions of Qt, 
     setting paperSize by a QSizeF does not always have the intended effect on enum.
     '''
-    if self.paper.isCustom :
+    ##WAS if self.paper.isCustom :
+    if self.paperIsCustom() :
       # Illegal to call setPaperSize(QPrinter.Custom)
       self._toPrinterAdaptorByIntegralMMSize(printerAdaptor)
     else:
-      printerAdaptor.setPaperSize(self.paper.paperEnum)
+      printerAdaptor.setPaperSize(self.paper.value)
+      ##WAS printerAdaptor.setPaperSize(self.paper)
     
     '''
     Strong assertion might not hold: Qt might be showing paper dimensions QSizeF(0,0) for Custom
@@ -115,9 +123,9 @@ class Printerable(object):
     Floating inch size.
     '''
     # TODO oriented, other inch unit sizes
-    if self.paper.paperEnum == QPageLayout.Legal:
+    if self.paper.value == QPageLayout.Legal:
       newPaperSizeInch = QSizeF(8.5, 14)
-    elif self.paper.paperEnum == QPageLayout.Letter:
+    elif self.paper.value == QPageLayout.Letter:
       newPaperSizeInch = QSizeF(8.5, 11)
     else:
       return
@@ -136,9 +144,9 @@ class Printerable(object):
   def isEqualPrinterAdaptor(self, printerAdaptor):
     '''
     Weak comparison: computed printerAdaptor.paper() equal self.
-    printerAdaptor.paperSize() might still not equal self.paperEnum
+    printerAdaptor.paperSize() might still not equal self.value
     '''
-    result = self.paper == printerAdaptor.paper() and self.orientation == printerAdaptor.paperOrientation
+    result = self.paper.value == printerAdaptor.paper().value and self.orientation.value == printerAdaptor.orientation().value
     if not result:
       alertLog("pageSetup differs")
       self.dumpDisagreement(printerAdaptor)
@@ -152,11 +160,12 @@ class Printerable(object):
     Comparison of dimensions is unoriented (usually, width < height, but not always, Tabloid/Ledger).
     '''
     # partialResult: enums and orientation
-    partialResult = self.paper.paperEnum == printerAdaptor.paperSize() \
-          and self.orientation == printerAdaptor.paperOrientation
+    # paperSize() is QPrinter.paperSize()
+    partialResult = self.paper.value == printerAdaptor.paperSize() \
+          and self.orientation.value == printerAdaptor.orientation().value
     
     # Compare sizes.  All Paper including Custom has a size.
-    sizeResult = partialResult and self.paper.isOrientedSizeEpsilonEqual(self.orientation, printerAdaptor.paperSizeMM)
+    sizeResult = partialResult and self.paper.isOrientedSizeEpsilonEqual(self.orientation.value, printerAdaptor.paperSizeMM)
     
     result = partialResult and sizeResult
       
@@ -185,7 +194,7 @@ class Printerable(object):
     '''
     return
     """
-    #print(self.paper.paperEnum, printerAdaptor.paperSize(), # our and Qt enums
+    #print(self.paper.value, printerAdaptor.paperSize(), # our and Qt enums
             self.orientation, printerAdaptor.orientation(), # our and Qt orientation
             printerAdaptor.paperSizeMM ) # Qt paperSize(mm)
     if not self.paper.isCustom:

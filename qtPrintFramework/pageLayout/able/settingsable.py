@@ -1,5 +1,5 @@
 
-from PyQt5.QtCore import QObject, QSettings, QSize
+from PyQt5.QtCore import QSettings, QSize # QObject, 
 from PyQt5.QtGui import QPagedPaintDevice
 
 from qtPrintFramework.pageLayout.components.paper.paper import Paper
@@ -57,7 +57,7 @@ class Settingsable():
     
     # Prepare default values
     if getDefaultsFromPrinterAdaptor is not None:
-      defaultPaperEnum = getDefaultsFromPrinterAdaptor.paper().paperEnum
+      defaultPaperEnum = getDefaultsFromPrinterAdaptor.paper().value
       defaultOrientation = getDefaultsFromPrinterAdaptor.orientation()
     else:
       defaultPaperEnum = 0  # Hack TODO PaperSizeModel.default()
@@ -72,7 +72,7 @@ class Settingsable():
     
     # Copy settings to self
     # Orientation first, needed for orienting paper size
-    self.orientation = Orientation(self._intForSetting(orientationValue))
+    self.orientation = Orientation(initialValue=self._intForSetting(orientationValue))
     
     size = QSize(self._intForSetting(integralOrientedWidthValue),
                 self._intForSetting(integralOrientedHeightValue))
@@ -93,9 +93,9 @@ class Settingsable():
     qsettings = QSettings()
     qsettings.beginGroup( "paperlessPrinter" )
     # Although Paper is pickleable, simplify to int.  QSettings stores objects correctly?
-    qsettings.setValue( "paperEnum", self.paper.paperEnum )
+    qsettings.setValue( "paperEnum", self.paper.value )
     qsettings.setValue( "paperOrientation", self.orientation.value )
-    integralOrientedSize = self.paper.integralOrientedSizeMM(self.orientation)
+    integralOrientedSize = self.paper.integralOrientedSizeMM(self.orientation.value)
     qsettings.setValue( "paperintegralOrientedWidth", integralOrientedSize.width())
     qsettings.setValue( "paperintegralOrientedHeight", integralOrientedSize.height())
     qsettings.endGroup()

@@ -25,19 +25,11 @@ class UnprinteredConverser(Converser):
   Does NOT need QtPrintSupport.
   Uses non-native dialogs provided by this framework.
   '''
-  def __init__(self, parentWidget):
-    super(UnprinteredConverser, self).__init__(parentWidget)
-    
-    # Specialized
-    self._getUnprinteredPageLayoutAndDialog(parentWidget)
 
-
-
-  def _getUnprinteredPageLayoutAndDialog(self, parentWidget):
+  def getPageLayoutAndDialog(self, parentWidget):
     '''
     Create a PageLayout and a view (GUI dialog) on it.
-    '''
-    '''
+    
     Static dialog owned by this framework.
     Requires no knowledge of printerAdaptor or current printer.
     '''
@@ -55,7 +47,8 @@ class UnprinteredConverser(Converser):
     
     PageLayout is initialized from settings OR printerAdaptor.
     '''
-    self.pageLayout = PrinterlessPageLayout(masterEditor=self.toFilePageSetupDialog)
+    result = PrinterlessPageLayout(masterEditor=self.toFilePageSetupDialog)
+    return result
     
   
   def conversePageSetup(self):

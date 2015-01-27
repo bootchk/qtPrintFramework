@@ -1,15 +1,16 @@
 
-from PyQt5.QtCore import QSize, QSizeF
+from PyQt5.QtCore import QObject, QSize, QSizeF, pyqtSignal, pyqtProperty
 from PyQt5.QtGui import QPagedPaintDevice  # !! Not in QtPrintSupport
-
 
 from qtPrintFramework.pageLayout.model.adaptedModel import AdaptedModel
 from qtPrintFramework.orientedSize import OrientedSize
 from qtPrintFramework.alertLog import alertLog
 
-class Paper(object):
+
+class Paper(QObject):
   '''
   Wrapper around QPagedPaintDevice.PageSize
+  TODO: around QPageSize ?
   
   ABC
   Inherited by:
@@ -29,6 +30,10 @@ class Paper(object):
   
   !!! a Paper does not know its orientation (it is passed) but knows it's oriented description.
   '''
+  
+  valueChanged = pyqtSignal(int)
+  
+  
   nameModel = AdaptedModel._getAdaptedReverseDictionary(enumOwningClass=QPagedPaintDevice, 
                                                      enumType=QPagedPaintDevice.PageSize) # !!! Paper/Page confusion
   
@@ -94,7 +99,7 @@ class Paper(object):
     
     
   @classmethod
-  def enumForPageSizeByMatchDimensions(cls, paperSizeMM, orientation):
+  def enumForPageSizeByMatchDimensions(cls, paperSizeMM, orientationEnum):
     '''
     Returns enum from type QPagedPaintDevice.PageSize using fuzzy match on paper dimensions.
     
@@ -104,11 +109,12 @@ class Paper(object):
     
     !!! But note that Qt returns paperSizeMM that reflects orientation, i.e. width can be > height
     '''
+    assert isinstance(orientationEnum, int)
     roundedSize = OrientedSize.roundedSize(sizeF=paperSizeMM)
     if roundedSize is None:
       return None
     
-    definedRoundedSize = OrientedSize.portraitSizeMM(roundedSize, orientation)
+    definedRoundedSize = OrientedSize.portraitSizeMM(roundedSize, orientationEnum)
     hashedDefinedRoundedSize = (definedRoundedSize.width(), definedRoundedSize.height())
     #print(hashedDefinedRoundedSize)
     try:
@@ -124,15 +130,17 @@ class Paper(object):
     '''
     Default: CustomPaper overrides: still has this attribute but is constant
     '''
+    super().__init__()  # init QObject
+    
     # this is the best assertion we can do?  Fragile?
     if initialValue is not None:
       assert isinstance(initialValue, int), str(type(initialValue))
-      #assert str(type(paperEnum)) == "<type 'sip.enumtype'>"
-      #assert isinstance(paperEnum, QPagedPaintDevice.PageSize)
+      #assert str(type(value)) == "<type 'sip.enumtype'>"
+      #assert isinstance(value, QPagedPaintDevice.PageSize)
       
-      self.paperEnum = initialValue
+      self._value = initialValue
     else:
-      self.paperEnum = 0  # QPagedPaintDevice.A0 ?
+      self._value = 0  # QPagedPaintDevice.A0 ?
   
   
   def __repr__(self):
@@ -157,12 +165,26 @@ class Paper(object):
     Used to determine whether pageSetup has changed.
     '''
     if not self.isCustom:
-      result = self.paperEnum == other.paperEnum
+      result = self._value == other._value
     else:
-      result = self.paperEnum == other.paperEnum \
+      result = self._value == other._value \
               and self.hasEqualSizeTo(other)
     return result
 
+
+  '''
+  Crux data is an enum, a Qt property with notifiable signal.
+  '''
+  @pyqtProperty(int, notify=valueChanged)
+  def value(self):
+    return self._value
+  
+  @value.setter
+  def value(self, newValue):
+    self._value = newValue
+    self.valueChanged.emit(newValue)
+  
+  
   
   @property
   def _definedSizeString(self):
@@ -180,9 +202,11 @@ class Paper(object):
     return str(size.width()) + 'x' + str(size.height()) + 'mm'
   
   
-  @property
+  '''
+  Deferred property
   def name(self):
     raise NotImplementedError('Deferred')
+  '''
   
 
   @property

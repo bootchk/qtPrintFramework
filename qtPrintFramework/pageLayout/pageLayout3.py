@@ -1,24 +1,21 @@
 
-from PyQt5.QtCore import pyqtProperty, QObject
-from PyQt5.QtCore import pyqtSignal as Signal
-from PyQt5.QtCore import pyqtSlot as Slot
-
-#from PyQt5.QtGui import QPageSize # QPageLayout, 
-
-from qtPrintFramework.pageLayout.components.paper.standard import StandardPaper
-from qtPrintFramework.pageLayout.components.orientation import Orientation
-#from qtPrintFramework.paper.custom import CustomPaper
+from PyQt5.QtCore import QObject, pyqtProperty, pyqtSignal
+from PyQt5.QtGui import QPageLayout, QPageSize
 
 
 # !! This should be independent of QtPrintSupport.
 # Instead, use QPageLayout (since Qt5.3) instead of QPrinter for enums 
 
-#from qtEmbeddedQmlFramework.qmlDelegate import QmlDelegate
+from qtEmbeddedQmlFramework.qmlDelegate import QmlDelegate
 
 # Mixins
 from qtPrintFramework.pageLayout.able.settingsable import Settingsable
 
-
+"""
+WAS: properties were classes
+from qtPrintFramework.pageLayout.components.paper.standard import StandardPaper
+from qtPrintFramework.pageLayout.components.orientation import Orientation
+"""
 
 '''
 Derived from PageSetup.py during implementation of QML PageSetup dialog.
@@ -27,7 +24,7 @@ PageSetup.py was flawed, it knew the view (editor.)  A model should not know any
 
 
 # WAS a object, no signals or tr(), and is copy()'d
-class PageLayout(QObject, Settingsable):  
+class PageLayout(QmlDelegate):  #, Settingsable):  
   '''
   Persistent user's choice of page layout attributes.
   Basically a QPageLayout (new to Qt5.3) that also persists in settings.
@@ -71,21 +68,12 @@ class PageLayout(QObject, Settingsable):
   They are often both confusingly used for the ideal concept (regardless of whether real thing is involved.)
   '''
   
-  '''
-  Since superclass mixin QmlDelegate defines signals, this class cannot.
-  But its attributes have properties that have signals.
-  IOW, this class has-a attributes that are QObjects.
-  
   orientationChanged = pyqtSignal()
   paperChanged = pyqtSignal()
-  '''
-  
-  openView = Signal() # to QML view
-  accepted = Signal() # to model
-  rejected = Signal() # to model
   
   
   def __init__(self, printerAdaptor=None):
+    #QObject.__init__(self)
     super().__init__()  # Must init QObject 
     
     '''
@@ -94,11 +82,16 @@ class PageLayout(QObject, Settingsable):
     Initialized to defaults for the properties.
     PageSetup.py initialized from an editor's defaults.
     '''
+    """
+    WAS
     self.paper = StandardPaper(initialValue = None)
     self.orientation = Orientation(initialValue = None )
+    """
+    self._paper = 0  # TODO symbolic 
+    self._orientation = 0  # QPageLayout.Portrait
     
     " Possibly change defaults from settings."
-    #TEMP self.initializeModelFromSettings(getDefaultsFromPrinterAdaptor=printerAdaptor)
+    #self.initializeModelFromSettings(getDefaultsFromPrinterAdaptor=printerAdaptor)
     # Not assert that printerAdaptor equals self yet.
     
     '''
@@ -122,7 +115,27 @@ class PageLayout(QObject, Settingsable):
     e.g. 'A4 Landscape 297x219mm'
     e.g. 'Custom Portrait 640x480mm'
     '''
-    ## return ','.join((str(self.paper), str(self.orientation)))  @pyqtProperty(int, notify=paperChanged)
+    ## return ','.join((str(self.paper), str(self.orientation)))
+    return self.paper.orientedDescription(self.orientation)
+    ##return " ".joint((self.paper.name, self._orientationName(self.orientation)), self.paper)
+  """
+  
+  def __eq__(self, other):
+    return self.paper == other.paper and self.orientation == other.orientation
+  
+
+  # A property so QML can access
+  @pyqtProperty(int, notify=orientationChanged)
+  def orientation(self):
+    return self._orientation
+  
+  @orientation.setter
+  def orientation(self, newValue):
+    self._orientation = newValue
+    self.orientationChanged.emit()
+  
+  
+  @pyqtProperty(int, notify=paperChanged)
   def paper(self):
     return self._paper
   
@@ -130,19 +143,10 @@ class PageLayout(QObject, Settingsable):
   def paper(self, newValue):
     self._paper = newValue
     self.paperChanged.emit()
-    return self.paper.orientedDescription(self.orientation)
-    ##return " ".joint((self.paper.name, self._orientationName(self.orientation)), self.paper)
-  """
-  
-  def __eq__(self, other):
-    return self.paper == other.paper and self.orientation == other.orientation
-
-  def __str__(self):
-    return 'Paper:' + str(self.paper) + ' Orientation:' +  str(self.orientation)
   
   
   def paperIsCustom(self):
-    return self.paper.isCustom
+    return self._paper == QPageSize.Custom
   
   '''
   CRUFT from  PageSetup.py
@@ -176,59 +180,6 @@ class PageLayout(QObject, Settingsable):
     '''
     For debugging only, may crash decoding on other languages.
     '''
-    print(self.paper, self.orientation)
+    print(self.paper, self.paper)
 
-
-  '''
-  Attributes are property (so QML can access)
-  Not just an int enum, but a full-fledged object.
-  '''
-  @pyqtProperty(Orientation)
-  def orientation(self):
-    return self._orientation
-  
-  @orientation.setter
-  def orientation(self, newValue):
-    self._orientation = newValue
-  
-  @pyqtProperty(StandardPaper)
-  def paper(self):
-    return self._paper
-  
-  @paper.setter
-  def paper(self, newValue):
-    self._paper = newValue
-    
-    
-  def emitOpenView(self):
-    '''
-    Activate view of self (self as a model.)
-    Called from business side.
-    Connected in QML to Dialog.open()
-    '''
-    print("activate called, emitting openView")
-    self.openView.emit()
-  
-  '''
-  Alias
-  From business side, open means "window modal."
-  That semantic must be defined in the QML.
-  '''
-  open = emitOpenView
-  
-  
-  @Slot()
-  def accept(self):
-    '''
-    Called from QML side.
-    Connected in business side to a handler of dialog results (in shared model.)
-    '''
-    self.accepted.emit()
-  
-  @Slot()
-  def reject(self):
-    '''
-    Opposite cohort of accept.
-    '''
-    self.rejected.emit()
   

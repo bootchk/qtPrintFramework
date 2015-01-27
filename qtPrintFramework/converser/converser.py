@@ -1,7 +1,4 @@
 
-
-from copy import copy
-
 from PyQt5.QtCore import QObject, QSizeF, pyqtSlot  # QSize, 
 from PyQt5.QtCore import pyqtSignal as Signal
 
@@ -28,30 +25,36 @@ class Converser(QObject):
   Knows that a reference to dialogs must be kept so they are not destroyed prematurely (especially native).
   
   Implementation:
-  owns a PageSetup and a PrinterAdaptor and Dialogs.
+  owns a PageLayout and a PrinterAdaptor and Dialogs.
   An app owns only a PrintConverser (usually wrapped in a PrintSession, not included here.)
   
-  !!! There are no circular references, otherwise you get segfaults on app quit
-  because things are destroyed in the wrong order.
+  !!! No circular references, otherwise you get segfaults on app quit when things are destroyed in wrong order.
   '''
   
   
   '''
   Meaning of signals:
-  userChangedPaper is 
+  -------------------
+  userChangedLayout: user changed attribute of layout (any of paper, orientation, ...).  May occur more than once per page stetup dialog
   
+  userAcceptedFoo: user pushed OK button on a dialog
+  
+  userCanceledPrintRelatedConversation: user pushed Cancel button on dialog.  
+     Deprecated: now dialogs cannot be canceled (changes are live and cannot be undone by canceling.)
+     
   Algebra of signals:
+  -------------------
   
-  userChangedPrinter and userChangedPaper are emitted before other signals
+  userChangedPrinter and userChangedLayout are emitted before other signals
   
-  userChangedPrinter and userChangedPaper are NOT emitted unless there is a change 
+  userChangedPrinter and userChangedLayout are NOT emitted unless there is a change 
   (not emitted if user is offered choice but OK's when choice is same as previous.)
   
-  userChangedPrinter and userChangedPaper are NOT emitted if userCanceledPrintRelatedConversation is emitted
+  userChangedPrinter and userChangedLayout are NOT emitted if userCanceledPrintRelatedConversation is emitted
   
   userAcceptedFoo and userCanceledPrintRelatedConversation are mutually exclusive
   '''
-  userChangedPaper = Signal()
+  userChangedLayout = Signal(int)
   
   userAcceptedPrint = Signal()
   userAcceptedPageSetup = Signal()
@@ -81,7 +84,20 @@ class Converser(QObject):
     self.nativePrintDialog = None
     self.nativePageSetupDialog = None
     
-    # subclasses must provide specialized dialogs and PageSetup
+    '''
+    A Converser owns PageLayout: model.
+    Call subclass to get specialized PageLayout and dialogs and other attributes (PrinterAdaptor.)
+    This has side effects (affects self's attributes not passed as parameters): setting dialogs.
+    '''
+    self.pageLayout = self.getPageLayoutAndDialog(parentWidget)
+   
+    '''
+    Layout changes whenever one of its component changes.
+    Connect both component signals (reduce) to one signal out of the framework.
+    Note the signals from components have a parameter: so must userChangedLayout
+    '''
+    #TODO self.userChangedLayout.connect(self.pageLayout.paper.paperChanged)
+    self.pageLayout.orientation.valueChanged[int].connect(self.userChangedLayout[int])
     
     
     
@@ -89,6 +105,9 @@ class Converser(QObject):
     debugLog(condition)
     # debugLog(self.printerAdaptor.description)
 
+
+  def getPageLayoutAndDialog(self, parentWidget):
+    raise NotImplementedError('Deferred')
 
   '''
   Exported print related conversations (dispatch according to native/nonnative.)
@@ -171,11 +190,11 @@ class Converser(QObject):
     
     # Do we need this warning? User will learn soon enough?
     #OLD paper.isCustom isCompatibleWithEditor
-    if not self.pageSetup.isCompatibleWithEditor(self.currentFrameworkPageSetupDialog):
+    if not self.pageLayout.isCompatibleWithEditor(self.currentFrameworkPageSetupDialog):
       self.warn.pageSetupNotUsableOnCustomPaper()
       
     # Ensure editor value matches pageSetup, or is default
-    self.pageSetup.toEditor(self.currentFrameworkPageSetupDialog)
+    self.pageLayout.toEditor(self.currentFrameworkPageSetupDialog)
       
     self._showPrintRelatedDialogWindowModal(dialog=self.currentFrameworkPageSetupDialog, 
                                             acceptSlot=self._acceptNonNativePageSetupSlot)
@@ -245,7 +264,7 @@ class Converser(QObject):
       '''
       
     # regardless of validity, choice goes to settings
-    self.pageSetup.toSettings()
+    self.pageLayout.toSettings()
     
 
   @pyqtSlot()
@@ -269,7 +288,7 @@ class Converser(QObject):
     self.userAcceptedPrintPDF.emit()
     debugLog("Emit userAcceptedPrintPDF")
 
-    self.pageSetup.toSettings()
+    self.pageLayout.toSettings()
 
     
   @pyqtSlot()
@@ -278,27 +297,32 @@ class Converser(QObject):
     User accepted NonNative PageSetupDialog.
     
     Dialog does not allow user to change adapted printer.
-    User might have changed page setup.
+    User might have changed page setup,
+    but they have not been applied to a PrinterAdaptor.
     
-    PageSetup editor has user's choices,
-    but they have not been applied to a PrinterAdaptor.)
+    !!! This is similar, but not the same as _capturePageSetupChange()
+    Here, user made change in a non-native dialog that hasn't yet affected printerAdaptor
     '''
     self.dump("accept nonnative page setup, printerAdaptor before setting it")
     
-    # !!! This is similar, but not the same as _capturePageSetupChange()
-    # Here, user made change in a non-native dialog that hasn't yet affected printerAdaptor
-    oldPageSetup = copy(self.pageSetup)
-    self.pageSetup.fromEditor(self.currentFrameworkPageSetupDialog)
-    if not oldPageSetup == self.pageSetup:
+    """
+    OLD Formerly we optimized by checking that pageLayout had actually changed.
+    And we did not propagate signals to userChangedLayout if nothing had changed.
+    Now we connect paperChanged and orientationChanged to userChangedLayout
+    oldPageSetup = copy(self.pageLayout)
+    self.pageLayout.fromEditor(self.currentFrameworkPageSetupDialog)
+    if not oldPageSetup == self.pageLayout:
       self._propagateChangedPageSetup()
       self._emitUserChangedPaper()
+    """
+    self._emitUserChangedLayout()
     
     self.dump("accept nonnative page setup, printerAdaptor after setting it")
 
     self.userAcceptedPageSetup.emit()
     debugLog("Emit userAcceptedPageSetup")
     
-    self.pageSetup.toSettings()
+    self.pageLayout.toSettings()
     
     
   def __capturePageSetupChange(self):
@@ -312,16 +336,17 @@ class Converser(QObject):
     raise NotImplementedError('Deferred')
   
     
-  def _emitUserChangedPaper(self):
+  def _emitUserChangedLayout(self):
     '''
-    User has chosen a new paper, either in Print or PageSetup dialog.
+    User has chosen a new layout, either in Print or PageSetup dialog.
     '''
     # Tell the app
-    self.userChangedPaper.emit()
-    debugLog("Emit userChangedPaper")
+    self.userChangedLayout.emit(0)  # Unused arg to signal
+    debugLog("Emit userChangedLayout")
     # Persist
-    self.pageSetup.toSettings()
-    
+    self.pageLayout.toSettings()
+
+
   @pyqtSlot()
   def _cancelSlot(self):
     '''
@@ -333,12 +358,12 @@ class Converser(QObject):
     
     Editor's controls may have different values than the model.
     Must sync editor with model before using editor again.
-    ##self.pageSetup.restoreEditorToModel()
+    ##self.pageLayout.restoreEditorToModel()
     '''
     self.userCanceledPrintRelatedConversation.emit()
     debugLog("Emit userCanceledPrintRelatedConversation")
       
-    # NOT self.pageSetup.toSettings()
+    # NOT self.pageLayout.toSettings()
     
 
   '''

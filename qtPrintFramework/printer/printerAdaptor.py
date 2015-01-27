@@ -119,7 +119,7 @@ class PrinterAdaptor(QPrinter):
     # !!! Not call deprecated self.pageSize(), it is in error also.
     # The overloaded paperSize(MM) returns an epsilon correct (except for floating precision) correct result
     floatPaperDimensionsMM = self.paperSizeMM
-    correctPaperEnum = Paper.enumForPageSizeByMatchDimensions(floatPaperDimensionsMM, self.paperOrientation)
+    correctPaperEnum = Paper.enumForPageSizeByMatchDimensions(floatPaperDimensionsMM, self.orientation().value)
     if correctPaperEnum is None:
       # self's paperSize(Millimeter) doesn't match any StandardPaper therefore self.paperSize() should be Custom
       assert self.paperSize() == QPagedPaintDevice.Custom
@@ -140,16 +140,16 @@ class PrinterAdaptor(QPrinter):
     return result
   
   
+  def orientation(self):
+    '''
+    Orientation from self, a printer.
+    
+    Obscures QPrinter.orientation()
+    '''
+    result = Orientation(super().orientation())  # Call QPrinter.orientation
+    assert isinstance(result, Orientation)  # Not an int, a full-fledged object
+    return result
   
-  '''
-  Methods that alias Qt methods for clarification
-  '''
-  @property
-  def paperOrientation(self):
-    '''
-    Orientation object from self.
-    '''
-    return Orientation(self.orientation())  # Call QPrinter.orientation
   
   """
   OBSOLETE QPrinter.pageRect() returning DevicePixel is obsolete

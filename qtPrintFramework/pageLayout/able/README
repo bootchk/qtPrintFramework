@@ -1,0 +1,5 @@
+Mixins for subclasses of PageLayout.
+
+The mixins cannot inherit any Qt classes (except QObject) and cannot define any signals.
+A class must inherit the mixins AFTER PageLayout since PageLayout inherits QObject and defines signals.
+See PyQt documents about cooperative multiple inheritance.

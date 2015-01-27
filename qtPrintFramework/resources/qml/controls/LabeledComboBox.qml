@@ -6,9 +6,9 @@ import QtQuick.Controls 1.2
 Row {
 	spacing: 10
 	
-	// Specialized at instantion
+	// Specialized at instantiation
 	property string text
-	property var model	// controlled model on business side
+	property QtObject model	// controlled model on business side
 	property var domain	// combobox's sub model
 	
 	Label {
@@ -19,6 +19,7 @@ Row {
 		model: parent.domain
 		
 		// TODO since model is a ListModel, convert from parent.model.value to ListModel.index to currentIndex
+		// Binding
 		currentIndex: parent.model.value
 		         
 		onActivated: {
@@ -31,10 +32,31 @@ Row {
 			// Note index is actual parameter of signal, not same as currentIndex
 			// OLD, for continguous enums: parent.model.value = index
 			// New use a list of [text,value] pairs i.e. ListModel of ListElements
-			console.log(model.get(index).value)
-			console.log(parent.model.value)
+			console.log("Combo box domain value:", model.get(index).value)
+			console.log("parent.model.value before setting", parent.model.value)
 			// model <= view
-			parent.model.value = model.get(index).value	
+			// model should be a notifiable property and emit a signal
+			parent.model.value = model.get(index).value
+			console.assert(parent.model.value == model.get(index).value)
+			console.log("parent.model after setting", parent.model.value)
+		}
+		
+		// For testing: connect to signal from model property
+		/*
+		Connections{
+			target: parent.model.value
+			onOrientationChanged: {
+				console.log("parent model orientation changed")
+				//combobox.find()
+			}	
+		}
+		*/
+	
+		Component.onCompleted: {
+			print("Completed Combobox")
+			console.assert(typeof parent.model != 'undefined', "parent.model is undefined")
+			console.log("typeof parent.model", typeof parent.model)
+			console.log("parent.model.value", parent.model.value)
 		}
 	}
 }

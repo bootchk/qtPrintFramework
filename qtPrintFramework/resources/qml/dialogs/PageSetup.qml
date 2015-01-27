@@ -24,12 +24,20 @@ Dialog {
 	//MyDialogContents()
 	Column {
 		MyControls.LabeledComboBox {
+			text: "Paper"
+			// bind model to field of delegate
+			model: delegate.paper
+			domain: MyDomains.Paper{}
+		}
+		
+		MyControls.LabeledComboBox {
 			text: "Orientation"
-			// bind model to delegate
+			// bind model to field of delegate
 			model: delegate.orientation
 			domain: MyDomains.Orientation{}
 		}
 	}
+	//Text { text: "Foo" }
 
 	onAccepted: {
 		console.log("Accepted")
@@ -42,7 +50,9 @@ Dialog {
 	}
 	
 	Component.onCompleted: {
-		console.log("delegate.orientation", delegate.orientation)
 		print("Completed PageSetup QML")
+		console.assert(typeof delegate != 'undefined', "delegate is undefined")
+		console.log("delegate.orientation", delegate.orientation.orientationEnum)
+		
 	}
 }

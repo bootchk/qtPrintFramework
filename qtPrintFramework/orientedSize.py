@@ -3,8 +3,9 @@
 from copy import copy
 
 from PyQt5.QtCore import QObject, QSize, QSizeF
+from PyQt5.QtGui import QPageLayout
 
-
+from qtPrintFramework.pageLayout.components.orientation import Orientation
 
 class OrientedSize(QObject):
   '''
@@ -47,7 +48,7 @@ class OrientedSize(QObject):
   
   
   @classmethod
-  def portraitSizeMM(cls, size, orientation):
+  def portraitSizeMM(cls, size, orientationEnum):
     '''
     Portrait only means: one of two orientations.
     Custom paper can be defined in portrait orientation, but not normalized.
@@ -57,17 +58,20 @@ class OrientedSize(QObject):
     
     Since definitions are portrait, this could also be called 'definedSizeMM.'
     '''
+    assert isinstance(orientationEnum, int)
     # i.e. an alias
-    return cls.orientedSize(size, orientation)
+    return cls.orientedSize(size, orientationEnum)
   
   
   @classmethod
-  def orientedSize(cls, size, orientation):
+  def orientedSize(cls, size, orientationEnum):
     '''
     size may be QSize or QSizeF, and result is same type
     Returns a copy.
     '''
-    if orientation.isPortrait:
+    assert isinstance(orientationEnum, int)
+    ##WAS if orientation.isPortrait:
+    if orientationEnum == QPageLayout.Portrait:
       result = copy(size)
     else:
       result = size.transposed() # QSize method, copy with swapped width and height

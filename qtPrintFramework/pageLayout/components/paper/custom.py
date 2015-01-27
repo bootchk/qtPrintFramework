@@ -4,7 +4,7 @@ from PyQt5.QtGui import QPagedPaintDevice  # !! Not in QtPrintSupport
 
 from qtPrintFramework.orientedSize import OrientedSize
 from qtPrintFramework.pageLayout.components.paper.paper import Paper
-from qtPrintFramework.pageLayout.components.orientation import Orientation
+##from qtPrintFramework.pageLayout.components.orientation import Orientation
 
 
 class CustomPaper(Paper):
@@ -13,23 +13,24 @@ class CustomPaper(Paper):
   
   Currently, CustomPaper only comes from native dialogs, when size is definitely known at creation time.
   We can change this design when we add GUI to let user define size in non-native PageSetupDialog.
+  
+  Inherited: 
+   __repr__
+   value
   '''
   
   def __init__(self, integralOrientedSizeMM, orientation):
-    self.paperEnum = QPagedPaintDevice.Custom
+    self.value = QPagedPaintDevice.Custom
     
     '''
     !!! Keep portrait size.
     Is NOT an assertion that size is normalized.
     '''
     assert isinstance(integralOrientedSizeMM, QSize)
-    assert isinstance(orientation, Orientation)
+    assert isinstance(orientation, int) # WAS Orientation)
     self.setSize(integralOrientedSizeMM, orientation)
     ## WAS, EQUIVALENT: self._portraitSizeMM = OrientedSize.portraitSizeMM(integralOrientedSizeMM, orientation)
 
-    
-  # Inherited: def __repr__(self):
-  
   
   @property
   def name(self):
@@ -37,6 +38,7 @@ class CustomPaper(Paper):
     Don't use model.  We might eliminate the enum from the model.  Always 'Custom'
     '''
     return  'Custom'
+  
   
   @classmethod
   def defaultSize(cls):
@@ -46,10 +48,6 @@ class CustomPaper(Paper):
     '''
     return QSize(640, 480)
   
-  
-  '''
-  paperEnum attribute inherited
-  '''
 
   def setSize(self, integralOrientedSizeMM, orientation):
     '''

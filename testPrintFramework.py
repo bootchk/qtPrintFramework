@@ -61,7 +61,6 @@ class MainWindow(QMainWindow):
     ## Choose one to debug
     self.printConverser = PrinteredConverser(parentWidget=self)
     ## self.printConverser = UnprinteredConverser(parentWidget=self)
-    UnprinteredConverser
     self.connectPrintConverserSignals()
     self.setCentralWidget(ButtonSet(printConverser=self.printConverser))
     
@@ -70,7 +69,7 @@ class MainWindow(QMainWindow):
     
     
   def connectPrintConverserSignals(self):
-    self.printConverser.userChangedPaper.connect(self.changedPaper)
+    self.printConverser.userChangedLayout[int].connect(self.changedLayout)
     # userChangedPrinter
     
     self.printConverser.userAcceptedPrint.connect(self.acceptedPrint)
@@ -85,8 +84,8 @@ class MainWindow(QMainWindow):
   These should do something: print, or appropriate processing, such as change visible page.
   Missing: paint to printer
   '''
-  def changedPaper(self):
-    print(">>>Changed paper, page setup is", self.printConverser.pageSetup)
+  def changedLayout(self, value):
+    print(">>>Changed layout(paper or orientation), page layout is", self.printConverser.pageLayout)
     pass
     
   def acceptedPrint(self):
@@ -94,11 +93,11 @@ class MainWindow(QMainWindow):
     pass
     
   def acceptedPrintPDF(self):
-    print(">>>Accepted Print PDF (not implemented)", self.printConverser.pageSetup)
+    print(">>>Accepted Print PDF (not implemented)", self.printConverser.pageLayout)
     pass
     
   def acceptedPageSetup(self):
-    print(">>>Accepted page setup is", self.printConverser.pageSetup)
+    print(">>>Accepted page setup is", self.printConverser.pageLayout)
     pass
     
   def canceled(self):
@@ -106,6 +105,8 @@ class MainWindow(QMainWindow):
     
     
 def main():
+  sys.setrecursionlimit(60)  # to find infinite signal loops?
+  
   app = QApplication(sys.argv)
   
   QCoreApplication.setOrganizationName("testPrintFramework")

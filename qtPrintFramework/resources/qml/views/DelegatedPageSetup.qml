@@ -6,6 +6,7 @@ This is outer shell with delegate and connections.
 
 import QtQuick 2.3
 
+//import PrinteredPageLayout 1.0
 import PageLayout 1.0
 import "../dialogs" as MyDialogs
 
@@ -16,6 +17,7 @@ Item {
 	property string titlePrefix
 	
 	// Delegate allowing Python side to open this dialog
+	//PrinteredPageLayout {
 	PageLayout {
 		id: pageSetupDelegate
 		objectName: "pageSetupDelegate"
@@ -25,20 +27,22 @@ Item {
 		id: pageSetupDialog
 		title: "PageSetup"
 		delegate: pageSetupDelegate
-		
-		Component.onCompleted: {
-			print(x, y, width, height)
-			// console.assert(typeof stylesheetModel != 'undefined', "stylesheetModel is undefined")
-		}
 	}
 	
 	Connections {
-	    target: pageSetupDelegate
-	    onActivated: {
-	    	console.log("Dialog activated from PyQt business side")
-	    	pageSetupDialog.open()
-	    	console.log("After dialog activated")
-	    	console.assert(pageSetupDialog.visible)
-	    }	
+		target: pageSetupDelegate
+		onOpenView: {
+			print("here")
+			console.log("Dialog activated from PyQt business side")
+			pageSetupDialog.open()
+			console.log("After dialog activated")
+			console.assert(pageSetupDialog.visible)
+		}	
+	}
+	
+	Component.onCompleted: {
+		print(x, y, width, height)
+		print("Item completed")
+		console.assert(typeof pageSetupDelegate != 'undefined', "pageSetupDelegate is undefined")
 	}
 }

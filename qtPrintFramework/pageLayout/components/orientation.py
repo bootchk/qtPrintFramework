@@ -2,6 +2,7 @@
 from PyQt5.QtCore import QObject, pyqtProperty, pyqtSignal
 from PyQt5.QtGui import QPageLayout
 
+from PyQt5.QtQml import qmlRegisterType
 
 
 class Orientation(QObject):
@@ -12,11 +13,12 @@ class Orientation(QObject):
   Primarily for translation, name, and repr.
   '''
   
-  valueChanged = pyqtSignal() 
+  valueChanged = pyqtSignal(int) # !!! Parameter is the new value
 
   
   def __init__(self, initialValue=None):
-    super(Orientation, self).__init__()
+    super().__init__()  # init QObject
+    
     if initialValue is None:
       #print("Defaulting orientation to Portrait.")
       self._value = QPageLayout.Portrait
@@ -24,7 +26,13 @@ class Orientation(QObject):
       assert initialValue == QPageLayout.Portrait or initialValue == QPageLayout.Landscape
       self._value = initialValue
   
+    #TODO
+    qmlRegisterType(Orientation, 'Orientation', 1, 0, 'Orientation')
+      
+      
+      
   def __repr__(self):
+    print("Orientation.__repr__", self.name)
     return self.name
   
   def __eq__(self, other):
@@ -39,7 +47,8 @@ class Orientation(QObject):
   @value.setter
   def value(self, newValue):
     self._value = newValue
-    self.valueChanged.emit()
+    print("emitting valueChanged")
+    self.valueChanged.emit(newValue)
   
   
   
@@ -48,10 +57,13 @@ class Orientation(QObject):
   '''
   @property
   def name(self):
-      if self.isPortrait:
-          return self.tr('Portrait')
-      else:
-          return self.tr('Landscape')
+    print("orientation enum:", self.value)
+    if self.isPortrait:
+        result = self.tr('Portrait')
+    else:
+        result = self.tr('Landscape')
+    print("Orientation.name", result)
+    return result
   
   @property
   def isPortrait(self):
