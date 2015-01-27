@@ -12,8 +12,7 @@ from qtPrintFramework.alertLog import alertLog
 
 class Paper(QObject):
   '''
-  Wrapper around QPagedPaintDevice.PageSize
-  TODO: around QPageSize ?
+  Page??
   
   ABC
   Inherited by:
@@ -23,7 +22,7 @@ class Paper(QObject):
   
   Responsibilities:
   - name
-  - enum, constant that Qt uses
+  - enum, constant that Qt uses: QPagedPaintDevice.PageSize or QPageLayout.PageSize ??
   - orientedDescription
   - knows whether it is Custom
   - size in various flavors

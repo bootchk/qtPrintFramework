@@ -4,6 +4,9 @@ from qtEmbeddedQmlFramework.embeddedQmlInterface import EmbeddedQmlInterface
 
 from qtPrintFramework.pageLayout.pageLayout import PageLayout
 
+from qtPrintFramework.pageLayout.components.orientation import Orientation
+from qtPrintFramework.pageLayout.components.paper.standard import StandardPaper
+
 
 class PageSetupDialogQMLManager():
   '''
@@ -28,13 +31,16 @@ class PageSetupDialogQMLManager():
     '''
     self.delegates = {}
     
+    self.manager = EmbeddedQmlManager()
+    self._registerOtherTypes(qmlManager=self.manager)
+    
     interfaces = [EmbeddedQmlInterface(pageLayoutType, 'pageSetup', 'DelegatedPageSetup.qml', 
                                          modelDelegateName='pageSetupDelegate',
                                          modelContextMenuName=None)
                     ]
     " Create QQuickView widgets from QML.  Put delegates in delegateMgr. "
     " Keep reference so quickviews not garbage collected. "
-    self.manager = EmbeddedQmlManager(self.delegates, interfaces)
+    self.manager.createInterfaces(self.delegates, interfaces)
     
     '''
     Assert delegate in self.delegates{} 
@@ -44,6 +50,13 @@ class PageSetupDialogQMLManager():
     Acceptance/Cancellation of dialog is moot.
     No business logic communication to delegate other than to activate (show) it.
     '''
+    
+    
+  def _registerOtherTypes(self, qmlManager):
+    # register other types used by QML
+    qmlManager.registerTypeInQml(typeToRegister=Orientation)
+    qmlManager.registerTypeInQml(typeToRegister=StandardPaper)
+    
     
   def pageSetupDialogDelegate(self):
     result = self.delegates['pageSetupDelegate']

@@ -2,8 +2,6 @@
 from PyQt5.QtCore import QObject, pyqtProperty, pyqtSignal
 from PyQt5.QtGui import QPageLayout
 
-from PyQt5.QtQml import qmlRegisterType
-
 
 class Orientation(QObject):
   '''
@@ -11,6 +9,8 @@ class Orientation(QObject):
   Wraps enumType=QPageLayout.Orientation
   
   Primarily for translation, name, and repr.
+  
+  Should be registered with QML if using QML.
   '''
   
   valueChanged = pyqtSignal(int) # !!! Parameter is the new value
@@ -25,10 +25,6 @@ class Orientation(QObject):
     else:
       assert initialValue == QPageLayout.Portrait or initialValue == QPageLayout.Landscape
       self._value = initialValue
-  
-    #TODO
-    qmlRegisterType(Orientation, 'Orientation', 1, 0, 'Orientation')
-      
       
       
   def __repr__(self):

@@ -1,7 +1,5 @@
 
-
 from PyQt5.QtCore import QSize
-from PyQt5.QtQml import qmlRegisterType
 
 from qtPrintFramework.pageLayout.components.paper.paper import Paper
 
@@ -15,14 +13,12 @@ class StandardPaper(Paper):
   Inherited:
    -  __repr__
    - value
+   
+  Should be registered with QML if using QML.
   '''
   
   def __init__(self, initialValue):
     super().__init__(initialValue)
-    #TODO
-    print("Registering paper types")
-    #qmlRegisterType(Paper, 'Paper', 1, 0, 'Paper')
-    qmlRegisterType(StandardPaper, 'StandardPaper', 1, 0, 'StandardPaper')
     
   
   @property
