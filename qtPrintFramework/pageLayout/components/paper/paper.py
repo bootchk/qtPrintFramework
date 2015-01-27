@@ -2,9 +2,11 @@
 from PyQt5.QtCore import QObject, QSize, QSizeF, pyqtSignal, pyqtProperty
 from PyQt5.QtGui import QPagedPaintDevice  # !! Not in QtPrintSupport
 
-from qtPrintFramework.pageLayout.model.adaptedModel import AdaptedModel
+from qtPrintFramework.pageLayout.model.pageNameToEnum import pageNameToEnumModel
+
 from qtPrintFramework.orientedSize import OrientedSize
 from qtPrintFramework.alertLog import alertLog
+
 
 
 class Paper(QObject):
@@ -33,9 +35,7 @@ class Paper(QObject):
   
   valueChanged = pyqtSignal(int)
   
-  
-  nameModel = AdaptedModel._getAdaptedReverseDictionary(enumOwningClass=QPagedPaintDevice, 
-                                                     enumType=QPagedPaintDevice.PageSize) # !!! Paper/Page confusion
+  nameModel = pageNameToEnumModel
   
   '''
   Dictionary from enum to integral QSize in mm.

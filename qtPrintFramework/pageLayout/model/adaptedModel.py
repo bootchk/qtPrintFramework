@@ -53,6 +53,7 @@ class AdaptedModel(QObject):  # for i18n
     cls._checkEnumParameters(enumOwningClass, enumType)
     
     adaptedDictionary = {}
+    # use python vars() to get dictionary of class
     for key, value in vars(enumOwningClass).items():  # Python2 iteritems():
       if isinstance(value, enumType):
         #print(key, value)
