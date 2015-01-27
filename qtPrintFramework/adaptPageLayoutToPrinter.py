@@ -10,41 +10,42 @@ from qtPrintFramework.pageLayout.components.paper.paper import Paper
 
 
 
-class Printerable():
+class AdaptorFromPageLayoutToPrinterAdaptor():
   '''
-  Mixin class for PageLayout.
-  Talks to (friend of) real printers.
+  Adapt in both directions.
+  
+  WAS: a mixin class for PageLayout.
+  NOW: instance owned by a converser
   
   !!! This does NOT drag in Qt's QPrintSupport module.
   It understands PrintAdaptor, but does not require any imports of same.
-  
-  To/from printerAdaptor
   
   Alternative design: illustrates general nature.
     for attribute in self:
       attribute.toPrinterAdaptor(printerAdaptor)
   '''
 
-  def fromPrinterAdaptor(self, printerAdaptor):
+  def fromPrinterAdaptor(self, pageLayout, printerAdaptor):
     '''
-    Copy values from printerAdaptor into self.
+    Copy values from printerAdaptor into pageLayout.
     And update controls (which are not visible, and are in parallel with native dialog controls.)
     '''
-    self.paper = printerAdaptor.paper() # new instance
-    self.orientation = printerAdaptor.orientation()
-    if self.paper.isCustom:
+    " !!! just change value, don't replace paper instance because QML is bound to the instance. "
+    pageLayout.paper.value = printerAdaptor.paper().value # new instance
+    pageLayout.orientation.value = printerAdaptor.orientation().value
+    if pageLayout.paper.isCustom:
       # capture size chosen by user, say in native Print dialog
       integralOrientedSizeMM = OrientedSize.roundedSize(sizeF=printerAdaptor.paperSizeMM)
-      self.paper.setSize(integralOrientedSizeMM = integralOrientedSizeMM, 
-                         orientation=self.orientation)
+      pageLayout.paper.setSize(integralOrientedSizeMM = integralOrientedSizeMM, 
+                         orientation=pageLayout.orientation)
     # else size of paper is standard.
     
     # editor and settings are not updated                    
-    assert isinstance(self.paper, Paper)
-    assert isinstance(self.orientation, Orientation)
+    assert isinstance(pageLayout.paper, Paper)
+    assert isinstance(pageLayout.orientation, Orientation)
     
     
-  def toPrinterAdaptor(self, printerAdaptor):
+  def toPrinterAdaptor(self, pageLayout, printerAdaptor):
     '''
     Set my values on printerAdaptor (and whatever printer it is adapting.)
     
@@ -60,7 +61,8 @@ class Printerable():
     '''
     
     # !!! Requires Qt 5.3 setPageO instead of setOrientation
-    printerAdaptor.setPageOrientation(self.orientation.value)
+    #print(type(pageLayout.orientation.value))
+    printerAdaptor.setPageOrientation(pageLayout.orientation.value)
     
     # Formerly we called _toPrinterAdaptorByIntegralMMSize() here
     
@@ -69,13 +71,13 @@ class Printerable():
     Because floating point errors in some versions of Qt, 
     setting paperSize by a QSizeF does not always have the intended effect on enum.
     '''
-    ##WAS if self.paper.isCustom :
-    if self.paperIsCustom() :
+    ##WAS if pageLayout.paper.isCustom :
+    if pageLayout.paperIsCustom() :
       # Illegal to call setPaperSize(QPrinter.Custom)
-      self._toPrinterAdaptorByIntegralMMSize(printerAdaptor)
+      pageLayout._toPrinterAdaptorByIntegralMMSize(printerAdaptor)
     else:
-      printerAdaptor.setPaperSize(self.paper.value)
-      ##WAS printerAdaptor.setPaperSize(self.paper)
+      printerAdaptor.setPaperSize(pageLayout.paper.value)
+      ##WAS printerAdaptor.setPaperSize(pageLayout.paper)
     
     '''
     Strong assertion might not hold: Qt might be showing paper dimensions QSizeF(0,0) for Custom
@@ -83,49 +85,49 @@ class Printerable():
     
     Or, despite trying to set QPrinter consistent, Qt bugs still don't meet strong assertion.
     '''
-    if not self.isEqualPrinterAdaptor(printerAdaptor):
+    if not self.isEqualPrinterAdaptor(pageLayout, printerAdaptor):
       '''
       Setting by enum (non-custom) has failed.  (Typically on OSX?)
       Fallback: attempt to set by size.
       '''
-      self._toPrinterAdaptorByIntegralMMSize(printerAdaptor)
+      pageLayout._toPrinterAdaptorByIntegralMMSize(printerAdaptor)
     
     """
-    Tried this for OSX, but it did not succeed in getting native dialog to agree with self.
+    Tried this for OSX, but it did not succeed in getting native dialog to agree with pageLayout.
     So Qt versions < 5.3 have a bug that cannot be worked around by this framework.
-    if not self.isEqualPrinterAdaptor(printerAdaptor):
-      self._toPrinterAdaptorByFloatInchSize(printerAdaptor)
+    if not self.isEqualPrinterAdaptor(pageLayout, printerAdaptor):
+      pageLayout._toPrinterAdaptorByFloatInchSize(printerAdaptor)
     """
       
-    self.warnIfDisagreesWithPrinterAdaptor(printerAdaptor)
+    self.warnIfDisagreesWithPrinterAdaptor(pageLayout, printerAdaptor)
     # Ideally (if Qt was bug free) these assertions should hold
-    #assert self.isStronglyEqualPrinterAdaptor(printerAdaptor)
-    #assert self.isEqualPrinterAdaptor(printerAdaptor)
+    #assert self.isStronglyEqualPrinterAdaptor(pageLayout, printerAdaptor)
+    #assert self.isEqualPrinterAdaptor(pageLayout, printerAdaptor)
     
     
-  def _toPrinterAdaptorByIntegralMMSize(self, printerAdaptor):
+  def _toPrinterAdaptorByIntegralMMSize(self, pageLayout, printerAdaptor):
     '''
     Set my values on printerAdaptor (and whatever printer it is adapting) by setting size.
     
     Take integral size, convert to float.
     '''
     # Even a Custom paper has a size, even if it is defaulted.
-    newPaperSizeMM = QSizeF(self.paper.integralOrientedSizeMM(self.orientation))
+    newPaperSizeMM = QSizeF(pageLayout.paper.integralOrientedSizeMM(pageLayout.orientation))
     assert newPaperSizeMM.isValid()
     # use overload QPrinter.setPaperSize(QPagedPaintDevice.PageSize, Units)
     printerAdaptor.setPaperSize(newPaperSizeMM, QPageLayout.Millimeter)
     
     
-  def _toPrinterAdaptorByFloatInchSize(self, printerAdaptor):
+  def _toPrinterAdaptorByFloatInchSize(self, pageLayout, printerAdaptor):
     '''
     Set my values on printerAdaptor (and whatever printer it is adapting) by setting size.
     
     Floating inch size.
     '''
     # TODO oriented, other inch unit sizes
-    if self.paper.value == QPageLayout.Legal:
+    if pageLayout.paper.value == QPageLayout.Legal:
       newPaperSizeInch = QSizeF(8.5, 14)
-    elif self.paper.value == QPageLayout.Letter:
+    elif pageLayout.paper.value == QPageLayout.Letter:
       newPaperSizeInch = QSizeF(8.5, 11)
     else:
       return
@@ -138,21 +140,21 @@ class Printerable():
     
     
   '''
-  Support assertions about relations between self and printerAdaptor.
+  Support assertions about relations between pageLayout and printerAdaptor.
   '''
 
-  def isEqualPrinterAdaptor(self, printerAdaptor):
+  def isEqualPrinterAdaptor(self, pageLayout, printerAdaptor):
     '''
-    Weak comparison: computed printerAdaptor.paper() equal self.
-    printerAdaptor.paperSize() might still not equal self.value
+    Weak comparison: computed printerAdaptor.paper() equal pageLayout.paper
+    printerAdaptor.paperSize() might still not equal pageLayout.value
     '''
-    result = self.paper.value == printerAdaptor.paper().value and self.orientation.value == printerAdaptor.orientation().value
+    result = pageLayout.paper.value == printerAdaptor.paper().value and pageLayout.orientation.value == printerAdaptor.orientation().value
     if not result:
       alertLog("pageSetup differs")
-      self.dumpDisagreement(printerAdaptor)
+      self.dumpDisagreement(pageLayout, printerAdaptor)
     return result
   
-  def isStronglyEqualPrinterAdaptor(self, printerAdaptor):
+  def isStronglyEqual(self, pageLayout, printerAdaptor):
     '''
     Strong comparison: enum, orientation, dimensions equal
     
@@ -161,11 +163,11 @@ class Printerable():
     '''
     # partialResult: enums and orientation
     # paperSize() is QPrinter.paperSize()
-    partialResult = self.paper.value == printerAdaptor.paperSize() \
-          and self.orientation.value == printerAdaptor.orientation().value
+    partialResult = pageLayout.paper.value == printerAdaptor.paperSize() \
+          and pageLayout.orientation.value == printerAdaptor.orientation().value
     
     # Compare sizes.  All Paper including Custom has a size.
-    sizeResult = partialResult and self.paper.isOrientedSizeEpsilonEqual(self.orientation.value, printerAdaptor.paperSizeMM)
+    sizeResult = partialResult and pageLayout.paper.isOrientedSizeEpsilonEqual(pageLayout.orientation.value, printerAdaptor.paperSizeMM)
     
     result = partialResult and sizeResult
       
@@ -176,16 +178,16 @@ class Printerable():
     return result
   
   
-  def warnIfDisagreesWithPrinterAdaptor(self, printerAdaptor):
+  def warnIfDisagreesWithPrinterAdaptor(self, pageLayout, printerAdaptor):
     '''
-    Despite best efforts, could not get printerAdaptor to match self.
+    Despite best efforts, could not get printerAdaptor to match pageLayout.
     However, the platform native dialogs might be correct,
     so the situation might correct itself after user uses native dialogs.
     So only give a warning (and the user may see artifactual wrong page outline.)
     This situation mainly occurs on OSX.
     '''
-    if not self.isEqualPrinterAdaptor(printerAdaptor):
-      alertLog("PrinterAdaptor pageSetup disagrees.")
+    if not self.isEqualPrinterAdaptor(pageLayout, printerAdaptor):
+      alertLog("PrinterAdaptor pageLayout disagrees.")
   
   
   def dumpDisagreement(self, printerAdaptor):

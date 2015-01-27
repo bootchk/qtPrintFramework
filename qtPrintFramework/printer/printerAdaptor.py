@@ -1,9 +1,10 @@
 
-import sys
+#import sys
 
 from PyQt5.QtCore import QSizeF # , QSize, QRect
 from PyQt5.QtPrintSupport import QPrinter
 from PyQt5.QtGui import QPagedPaintDevice  # !! Not in QtPrintSupport
+from PyQt5.QtGui import QPageLayout
 
 from qtPrintFramework.orientedSize import OrientedSize
 from qtPrintFramework.pageLayout.components.paper.paper import Paper
@@ -146,7 +147,15 @@ class PrinterAdaptor(QPrinter):
     
     Obscures QPrinter.orientation()
     '''
-    result = Orientation(super().orientation())  # Call QPrinter.orientation
+    printerOrientation = super().orientation()  # Call QPrinter.orientation
+    '''
+    !!! convert from QPrinter.Orientation enum to QPageLayout.Orientation enum
+    They have the same int values but PyQt checks types later.
+    '''
+    if printerOrientation == QPrinter.Portrait:
+      result = Orientation(QPageLayout.Portrait)
+    else:
+      result = Orientation(QPageLayout.Landscape)
     assert isinstance(result, Orientation)  # Not an int, a full-fledged object
     return result
   

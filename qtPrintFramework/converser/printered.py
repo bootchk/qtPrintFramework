@@ -1,13 +1,11 @@
 
-from copy import copy
-
 # !!! Depends on QtPrintSupport printing subsystem
 from PyQt5.QtPrintSupport import QPageSetupDialog, QPrintDialog
 
 from qtPrintFramework.converser.converser import Converser
 from qtPrintFramework.printer.printerAdaptor import PrinterAdaptor
-from qtPrintFramework.pageLayout.printeredPageLayout import PrinteredPageLayout
 from qtPrintFramework.pageLayout.pageLayout import PageLayout
+from qtPrintFramework.adaptPageLayoutToPrinter import AdaptorFromPageLayoutToPrinterAdaptor
 from qtPrintFramework.alertLog import debugLog, alertLog
 import qtPrintFramework.config as config
 # Dynamic imports below for QML/QWidget
@@ -30,6 +28,7 @@ class PrinteredConverser(Converser):
     See below, this is used in signal handlers.
     '''
     self.printerAdaptor = PrinterAdaptor(parentWidget=parentWidget)
+    self.adaptorFromPageLayoutToPrinterAdaptor = AdaptorFromPageLayoutToPrinterAdaptor()
     
     '''
     Static dialog and model (or delegate to dialog and model) owned by this framework.
@@ -50,7 +49,7 @@ class PrinteredConverser(Converser):
       self.toFilePageSetupDialog = PrinterlessPageSetupDialog(parentWidget=self.parentWidget)
     
       ##self.pageLayout = PrinteredpageLayout(masterEditor=self.toFilePageSetupDialog, printerAdaptor=self.printerAdaptor, )
-      result = PrinteredPageLayout(printerAdaptor=self.printerAdaptor)
+      result = PageLayout(printerAdaptor=self.printerAdaptor)
 
     '''
     Not assert that printerAdaptor equal PageSetup.
@@ -218,18 +217,18 @@ class PrinteredConverser(Converser):
     OLD optimize  by not emitting unless pageLayout actually changed.
     oldPageSetup = copy(self.pageLayout)
     '''
-    self.pageLayout.fromPrinterAdaptor(self.printerAdaptor)
+    self.adaptorFromPageLayoutToPrinterAdaptor.fromPrinterAdaptor(self.pageLayout, self.printerAdaptor)
     '''
     OLD
     if not oldPageSetup == self.pageLayout:
       self._emitUserChangedPaper()
     '''
     self._emitUserChangedLayout()
-    self.pageLayout.warnIfDisagreesWithPrinterAdaptor(self.printerAdaptor)
+    self.adaptorFromPageLayoutToPrinterAdaptor.warnIfDisagreesWithPrinterAdaptor(self.pageLayout, self.printerAdaptor)
 
   def _propagateChangedPageSetup(self):
-    self.pageLayout.toPrinterAdaptor(self.printerAdaptor)
-    self.pageLayout.warnIfDisagreesWithPrinterAdaptor(self.printerAdaptor)
+    self.adaptorFromPageLayoutToPrinterAdaptor.toPrinterAdaptor(self.pageLayout, self.printerAdaptor)
+    self.adaptorFromPageLayoutToPrinterAdaptor.warnIfDisagreesWithPrinterAdaptor(self.pageLayout, self.printerAdaptor)
     
 
   def checkInvariantAndFix(self):
@@ -244,12 +243,12 @@ class PrinteredConverser(Converser):
     (After one Print conversation, a printerAdaptor loses its page setup.)
     '''
     
-    if not self.pageLayout.isStronglyEqualPrinterAdaptor(self.printerAdaptor):
+    if not self.adaptorFromPageLayoutToPrinterAdaptor.isStronglyEqual(self.pageLayout, self.printerAdaptor):
       paper = self.pageLayout.paper
       alertLog('Fixing invariant by setting paperSize on QPrinter')
       debugLog(str(paper))
       # self.setPaperSize(paper.value)
-      self.pageLayout.toPrinterAdaptor(printerAdaptor=self.printerAdaptor)
+      self.adaptorFromPageLayoutToPrinterAdaptor.toPrinterAdaptor(self.pageLayout, printerAdaptor=self.printerAdaptor)
     
     """
     if sys.platform.startswith('darwin'):
@@ -262,7 +261,7 @@ class PrinteredConverser(Converser):
   
       Call _toPrinterAdaptorByFloatInchSize() which might be more effective.
       '''
-      self.pageLayout._toPrinterAdaptorByFloatInchSize(self.printerAdaptor)
+      self.adaptorFromPageLayoutToPrinterAdaptor._toPrinterAdaptorByFloatInchSize(self.printerAdaptor)
     """
     
     self.dump("After checkInvariantAndFix")

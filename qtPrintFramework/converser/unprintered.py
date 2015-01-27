@@ -9,7 +9,7 @@ Or use while Qt print framework has bugs re systems without real printers on cer
 from PyQt5.QtCore import QSizeF
 
 from qtPrintFramework.converser.converser import Converser
-from qtPrintFramework.pageLayout.printerlessPageLayout import PrinterlessPageLayout
+from qtPrintFramework.pageLayout.pageLayout import PageLayout
 from qtPrintFramework.pageLayout.components.paper.standard import StandardPaper
 # from qtPrintFramework.alertLog import debugLog, alertLog
 
@@ -34,8 +34,8 @@ class UnprinteredConverser(Converser):
     Requires no knowledge of printerAdaptor or current printer.
     '''
     if config.useQML:
-      from qtPrintFramework.userInterface.qml.dialog.pageSetupDialogQML import pageSetupDialogMgr
-
+      from qtPrintFramework.userInterface.qml.dialog.pageSetupDialogQML import PageSetupDialogQMLManager
+      pageSetupDialogMgr=PageSetupDialogQMLManager()
       self.toFilePageSetupDialog = pageSetupDialogMgr.pageSetupDialogDelegate()
     else: # QWidget
       from qtPrintFramework.userInterface.widget.dialog.printerlessPageSetup import PrinterlessPageSetupDialog
@@ -47,7 +47,7 @@ class UnprinteredConverser(Converser):
     
     PageLayout is initialized from settings OR printerAdaptor.
     '''
-    result = PrinterlessPageLayout(masterEditor=self.toFilePageSetupDialog)
+    result = PageLayout(masterEditor=self.toFilePageSetupDialog)
     return result
     
   

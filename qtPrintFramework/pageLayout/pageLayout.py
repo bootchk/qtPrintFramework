@@ -3,21 +3,19 @@ from PyQt5.QtCore import pyqtProperty, QObject
 from PyQt5.QtCore import pyqtSignal as Signal
 from PyQt5.QtCore import pyqtSlot as Slot
 
+'''
+!! This should be independent of QtPrintSupport.
+If necessary, use QPageLayout (since Qt5.3) instead of QPrinter for enums.
 #from PyQt5.QtGui import QPageSize # QPageLayout, 
+'''
 
 from qtPrintFramework.pageLayout.components.paper.standard import StandardPaper
 from qtPrintFramework.pageLayout.components.orientation import Orientation
 #from qtPrintFramework.paper.custom import CustomPaper
 
-
-# !! This should be independent of QtPrintSupport.
-# Instead, use QPageLayout (since Qt5.3) instead of QPrinter for enums 
-
-#from qtEmbeddedQmlFramework.qmlDelegate import QmlDelegate
-
 # Mixins
 from qtPrintFramework.pageLayout.able.settingsable import Settingsable
-
+#from qtEmbeddedQmlFramework.qmlDelegate import QmlDelegate
 
 
 '''
@@ -63,8 +61,7 @@ class PageLayout(QObject, Settingsable):
   
   !!! A PageLayout can be impressed on a PrinterAdaptor, but a PrinterAdaptor does not own one.
   A PrintConverser owns a PageLayout.
-  An adapted printer (that a PrinterAdaptor adapts) might own a different object (which is opaque to us)
-  that holds its notion of page layout.
+  An adapted printer (that a PrinterAdaptor adapts) might own another object (opaque to us) that is its notion of page layout.
   
   !!! Paper/Page are not interchangeable but refer to a similar concept.
   Paper connotes real thing, and Page an ideal concept.

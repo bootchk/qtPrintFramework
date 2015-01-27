@@ -46,6 +46,7 @@ class Orientation(QObject):
   
   @value.setter
   def value(self, newValue):
+    assert isinstance(newValue, int)
     self._value = newValue
     print("emitting valueChanged")
     self.valueChanged.emit(newValue)
