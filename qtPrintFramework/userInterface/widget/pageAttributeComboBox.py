@@ -9,7 +9,7 @@ from PyQt5.QtCore import pyqtSlot as Slot
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QComboBox
 
-from qtPrintFramework.pageLayout.model.adaptedModel import AdaptedModel
+# from qtPrintFramework.pageLayout.model.adaptedModel import AdaptedModel
 
 
 class PageAttributeComboBox(QComboBox):
@@ -27,7 +27,7 @@ class PageAttributeComboBox(QComboBox):
   
 
   def __init__(self, model):
-    assert isinstance(model, AdaptedModel)  
+    # assert isinstance(model, AdaptedModel)  
     
     QComboBox.__init__(self)
     self.model = model

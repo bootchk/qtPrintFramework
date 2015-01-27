@@ -3,7 +3,7 @@
 
 from PyQt5.QtGui import QPagedPaintDevice # !! Not in QtPrintSupport
 
-from qtPrintFramework.pageLayout.model.adaptedModel import AdaptedSortedModel
+from qtPrintFramework.pageLayout.model.adaptedModel import AdaptedModel, AdaptedSortedModel
 
 
 class AdaptedPageNameToEnumModel(AdaptedSortedModel):  # !!! Sorted
@@ -28,16 +28,19 @@ class AdaptedPageNameToEnumModel(AdaptedSortedModel):  # !!! Sorted
     
     !!! No i18n for page names: assume names are internationally recognized.
     '''
-    self.values = AdaptedSortedModel._getAdaptedDictionary(enumOwningClass=QPagedPaintDevice, 
+    self.value = AdaptedSortedModel._getAdaptedDictionary(enumOwningClass=QPagedPaintDevice, 
                                                      enumType=QPagedPaintDevice.PageSize) # !!! Paper/Page confusion
+    assert isinstance(self.value, dict)
 
     self._deleteCustomPaper()
     
-    print(self.values)
+    print(self.value)
     
     
   def _deleteCustomPaper(self):
-    self.values.pop("Custom", None)
+    self.value.pop("Custom", None)
 
 
-pageNameToEnumModel = AdaptedPageNameToEnumModel()  # singleton
+pageNameToEnum = AdaptedPageNameToEnumModel().value  # singleton
+pageEnumToName = AdaptedModel._getAdaptedReverseDictionary(enumOwningClass=QPagedPaintDevice, 
+                                                     enumType=QPagedPaintDevice.PageSize)
