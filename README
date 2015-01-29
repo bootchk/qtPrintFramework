@@ -191,3 +191,7 @@ i.e. implemented by the OS (via Qt.)
 
 If QML is used, this project (package) depends on the qtEmbeddedQmlFramework.
 
+If QML is used, copy/erge this projects directory resources/qml to your apps resources/qml.
+
+
+
