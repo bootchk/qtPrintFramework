@@ -31,7 +31,7 @@ class PageSetupDialogQMLManager():
     '''
     self.delegates = {}
     
-    self.manager = EmbeddedQmlManager()
+    self.manager = EmbeddedQmlManager(subsystemName='print')
     self._registerOtherTypes(qmlManager=self.manager)
     
     interfaces = [EmbeddedQmlInterface(pageLayoutType, 'pageSetup', 'DelegatedPageSetup.qml', 

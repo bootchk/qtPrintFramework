@@ -6,7 +6,6 @@ This is outer shell with delegate and connections.
 
 import QtQuick 2.3
 
-//import PrinteredPageLayout 1.0
 import PageLayout 1.0
 import "../dialogs" as MyDialogs
 
