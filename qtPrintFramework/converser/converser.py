@@ -96,8 +96,8 @@ class Converser(QObject):
     Connect both component signals (reduce) to one signal out of the framework.
     Note the signals from components have a parameter: so must userChangedLayout
     '''
-    #TODO self.userChangedLayout.connect(self.pageLayout.paper.paperChanged)
-    self.pageLayout.orientation.valueChanged[int].connect(self.userChangedLayout[int])
+    self.pageLayout.orientation.valueChanged[int].connect(self._userTouchedNonNativePageLayoutSlot)
+    self.pageLayout.paper.valueChanged[int].connect(self._userTouchedNonNativePageLayoutSlot)
     
     
     
@@ -114,10 +114,7 @@ class Converser(QObject):
   '''
       
   def conversePageSetup(self):
-    '''
-    Start a Page Setup conversation
-    
-    Specialized by subclasses
+    ''' Start GUI to view/control PageLayout.  Specialized by subclasses
     '''
     raise NotImplementedError('Deferred')
 
@@ -173,7 +170,7 @@ class Converser(QObject):
   
   def conversePageSetupNonNative(self):
     '''
-    Use framework's dialog (which is non-native, doesn't use native dialogs.)
+    Use framework's dialog (which doesn't use platform's native dialogs.)
     
     This MUST be used with non-native printers (Qt has no PageSetup dialog for non-native printers.)
     This CAN be used with native printers (thus it is exported from framework.)
@@ -290,7 +287,7 @@ class Converser(QObject):
 
     self.pageLayout.toSettings()
 
-    
+  
   @pyqtSlot()
   def _acceptNonNativePageSetupSlot(self):
     '''
@@ -308,21 +305,27 @@ class Converser(QObject):
     """
     OLD Formerly we optimized by checking that pageLayout had actually changed.
     And we did not propagate signals to userChangedLayout if nothing had changed.
-    Now we connect paperChanged and orientationChanged to userChangedLayout
-    oldPageSetup = copy(self.pageLayout)
-    self.pageLayout.fromEditor(self.currentFrameworkPageSetupDialog)
-    if not oldPageSetup == self.pageLayout:
-      self._propagateChangedPageSetup()
-      self._emitUserChangedPaper()
-    """
-    self._emitUserChangedLayout()
     
+    NEW connect paperChanged and orientationChanged to _userTouchedNonNativePageLayoutSlot
+    Thus the dialog is live: a change to any control signals the app even without closing the dialog.
+    """
     self.dump("accept nonnative page setup, printerAdaptor after setting it")
-
     self.userAcceptedPageSetup.emit()
     debugLog("Emit userAcceptedPageSetup")
-    
+
+    # Only write to setting on closing of dialog
     self.pageLayout.toSettings()
+    
+    
+  @pyqtSlot(int)
+  def _userTouchedNonNativePageLayoutSlot(self, value): 
+    '''
+    User touched an attribute of PageLayout.
+    
+    Do not relay value from property change: receiver can't interpret it properly since doesn't know which property
+    '''
+    self._propagateChangedPageSetup() # deferred to subclass, typically propagate to printer
+    self._emitUserChangedLayout()
     
     
   def transferPageLayoutFromPrinterToFramework(self):
