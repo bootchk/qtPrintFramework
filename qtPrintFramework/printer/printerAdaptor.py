@@ -1,5 +1,5 @@
 
-#import sys
+import sys
 
 from PyQt5.QtCore import QSizeF # , QSize, QRect
 from PyQt5.QtPrintSupport import QPrinter
@@ -86,8 +86,8 @@ class PrinterAdaptor(QPrinter):
               "paper size MM:"+ str(self.paperSizeMM),
               "paper size Inch:"+ str(self.paperSize(QPrinter.Inch)),
               "paper size DP:"+ str(self.paperSize(QPrinter.DevicePixel)),
-              "print rect MM:" + str(self.pageRect(QPrinter.Millimeter)),
-              "orientation:" + str(self.paperOrientation))
+              "print rect MM:" + str(self.pageRect(QPrinter.Millimeter)))
+              # Deprecated QPrinter method? "orientation:" + str(self.paperOrientation))
     return '\n   '.join(terms)
   
   

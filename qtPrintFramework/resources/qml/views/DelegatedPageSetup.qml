@@ -32,17 +32,17 @@ Item {
 	Connections {
 		target: pageSetupDelegate
 		onOpenView: {
-			print("here")
-			console.log("Dialog activated from PyQt business side")
+			// console.log("Dialog activated from PyQt business side")
 			pageSetupDialog.open()
-			console.log("After dialog activated")
 			console.assert(pageSetupDialog.visible)
 		}	
 	}
 	
+	/*
 	Component.onCompleted: {
 		print(x, y, width, height)
 		print("Item completed")
 		console.assert(typeof pageSetupDelegate != 'undefined', "pageSetupDelegate is undefined")
 	}
+	*/
 }

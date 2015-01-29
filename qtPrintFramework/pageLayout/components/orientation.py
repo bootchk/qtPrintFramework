@@ -28,7 +28,7 @@ class Orientation(QObject):
       
       
   def __repr__(self):
-    print("Orientation.__repr__", self.name)
+    #print("Orientation.__repr__", self.name)
     return self.name
   
   def __eq__(self, other):
@@ -44,7 +44,7 @@ class Orientation(QObject):
   def value(self, newValue):
     assert isinstance(newValue, int)
     self._value = newValue
-    print("emitting valueChanged")
+    #print("emitting valueChanged")
     self.valueChanged.emit(newValue)
   
   
@@ -54,12 +54,12 @@ class Orientation(QObject):
   '''
   @property
   def name(self):
-    print("orientation enum:", self.value)
+    #print("orientation enum:", self.value)
     if self.isPortrait:
         result = self.tr('Portrait')
     else:
         result = self.tr('Landscape')
-    print("Orientation.name", result)
+    #print("Orientation.name", result)
     return result
   
   @property

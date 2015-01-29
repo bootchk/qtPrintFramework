@@ -199,7 +199,7 @@ class PrinteredConverser(Converser):
     or do some platforms not allow user to choose a new printer (make it current.)
     '''
     self.dump("Accept native page setup, printerAdaptor before setting it ")
-    self._capturePageSetupChange()
+    self.transferPageLayoutFromPrinterToFramework()
     self.dump("accept native page setup, printerAdaptor after setting it")
     
     self.userAcceptedPageSetup.emit()
@@ -209,27 +209,25 @@ class PrinteredConverser(Converser):
     
   
   '''
-  Implement deferred methods that capture/propagate
-  between dialog and printerAdaptor.
+  Implement deferred methods.  See comments in super().
   '''
-  def _capturePageSetupChange(self):
-    '''
-    OLD optimize  by not emitting unless pageLayout actually changed.
-    oldPageSetup = copy(self.pageLayout)
-    '''
+  def transferPageLayoutFromPrinterToFramework(self):
     self.adaptorFromPageLayoutToPrinterAdaptor.fromPrinterAdaptor(self.pageLayout, self.printerAdaptor)
     '''
-    OLD
+    OLD optimization to forego signal when nothing changed.
     if not oldPageSetup == self.pageLayout:
       self._emitUserChangedPaper()
     '''
     self._emitUserChangedLayout()
     self.adaptorFromPageLayoutToPrinterAdaptor.warnIfDisagreesWithPrinterAdaptor(self.pageLayout, self.printerAdaptor)
 
+
   def _propagateChangedPageSetup(self):
     self.adaptorFromPageLayoutToPrinterAdaptor.toPrinterAdaptor(self.pageLayout, self.printerAdaptor)
     self.adaptorFromPageLayoutToPrinterAdaptor.warnIfDisagreesWithPrinterAdaptor(self.pageLayout, self.printerAdaptor)
     
+
+
 
   def checkInvariantAndFix(self):
     '''

@@ -243,7 +243,7 @@ class Converser(QObject):
     Whether native printer or non-native printer (user changed printer)
     reflect user's choices into PageSetup.
     '''
-    self._capturePageSetupChange()
+    self.transferPageLayoutFromPrinterToFramework()
     self.dump("Accept native print dialog on")
 
     '''
@@ -281,7 +281,7 @@ class Converser(QObject):
     """
     TODO
     If non-native print allows choice of PageSetup, we need something like:
-    self._capturePageSetupChange()
+    self.transferPageLayoutFromPrinterToFramework()
     """
     self.dump("Accept non-native print dialog on")
 
@@ -300,7 +300,7 @@ class Converser(QObject):
     User might have changed page setup,
     but they have not been applied to a PrinterAdaptor.
     
-    !!! This is similar, but not the same as _capturePageSetupChange()
+    !!! This is similar, but not the same as transferPageLayoutFromPrinterToFramework()
     Here, user made change in a non-native dialog that hasn't yet affected printerAdaptor
     '''
     self.dump("accept nonnative page setup, printerAdaptor before setting it")
@@ -325,8 +325,13 @@ class Converser(QObject):
     self.pageLayout.toSettings()
     
     
-  def __capturePageSetupChange(self):
+  def transferPageLayoutFromPrinterToFramework(self):
+    '''
+    A native dialog affects a printer's notion of PageLayout but not the framework's PageLayout instance.
+    I.E. a native view is not connected to the framework's model.
+    '''
     raise NotImplementedError('Deferred')
+  
   
   def _propagateChangedPageSetup(self):
     '''

@@ -28,35 +28,39 @@ Row {
 			 * onCurrentIndexChanged comes on initialization without user input.
 			 * Also, this has a formal parameter "index" which is not same as currentIndex
 			 */
-			console.debug("CombBox.onActivated", index)
-			// Note index is actual parameter of signal, not same as currentIndex
-			// OLD, for continguous enums: parent.model.value = index
-			// New use a list of [text,value] pairs i.e. ListModel of ListElements
-			console.log("Combo box domain value:", model.get(index).value)
-			console.log("parent.model.value before setting", parent.model.value)
-			// model <= view
-			// model should be a notifiable property and emit a signal
+			//console.debug("CombBox.onActivated", index)
+			/* Note index is actual parameter of signal, not same as currentIndex
+			 * OLD, for continguous enums: parent.model.value = index
+			 * New use a list of [text,value] pairs i.e. ListModel of ListElements
+			 */
+			//console.log("Combo box domain value:", model.get(index).value)
+			//console.log("parent.model.value before setting", parent.model.value)
+			// model <= view.   model should be a notifiable property and emit a signal
+			// The signal will have a parameter of type int !!!
 			parent.model.value = model.get(index).value
 			console.assert(parent.model.value == model.get(index).value)
-			console.log("parent.model after setting", parent.model.value)
+			//console.log("parent.model after setting", parent.model.value)
 		}
 		
 		// For testing: connect to signal from model property
 		/*
 		Connections{
 			target: parent.model.value
-			onOrientationChanged: {
+			onValueChanged: {
 				console.log("parent model orientation changed")
 				//combobox.find()
 			}	
 		}
 		*/
 	
+		// For testing
+		/*
 		Component.onCompleted: {
 			print("Completed Combobox")
 			console.assert(typeof parent.model != 'undefined', "parent.model is undefined")
 			console.log("typeof parent.model", typeof parent.model)
 			console.log("parent.model.value", parent.model.value)
 		}
+		*/
 	}
 }

@@ -18,9 +18,10 @@ Dialog {
 	// visible: true
 	
 	title: "Page Setup"
+	
+	// Dialog has no Cancel button (if user wants to undo, just choose the original values.)
 	standardButtons: StandardButton.Ok
-	// | StandardButton.Cancel
-
+	
 	//MyDialogContents()
 	Column {
 		MyControls.LabeledComboBox {
@@ -40,19 +41,21 @@ Dialog {
 	//Text { text: "Foo" }
 
 	onAccepted: {
-		console.log("Accepted")
+		//console.log("Accepted")
 		delegate.accept()
 	}
 	 
 	onRejected: {
-		console.log("Rejected")
+		//console.log("Rejected")
 		delegate.reject()
 	}
 	
+	/*
 	Component.onCompleted: {
 		print("Completed PageSetup QML")
 		console.assert(typeof delegate != 'undefined', "delegate is undefined")
-		console.log("delegate.orientation", delegate.orientation.orientationEnum)
+		console.log("delegate.orientation:", delegate.orientation.value)
 		
 	}
+	*/
 }

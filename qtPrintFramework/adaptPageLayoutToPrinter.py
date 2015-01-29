@@ -31,6 +31,7 @@ class AdaptorFromPageLayoutToPrinterAdaptor():
     And update controls (which are not visible, and are in parallel with native dialog controls.)
     '''
     " !!! just change value, don't replace paper instance because QML is bound to the instance. "
+    print("Printer: ", printerAdaptor.description)  # ,"has paper:", printerAdaptor.paper())
     pageLayout.paper.value = printerAdaptor.paper().value # new instance
     pageLayout.orientation.value = printerAdaptor.orientation().value
     if pageLayout.paper.isCustom:
