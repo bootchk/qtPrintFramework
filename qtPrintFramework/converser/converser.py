@@ -4,9 +4,12 @@ from PyQt5.QtCore import pyqtSignal as Signal
 
 # !!! This does not depend on QtPrintSupport, but certain subclasses do
 
+from qtPrintFramework.pageLayout.pageLayout import PageLayout
 from qtPrintFramework.exceptions import InvalidPageSize
 from qtPrintFramework.warn import Warn
 from qtPrintFramework.alertLog import debugLog # alertLog, 
+
+import qtPrintFramework.config as config
 
 
 
@@ -106,8 +109,37 @@ class Converser(QObject):
     # debugLog(self.printerAdaptor.description)
 
 
-  def getPageLayoutAndDialog(self, parentWidget):
-    raise NotImplementedError('Deferred')
+  def getPageLayoutAndDialog(self, parentWidget, printerAdaptor=None):
+    '''
+    Create a PageLayout and a view (GUI dialog) on it.
+    
+    Static dialog owned by this framework.
+    Default is: no knowledge of printerAdaptor or current printer.
+    PrinteredConverser redefined this and passes a printerAdaptor.
+    '''
+    '''
+    Static dialog and model (or delegate to dialog and model) owned by this framework.
+    PageLayout model is initialized from settings OR printerAdaptor.
+    '''
+    if config.useQML:
+      from qtPrintFramework.userInterface.qml.dialog.pageSetupDialogQML import PageSetupDialogQMLManager
+
+      self.pageSetupDialogMgr = PageSetupDialogQMLManager()
+      self.toFilePageSetupDialog = self.pageSetupDialogMgr.pageSetupDialogDelegate()
+      
+      " delegate is a dialog and also a PageLayout model."
+      result = self.toFilePageSetupDialog
+      
+    else: # QWidget
+      from qtPrintFramework.userInterface.widget.dialog.printerlessPageSetup import PrinterlessPageSetupDialog
+
+      self.toFilePageSetupDialog = PrinterlessPageSetupDialog(parentWidget=self.parentWidget)
+    
+      ##self.pageLayout = PrinteredpageLayout(masterEditor=self.toFilePageSetupDialog, printerAdaptor=self.printerAdaptor, )
+      result = PageLayout(printerAdaptor=self.printerAdaptor)
+      
+    return result
+    
 
   '''
   Exported print related conversations (dispatch according to native/nonnative.)

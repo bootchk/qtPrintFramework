@@ -94,8 +94,8 @@ class PageLayout(QObject, Settingsable):
     self.paper = StandardPaper(initialValue = None)
     self.orientation = Orientation(initialValue = None )
     
-    " Possibly change defaults from settings."
-    #TEMP self.initializeModelFromSettings(getDefaultsFromPrinterAdaptor=printerAdaptor)
+    " Possibly change defaults from settings AND/OR printerAdaptor."
+    self.initializeModelFromSettings(getDefaultsFromPrinterAdaptor=printerAdaptor)
     # Not assert that printerAdaptor equals self yet.
     
     '''
