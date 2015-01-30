@@ -3,7 +3,6 @@
 	<name>qtPrintFramework</name>
 	<comment></comment>
 	<projects>
-		<project>qtEmbeddedQmlFramework</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

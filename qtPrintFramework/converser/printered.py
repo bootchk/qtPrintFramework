@@ -37,7 +37,7 @@ class PrinteredConverser(Converser):
     if config.useQML:
       from qtPrintFramework.userInterface.qml.dialog.pageSetupDialogQML import PageSetupDialogQMLManager
 
-      self.pageSetupDialogMgr = PageSetupDialogQMLManager(pageLayoutType=PageLayout)  # PrinteredPageLayout)
+      self.pageSetupDialogMgr = PageSetupDialogQMLManager()
       self.toFilePageSetupDialog = self.pageSetupDialogMgr.pageSetupDialogDelegate()
       
       " delegate is a dialog and also a PageLayout model."

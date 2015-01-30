@@ -3,7 +3,6 @@ from qtEmbeddedQmlFramework.embeddedQmlManager import EmbeddedQmlManager
 from qtEmbeddedQmlFramework.embeddedQmlInterface import EmbeddedQmlInterface
 
 from qtPrintFramework.pageLayout.pageLayout import PageLayout
-
 from qtPrintFramework.pageLayout.components.orientation import Orientation
 from qtPrintFramework.pageLayout.components.paper.standard import StandardPaper
 
@@ -23,18 +22,16 @@ class PageSetupDialogQMLManager():
   But on mobile devices, users don't usually add printers: either the OS has a printing subsystem or not.
   '''
   
-  def __init__(self, pageLayoutType):
+  def __init__(self):
     '''
     Create delegate to PageSetup dialog implemented in QML.
-    
-    pageLayoutType is PrinteredPageLayout or UnprinteredPageLayout
     '''
     self.delegates = {}
     
     self.manager = EmbeddedQmlManager(subsystemName='print')
     self._registerOtherTypes(qmlManager=self.manager)
     
-    interfaces = [EmbeddedQmlInterface(pageLayoutType, 'pageSetup', 'DelegatedPageSetup.qml', 
+    interfaces = [EmbeddedQmlInterface(PageLayout, 'pageSetup', 'DelegatedPageSetup.qml', 
                                          modelDelegateName='pageSetupDelegate',
                                          modelContextMenuName=None)
                     ]
