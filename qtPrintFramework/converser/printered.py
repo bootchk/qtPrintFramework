@@ -4,11 +4,9 @@ from PyQt5.QtPrintSupport import QPageSetupDialog, QPrintDialog
 
 from qtPrintFramework.converser.converser import Converser
 from qtPrintFramework.printer.printerAdaptor import PrinterAdaptor
-from qtPrintFramework.pageLayout.pageLayout import PageLayout
 from qtPrintFramework.adaptPageLayoutToPrinter import AdaptorFromPageLayoutToPrinterAdaptor
 from qtPrintFramework.alertLog import debugLog, alertLog
 import qtPrintFramework.config as config
-# Dynamic imports below for QML/QWidget
 
 
 
@@ -24,40 +22,21 @@ class PrinteredConverser(Converser):
     '''
     Specialized.  Reimplement deferred.
     
-    PrintConverser has-a PrinterAdaptor (unidirectional link.)
+    PrinteredConverser has-a PrinterAdaptor (unidirectional link.)
     See below, this is used in signal handlers.
     '''
     self.printerAdaptor = PrinterAdaptor(parentWidget=parentWidget)
     self.adaptorFromPageLayoutToPrinterAdaptor = AdaptorFromPageLayoutToPrinterAdaptor()
     
-    '''
-    Static dialog and model (or delegate to dialog and model) owned by this framework.
-    PageLayout model is initialized from settings OR printerAdaptor.
-    '''
-    if config.useQML:
-      from qtPrintFramework.userInterface.qml.dialog.pageSetupDialogQML import PageSetupDialogQMLManager
-
-      self.pageSetupDialogMgr = PageSetupDialogQMLManager()
-      self.toFilePageSetupDialog = self.pageSetupDialogMgr.pageSetupDialogDelegate()
-      
-      " delegate is a dialog and also a PageLayout model."
-      result = self.toFilePageSetupDialog
-      
-    else: # QWidget
-      from qtPrintFramework.userInterface.widget.dialog.printerlessPageSetup import PrinterlessPageSetupDialog
-
-      self.toFilePageSetupDialog = PrinterlessPageSetupDialog(parentWidget=self.parentWidget)
+    result = super().getPageLayoutAndDialog(parentWidget, printerAdaptor=self.printerAdaptor)
     
-      ##self.pageLayout = PrinteredpageLayout(masterEditor=self.toFilePageSetupDialog, printerAdaptor=self.printerAdaptor, )
-      result = PageLayout(printerAdaptor=self.printerAdaptor)
-
     '''
-    Not assert that printerAdaptor equal PageSetup.
-    Try to make them equal now.
+    Not assert that printerAdaptor equal PageLayout. 
+    Try to make them equal now by sending PageLayout to printer.
     '''
-    ##TEMP out result.toPrinterAdaptor(self.printerAdaptor)
+    self.adaptorFromPageLayoutToPrinterAdaptor.toPrinterAdaptor(result, self.printerAdaptor)
     '''
-    Still not assert that printerAdaptor equal PageSetup, since adapted printer might not support.
+    Still not assert that printerAdaptor equal PageLayout, since adapted printer might not support.
     Usually they are equal.  But user might have changed system default printer.
     '''
     return result

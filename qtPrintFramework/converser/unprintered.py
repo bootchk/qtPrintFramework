@@ -9,12 +9,7 @@ Or use while Qt print framework has bugs re systems without real printers on cer
 from PyQt5.QtCore import QSizeF
 
 from qtPrintFramework.converser.converser import Converser
-from qtPrintFramework.pageLayout.pageLayout import PageLayout
 from qtPrintFramework.pageLayout.components.paper.standard import StandardPaper
-# from qtPrintFramework.alertLog import debugLog, alertLog
-
-import qtPrintFramework.config as config
-# Dynamic imports below for QML/QWidget
 
 
 
@@ -25,31 +20,6 @@ class UnprinteredConverser(Converser):
   Does NOT need QtPrintSupport.
   Uses non-native dialogs provided by this framework.
   '''
-
-  def getPageLayoutAndDialog(self, parentWidget):
-    '''
-    Create a PageLayout and a view (GUI dialog) on it.
-    
-    Static dialog owned by this framework.
-    Requires no knowledge of printerAdaptor or current printer.
-    '''
-    if config.useQML:
-      from qtPrintFramework.userInterface.qml.dialog.pageSetupDialogQML import PageSetupDialogQMLManager
-      pageSetupDialogMgr=PageSetupDialogQMLManager()
-      self.toFilePageSetupDialog = pageSetupDialogMgr.pageSetupDialogDelegate()
-    else: # QWidget
-      from qtPrintFramework.userInterface.widget.dialog.printerlessPageSetup import PrinterlessPageSetupDialog
-
-      self.toFilePageSetupDialog = PrinterlessPageSetupDialog(parentWidget=self.parentWidget)
-    
-    '''
-    self owns because self mediates use of it on every conversation.
-    
-    PageLayout is initialized from settings OR printerAdaptor.
-    '''
-    result = PageLayout(masterEditor=self.toFilePageSetupDialog)
-    return result
-    
   
   def conversePageSetup(self):
     '''
